@@ -6,6 +6,8 @@ const mongoose = require('mongoose');
 const Joi = require('joi');
 const redis = require('redis');
 
+const { Subscription, SubscriptionPlan } = require('../../models/subscriptionSystemModels');
+
 // Initialize Redis client (Assume it's properly configured)
 const redisClient = redis.createClient();
 
@@ -35,6 +37,31 @@ exports.createRoom = async (req, res) => {
     // Ensure the creator is the creator of the apartment
     if (apartment.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Only the creator of the apartment can create rooms' });
+    }
+
+    // Fetch the user's subscription plan
+    const userSubscription = await Subscription.findOne({ user: req.user._id }).populate('subscriptionPlan');
+    if (!userSubscription) {
+      return res.status(400).json({ message: 'User does not have a valid subscription' });
+    }
+
+    const subscriptionPlan = userSubscription.subscriptionPlan;
+
+    // Check the room limits based on the subscription plan
+    const currentRoomCount = apartment.rooms.length;
+
+    if (subscriptionPlan.name === 'free') {
+      // Free plan: Max 3 rooms per apartment
+      if (currentRoomCount >= 3) {
+        return res.status(403).json({ message: 'Free plan users can only create up to 3 rooms per apartment' });
+      }
+    }
+
+    if (subscriptionPlan.name === 'gold') {
+      // Gold plan: Max 8 rooms per apartment
+      if (currentRoomCount >= 8) {
+        return res.status(403).json({ message: 'Gold plan users can only create up to 8 rooms per apartment' });
+      }
     }
 
     const roomData = { ...req.body, creator: req.user._id, users: [req.user._id] };
