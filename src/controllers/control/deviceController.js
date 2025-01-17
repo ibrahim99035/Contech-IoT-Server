@@ -5,6 +5,8 @@ const Joi = require('joi');
 const redis = require('redis');
 const crypto = require('crypto');
 
+const { Subscription, SubscriptionPlan } = require('../../models/subscriptionSystemModels');
+
 // Initialize Redis client (Assume it's properly configured)
 const redisClient = redis.createClient();
 
@@ -31,6 +33,36 @@ exports.createDevice = async (req, res) => {
 
     if (room.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({ message: 'Access denied. Only the room creator can create devices.' });
+    }
+
+    // Fetch the user's subscription plan
+    const userSubscription = await Subscription.findOne({ user: req.user._id }).populate('subscriptionPlan');
+    if (!userSubscription) {
+      return res.status(400).json({ message: 'User does not have a valid subscription' });
+    }
+
+    const subscriptionPlan = userSubscription.subscriptionPlan;
+    const currentDeviceCount = room.devices.length;
+
+    // Define limits based on subscription plans
+    let deviceLimit;
+    switch (subscriptionPlan.name.toLowerCase()) {
+      case 'free':
+        deviceLimit = 2;
+        break;
+      case 'gold':
+        deviceLimit = 4;
+        break;
+      default:
+        deviceLimit = 6; // Default limit for other plans
+        break;
+    }
+
+    // Check if the device limit has been exceeded
+    if (currentDeviceCount >= deviceLimit) {
+      return res.status(403).json({
+        message: `Your plan (${subscriptionPlan.name}) allows only ${deviceLimit} devices per room.`,
+      });
     }
 
     const device = await Device.create({ ...req.body, creator: req.user._id });

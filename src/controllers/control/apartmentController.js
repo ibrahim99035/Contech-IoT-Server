@@ -5,6 +5,7 @@ const Device = require('../../models/Device');
 const mongoose = require('mongoose');
 const Joi = require('joi');
 const redis = require('redis');
+const { Subscription, SubscriptionPlan } = require('../../models/subscriptionSystemModels');
 
 // Initialize Redis client (Assume it's properly configured)
 const redisClient = redis.createClient();
@@ -39,11 +40,43 @@ exports.createApartment = async (req, res) => {
 
     session.startTransaction();
 
+    // Fetch user's subscription plan
+    const userSubscription = await Subscription.findOne({ user: req.user._id }).populate('subscriptionPlan');
+    if (!userSubscription) {
+      return res.status(400).json({ message: 'User does not have a valid subscription' });
+    }
+
+    const subscriptionPlan = userSubscription.subscriptionPlan;
+
     // Add creator as a member
     const apartmentData = {
       ...req.body,
       members: [...new Set([req.body.creator, ...(req.body.members || [])])]
     };
+
+    // Check if the user is on the free plan
+    if (subscriptionPlan.name === 'free') {
+      // Prevent creating more than 1 apartment or being a member of an apartment
+      const userApartments = await Apartment.find({ creator: req.user._id });
+      const userMemberships = await Apartment.find({ members: req.user._id });
+
+      // Prevent creating more than one apartment if the user is on the free plan
+      if (userApartments.length >= 1 || userMemberships.length > 0) {
+        return res.status(403).json({ message: 'Free plan users can only create one apartment and cannot be members of another apartment.' });
+      }
+    }
+
+    // Check if the user is on the gold plan
+    if (subscriptionPlan.name === 'gold') {
+      // Prevent creating more than 1 apartment or being a member of an apartment
+      const userApartments = await Apartment.find({ creator: req.user._id });
+      const userMemberships = await Apartment.find({ members: req.user._id });
+
+      // Prevent creating more than one apartment if the user is on the free plan
+      if (userApartments.length >= 2 || userMemberships.length > 1) {
+        return res.status(403).json({ message: 'Gold plan users can only create 2 apartments and cannot be members of another apartments.' });
+      }
+    }
 
     const apartment = await Apartment.create([apartmentData], { session });
     await User.findByIdAndUpdate(req.body.creator, { $push: { apartments: apartment[0]._id } }, { session });
@@ -89,9 +122,33 @@ exports.assignMembers = async (req, res) => {
     const apartment = await Apartment.findById(apartmentId);
     if (!apartment) return res.status(404).json({ message: 'Apartment not found' });
 
+    // Fetch the user's subscription plan
+    const userSubscription = await Subscription.findOne({ user: req.user._id }).populate('subscriptionPlan');
+    if (!userSubscription) {
+      return res.status(400).json({ message: 'User does not have a valid subscription' });
+    }
+    const subscriptionPlan = userSubscription.subscriptionPlan;
+
     // Check if the user is the creator
     if (apartment.creator.toString() !== req.user._id.toString())
       return res.status(403).json({ message: 'Only the creator can assign members' });
+
+    // Check the subscription plan constraints
+    const currentMembersCount = apartment.members.length;
+
+    if (subscriptionPlan.name === 'free') {
+      // Free plan: Only 1 additional member (total 2 members including the creator)
+      if (currentMembersCount >= 1) {
+        return res.status(403).json({ message: 'Free plan users can only have one additional member (total 2 members)' });
+      }
+    }
+
+    if (subscriptionPlan.name === 'gold') {
+      // Gold plan: Only 3 additional members (total 4 members including the creator)
+      if (currentMembersCount >= 3) {
+        return res.status(403).json({ message: 'Gold plan users can only have three additional members (total 4 members)' });
+      }
+    }
 
     // Add members and ensure no duplicates
     apartment.members = [...new Set([...apartment.members, ...members])];
