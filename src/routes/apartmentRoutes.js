@@ -35,7 +35,7 @@ router.get('/apartments', protect, getApartmentsByMember);
  * @body    { apartmentId: string, members: array<string> }
  * @access  Protected (Requires authentication)
  */
-router.put('/apartments/assign-members', authMiddleware, assignMembers);
+router.put('/apartments/assign-members', protect, assignMembers);
 
 /**
  * @route   PUT /api/apartments/update-name
@@ -44,7 +44,7 @@ router.put('/apartments/assign-members', authMiddleware, assignMembers);
  * @body    { apartmentId: string, name: string }
  * @access  Protected (Requires authentication)
  */
-router.put('/apartments/update-name', authMiddleware, updateApartmentName);
+router.put('/apartments/update-name', protect, updateApartmentName);
 
 /**
  * @route   DELETE /api/apartments/:id
@@ -53,6 +53,6 @@ router.put('/apartments/update-name', authMiddleware, updateApartmentName);
  * @params  { id: string } - The ID of the apartment to delete.
  * @access  Protected (Requires authentication)
  */
-router.delete('/apartments/:id', authMiddleware, deleteApartment);
+router.delete('/apartments/:id', protect, deleteApartment);
 
 module.exports = router;

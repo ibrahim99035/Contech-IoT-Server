@@ -40,7 +40,7 @@ const io = socketIo(server, {
 });
 
 // WebSocket logic for user and IoT device
-require('./src/websockets')(io);  
+require('./src/controllers/websocket/websockets')(io);  
 
 // Middleware
 app.use(logger); 
