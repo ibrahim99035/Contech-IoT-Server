@@ -1,8 +1,7 @@
 // controllers/taskController.js
-const Task = require('../models/taskModel');
-const Device = require('../models/deviceModel');
-const User = require('../models/userModel');
-const { io } = require('../server'); // WebSocket instance
+const Task = require('../../models/Task');
+const Device = require('../../models/Device');
+const User = require('../../models/User');
 
 // Create Task
 exports.createTask = async (req, res) => {

@@ -2,8 +2,7 @@ const User = require('../../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const SubscriptionPlan = require('../../models/SubscriptionPlan');
-const Subscription = require('../../models/Subscription'); // Subscription model if it's separate
+const { SubscriptionPlan, Subscription } = require('../../models/subscriptionSystemModels');
 const activationEmailTemplate = require('../../utils/activationEmailTemplate'); // Import the template
 
 // User Registration
@@ -22,14 +21,12 @@ exports.registerUser = async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized: cannot assign admin role' });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create new user
     user = new User({
       name,
       email,
-      password: hashedPassword,
+      password: password,
       role,
       active: true,
       emailActivated: false,
@@ -66,6 +63,8 @@ exports.registerUser = async (req, res) => {
       { expiresIn: '1h' }
     );
 
+    console.log(process.env.EMAIL_PASS,);
+
     // Nodemailer setup
     const transporter = nodemailer.createTransport({
       service: 'gmail', // Or your preferred email service
@@ -73,6 +72,9 @@ exports.registerUser = async (req, res) => {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
+      debug: true, // Enable debug mode
+      logger: true, // Log the process to console
+  
     });
 
     // Prepare email content using the template
