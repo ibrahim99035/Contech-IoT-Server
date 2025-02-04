@@ -1,13 +1,12 @@
 const express = require('express');
 const router = express.Router();
-const {
-  createRoom,
-  updateRoomName,
-  addUsersToRoom,
-  getRoomsByUser,
-  getRoomsByApartment,
-  deleteRoom,
-} = require('../controllers/control/roomController'); // Adjust path as necessary
+
+const createRoom = require('../controllers/control/rooms/createRoom');
+const updateRoomName = require('../controllers/control/rooms/updateRoomName');
+const addUsersToRoom = require('../controllers/control/rooms/addUsersToRoom');
+const getRoomsByUser = require('../controllers/control/rooms/getRoomsByUser');
+const getRoomsByApartment = require('../controllers/control/rooms/getRoomsByApartment');
+const deleteRoom = require('../controllers/control/rooms/deleteRoom');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
