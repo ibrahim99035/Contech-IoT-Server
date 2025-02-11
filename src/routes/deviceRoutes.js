@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const createDevice = require('../controllers/control/devices/createDevice');
-const updateDeviceName = require('../controllers/control/devices/updateDeviceName');
-const updateComponentNumber = require('../controllers/control/devices/updateComponentNumber');
-const getDevicesByRoom = require('../controllers/control/devices/getDevicesByRoom');
-const deleteDevice = require('../controllers/control/devices/deleteDevice');
+const { createDevice } = require('../controllers/control/devices/createDevice');
+const { updateDeviceName } = require('../controllers/control/devices/updateDeviceName');
+const { updateComponentNumber } = require('../controllers/control/devices/updateComponentNumber');
+const { getDevicesByRoom } = require('../controllers/control/devices/getDevicesByRoom');
+const { deleteDevice } = require('../controllers/control/devices/deleteDevice');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');

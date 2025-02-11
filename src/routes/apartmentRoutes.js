@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
 
-const createApartment = require('../controllers/control/apartments/createApartment');
-const getApartmentsByMember = require('../controllers/control/apartments/getApartmentsByMember');
-const assignMembers = require('../controllers/control/apartments/assignMembers');
-const updateApartmentName = require('../controllers/control/apartments/updateApartmentName');
-const deleteApartment = require('../controllers/control/apartments/deleteApartment');
+const { createApartment } = require('../controllers/control/apartments/createApartment');
+const { getApartmentsByMember } = require('../controllers/control/apartments/getApartmentsByMember');
+const { assignMembers } = require('../controllers/control/apartments/assignMembers');
+const { updateApartmentName } = require('../controllers/control/apartments/updateApartmentName');
+const { deleteApartment } = require('../controllers/control/apartments/deleteApartment');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
