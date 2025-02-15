@@ -51,7 +51,7 @@ app.use(morgan('dev'));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin-dashboard', userRoutes); 
-app.use('/api/appartments-handler', apartmentRoutes); 
+app.use('/api/apartments-handler', apartmentRoutes); 
 app.use('/api/rooms-handler', roomRoutes); 
 app.use('/api/device-handler', deviceRoutes); 
 app.use('/api/task-handler', taskRoutes); 

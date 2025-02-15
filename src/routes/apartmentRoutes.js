@@ -17,7 +17,7 @@ const { protect } = require('../middleware/authMiddleware');
  * @desc    Create a new apartment. Automatically adds the creator as a member.
  * @access  Protected (Requires authentication)
  */
-router.post('/apartments', protect, createApartment);
+router.post('/apartments/create-apartment', protect, createApartment);
 
 /**
  * @route   GET /api/apartments
