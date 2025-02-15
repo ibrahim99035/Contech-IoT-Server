@@ -5,7 +5,12 @@ exports.getRoomsByUser = async (req, res) => {
     const rooms = await Room.find({ users: req.user._id })
       .populate('apartment', 'name')
       .populate('devices', 'name type status')
+      .select('_id name apartment devices') // Fetch only needed fields
       .lean();
+
+    if (!rooms.length) {
+      return res.status(404).json({ message: 'No rooms found for this user.' });
+    }
 
     res.json(rooms);
   } catch (error) {
