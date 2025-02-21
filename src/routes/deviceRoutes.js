@@ -17,7 +17,7 @@ const { protect } = require('../middleware/authMiddleware');
  * @desc    Create a new device within a specific room. Only the room creator can perform this action.
  * @access  Protected (Requires authentication)
  */
-router.post('/devices', protect, createDevice);
+router.post('/devices/create', protect, createDevice);
 
 /**
  * @route   PUT /api/devices/:id/update-name
@@ -44,7 +44,7 @@ router.put('/devices/:id/update-component-number', protect, updateComponentNumbe
  * @query   { roomId: string } - The ID of the room to fetch devices from.
  * @access  Protected (Requires authentication)
  */
-router.get('/devices', protect, getDevicesByRoom);
+router.get('/devices/room', protect, getDevicesByRoom);
 
 /**
  * @route   DELETE /api/devices/:id
@@ -52,6 +52,6 @@ router.get('/devices', protect, getDevicesByRoom);
  * @params  { id: string } - The ID of the device to delete.
  * @access  Protected (Requires authentication)
  */
-router.delete('/devices/:id', protect, deleteDevice);
+router.delete('/devices/delete/:id', protect, deleteDevice);
 
 module.exports = router;

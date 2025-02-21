@@ -18,7 +18,7 @@ const { protect } = require('../middleware/authMiddleware');
  * @desc    Create a new room in an apartment. Only the apartment creator can perform this action.
  * @access  Protected (Requires authentication)
  */
-router.post('/rooms', protect, createRoom);
+router.post('/rooms/create', protect, createRoom);
 
 /**
  * @route   PUT /api/rooms/:id/update-name
@@ -43,7 +43,7 @@ router.put('/rooms/:id/add-users', protect, addUsersToRoom);
  * @desc    Retrieve all rooms the authenticated user is a part of.
  * @access  Protected (Requires authentication)
  */
-router.get('/rooms', protect, getRoomsByUser);
+router.get('/rooms/get-all', protect, getRoomsByUser);
 
 /**
  * @route   GET /api/rooms/apartment/:apartmentId
@@ -59,6 +59,6 @@ router.get('/rooms/apartment/:apartmentId', protect, getRoomsByApartment);
  * @params  { id: string } - The ID of the room to delete.
  * @access  Protected (Requires authentication)
  */
-router.delete('/rooms/:id', protect, deleteRoom);
+router.delete('/rooms/delete/:id', protect, deleteRoom);
 
 module.exports = router;

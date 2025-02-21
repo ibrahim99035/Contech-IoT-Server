@@ -5,5 +5,6 @@ exports.deviceSchema = Joi.object({
   type: Joi.string().valid('Light', 'Thermostat', 'Camera', 'Lock').required(),
   status: Joi.string().valid('on', 'off').default('off'),
   room: Joi.string().required(),
-  users: Joi.array().items(Joi.string())
+  users: Joi.array().items(Joi.string()),
+  componentNumber: Joi.string().optional()
 });
