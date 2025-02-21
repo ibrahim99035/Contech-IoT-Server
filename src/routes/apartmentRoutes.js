@@ -13,19 +13,19 @@ const { protect } = require('../middleware/authMiddleware');
 // Routes Definitions
 
 /**
- * @route   POST /api/apartments
+ * @route   POST /api/apartments/create-apartment
  * @desc    Create a new apartment. Automatically adds the creator as a member.
  * @access  Protected (Requires authentication)
- */
+*/
 router.post('/apartments/create-apartment', protect, createApartment);
 
 /**
- * @route   GET /api/apartments
+ * @route   GET /api/apartments/member
  * @desc    Retrieve a list of apartments the authenticated user is a member of.
  *          Includes details about the apartment creator and associated rooms.
  * @access  Protected (Requires authentication)
- */
-router.get('/apartments', protect, getApartmentsByMember);
+*/
+router.get('/apartments/member', protect, getApartmentsByMember);
 
 /**
  * @route   PUT /api/apartments/assign-members
@@ -33,7 +33,7 @@ router.get('/apartments', protect, getApartmentsByMember);
  *          is allowed to perform this action.
  * @body    { apartmentId: string, members: array<string> }
  * @access  Protected (Requires authentication)
- */
+*/
 router.put('/apartments/assign-members', protect, assignMembers);
 
 /**
@@ -42,16 +42,16 @@ router.put('/apartments/assign-members', protect, assignMembers);
  *          is allowed to perform this action.
  * @body    { apartmentId: string, name: string }
  * @access  Protected (Requires authentication)
- */
+*/
 router.put('/apartments/update-name', protect, updateApartmentName);
 
 /**
- * @route   DELETE /api/apartments/:id
+ * @route   DELETE /api/apartments/delete/:id
  * @desc    Delete an apartment and cascade-delete related resources (rooms, devices, etc.).
  *          Only the creator of the apartment is allowed to perform this action.
  * @params  { id: string } - The ID of the apartment to delete.
  * @access  Protected (Requires authentication)
- */
-router.delete('/apartments/:id', protect, deleteApartment);
+*/
+router.delete('/apartments/delete/:id', protect, deleteApartment);
 
 module.exports = router;
