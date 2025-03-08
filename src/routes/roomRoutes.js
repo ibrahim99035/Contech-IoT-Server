@@ -43,7 +43,7 @@ router.put('/rooms/:id/add-users', protect, addUsersToRoom);
  * @desc    Retrieve all rooms the authenticated user is a part of.
  * @access  Protected (Requires authentication)
  */
-router.get('/rooms/get-all', protect, getRoomsByUser);
+router.get('/rooms/user/get-all', protect, getRoomsByUser);
 
 /**
  * @route   GET /api/rooms/apartment/:apartmentId

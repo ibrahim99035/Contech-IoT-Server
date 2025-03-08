@@ -18,7 +18,7 @@ const { protect } = require('../middleware/authMiddleware');
  * @desc    Create a new task. Only users with access to the device can create tasks.
  * @access  Protected (Requires authentication)
  */
-router.post('/tasks', protect, createTask);
+router.post('/tasks/create', protect, createTask);
 
 /**
  * @route   GET /api/tasks/user
@@ -41,7 +41,7 @@ router.get('/tasks/device/:deviceId', protect, getTasksByDevice);
  * @params  { id: string } - The ID of the task to update.
  * @access  Protected (Requires authentication)
  */
-router.put('/tasks/:id', protect, updateTask);
+router.put('/tasks/update/:id', protect, updateTask);
 
 /**
  * @route   DELETE /api/tasks/:id
@@ -49,6 +49,6 @@ router.put('/tasks/:id', protect, updateTask);
  * @params  { id: string } - The ID of the task to delete.
  * @access  Protected (Requires authentication)
  */
-router.delete('/tasks/:id', protect, deleteTask);
+router.delete('/tasks/delete/:id', protect, deleteTask);
 
 module.exports = router;
