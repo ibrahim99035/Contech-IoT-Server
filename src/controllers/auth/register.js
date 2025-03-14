@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 const { SubscriptionPlan, Subscription } = require('../../models/subscriptionSystemModels');
-const activationEmailTemplate = require('../../utils/activationEmailTemplate'); // Import the template
+const activationEmailTemplate = require('../../utils/activationEmailTemplate'); 
 
 // User Registration
 exports.registerUser = async (req, res) => {

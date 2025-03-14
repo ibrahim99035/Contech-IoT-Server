@@ -13,7 +13,7 @@ exports.updatePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
   try {
-    const user = await User.findById(req.user.userId);
+    const user = await User.findById(req.user._id);
 
     // Check if old password matches
     const isMatch = await bcrypt.compare(oldPassword, user.password);
@@ -21,9 +21,7 @@ exports.updatePassword = async (req, res) => {
       return res.status(400).json({ message: 'Old password is incorrect' });
     }
 
-    // Hash and set new password
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedNewPassword;
+    user.password = newPassword;
 
     await user.save();
     res.json({ message: 'Password updated successfully' });
@@ -44,7 +42,7 @@ exports.forgotPassword = async (req, res) => {
     const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
 
     // Verify email if needed (optional step)
-    if (!user.isVerified) {
+    if (!user.emailActivated) {
       return res.status(400).json({ message: 'Email is not verified. Please verify your email first.' });
     }
 
@@ -91,9 +89,7 @@ exports.resetPassword = async (req, res) => {
       return res.status(400).json({ message: 'Invalid token or user not found' });
     }
 
-    // Hash and set new password
-    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
-    user.password = hashedNewPassword;
+    user.password = newPassword;
 
     await user.save();
     res.json({ message: 'Password reset successfully' });
