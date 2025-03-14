@@ -4,7 +4,14 @@ const nodemailer = require('nodemailer');
 
 exports.sendActivationToken = async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    // Input validation
+    const { email } = req.body;
+    if (!email || !isValidEmail(email)) {
+      return res.status(400).json({ message: 'Please provide a valid email address' });
+    }
+
+    const user = await User.findOne({ email });
+    
     if (!user) {
       return res.status(400).json({ message: 'Invalid email' });
     }
@@ -13,51 +20,70 @@ exports.sendActivationToken = async (req, res) => {
       return res.status(400).json({ message: 'Email already activated' });
     }
 
-    // Generate activation token
+    // Check for environment variables
+    if (!process.env.JWT_SECRET || !process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.FRONTEND_URL) {
+      console.error('Missing required environment variables');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+
+    // Generate activation token with email included as needed
     const activationToken = jwt.sign(
       { userId: user._id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
 
-    // Nodemailer setup
+    // Generate activation URL
+    const activationUrl = `${process.env.FRONTEND_URL}/activate?token=${activationToken}`;
+
+    // Nodemailer setup - disable debug in production
     const transporter = nodemailer.createTransport({
       service: 'gmail', // Or your preferred email service
       auth: {
-        user: process.env.EMAIL_USER,
+        user: process.env.EMAIL_USER, 
         pass: process.env.EMAIL_PASS,
       },
+      debug: process.env.NODE_ENV === 'development', 
+      logger: process.env.NODE_ENV === 'development'
     });
 
+    // Make sure the template function is properly imported
+    if (typeof activationEmailTemplate !== 'function') {
+      console.error('Activation email template function is not defined');
+      return res.status(500).json({ message: 'Server configuration error' });
+    }
+  
+    // Prepare email content with the activation URL
+    const emailContent = activationEmailTemplate(user, activationUrl);
+  
     // Email options
     const mailOptions = {
-      from: process.env.EMAIL_USER,
+      from: `"Contech IoT" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: 'Email Activation Required',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
-          <h2 style="color: #4CAF50; text-align: center;">Activate Your Email</h2>
-          <p style="font-size: 16px; color: #333;">Dear ${user.name || 'User'},</p>
-          <p style="font-size: 16px; color: #333;">Click the button below to activate your email. The link will expire in 1 hour.</p>
-          <a href="${process.env.FRONTEND_URL}/activate-email/${activationToken}" 
-             style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #4CAF50; color: #fff; text-decoration: none; border-radius: 5px;">
-            Activate Email
-          </a>
-          <p style="font-size: 16px; color: #333; margin-top: 20px;">If you did not request this, please ignore this email.</p>
-          <p style="font-size: 16px; color: #333;">Best Regards,<br/>The Team</p>
-        </div>
-      `,
+      html: emailContent,
     };
 
-    // Send email
-    await transporter.sendMail(mailOptions);
+    // Send email with better error handling
+    try {
+      await transporter.sendMail(mailOptions);
+    } catch (emailError) {
+      console.error('Error sending email:', emailError);
+      return res.status(500).json({ message: 'Failed to send activation email. Please try again later.' });
+    }
 
-    res.json({ message: 'Activation email sent successfully' });
+    res.status(200).json({ message: 'Activation email sent successfully' });
   } catch (error) {
-    console.error('Error:', error.message);
+    console.error('Error in sendActivationToken controller:', error);
     res.status(500).json({ message: 'Server error during email token generation' });
   }
 };
+
+// Email validation helper function
+function isValidEmail(email) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
 
 // Email Activation (Verifies user email)
 exports.activateEmailWithToken = async (req, res) => {
