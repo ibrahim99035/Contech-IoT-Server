@@ -6,6 +6,7 @@ const { getApartmentsByMember } = require('../controllers/control/apartments/get
 const { assignMembers } = require('../controllers/control/apartments/assignMembers');
 const { updateApartmentName } = require('../controllers/control/apartments/updateApartmentName');
 const { deleteApartment } = require('../controllers/control/apartments/deleteApartment');
+const { getApartmentMembers } = require('../controllers/control/apartments/getApartmentMembers'); // <-- New controller
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
@@ -16,7 +17,7 @@ const { protect } = require('../middleware/authMiddleware');
  * @route   POST /api/apartments/create-apartment
  * @desc    Create a new apartment. Automatically adds the creator as a member.
  * @access  Protected (Requires authentication)
-*/
+ */
 router.post('/apartments/create-apartment', protect, createApartment);
 
 /**
@@ -24,7 +25,7 @@ router.post('/apartments/create-apartment', protect, createApartment);
  * @desc    Retrieve a list of apartments the authenticated user is a member of.
  *          Includes details about the apartment creator and associated rooms.
  * @access  Protected (Requires authentication)
-*/
+ */
 router.get('/apartments/member', protect, getApartmentsByMember);
 
 /**
@@ -33,7 +34,7 @@ router.get('/apartments/member', protect, getApartmentsByMember);
  *          is allowed to perform this action.
  * @body    { apartmentId: string, members: array<string> }
  * @access  Protected (Requires authentication)
-*/
+ */
 router.put('/apartments/assign-members', protect, assignMembers);
 
 /**
@@ -42,7 +43,7 @@ router.put('/apartments/assign-members', protect, assignMembers);
  *          is allowed to perform this action.
  * @body    { apartmentId: string, name: string }
  * @access  Protected (Requires authentication)
-*/
+ */
 router.put('/apartments/update-name', protect, updateApartmentName);
 
 /**
@@ -51,7 +52,15 @@ router.put('/apartments/update-name', protect, updateApartmentName);
  *          Only the creator of the apartment is allowed to perform this action.
  * @params  { id: string } - The ID of the apartment to delete.
  * @access  Protected (Requires authentication)
-*/
+ */
 router.delete('/apartments/delete/:id', protect, deleteApartment);
+
+/**
+ * @route   GET /api/apartments/:id/members
+ * @desc    Get all members of a specific apartment, including the creator.
+ * @params  { id: string } - The ID of the apartment.
+ * @access  Protected (Requires authentication)
+ */
+router.get('/apartments/:id/members', protect, getApartmentMembers); // <-- New route added
 
 module.exports = router;

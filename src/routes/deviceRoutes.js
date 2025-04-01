@@ -10,11 +10,10 @@ const { deleteDevice } = require('../controllers/control/devices/deleteDevice');
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
 
-// Routes Definitions
-
 /**
- * @route   POST /api/devices
+ * @route   POST /api/devices/create
  * @desc    Create a new device within a specific room. Only the room creator can perform this action.
+ * @body    { name: string, room: string }
  * @access  Protected (Requires authentication)
  */
 router.post('/devices/create', protect, createDevice);
@@ -22,7 +21,7 @@ router.post('/devices/create', protect, createDevice);
 /**
  * @route   PUT /api/devices/:id/update-name
  * @desc    Update the name of a device. Only the device creator can perform this action.
- * @params  { id: string } - The ID of the device to update.
+ * @params  { id: string } - The ID of the device.
  * @body    { name: string }
  * @access  Protected (Requires authentication)
  */
@@ -32,26 +31,26 @@ router.put('/devices/:id/update-name', protect, updateDeviceName);
  * @route   PUT /api/devices/:id/update-component-number
  * @desc    Update the component number of a device. The component number is stored as a hashed value.
  *          Only the device creator can perform this action.
- * @params  { id: string } - The ID of the device to update.
+ * @params  { id: string } - The ID of the device.
  * @body    { componentNumber: string }
  * @access  Protected (Requires authentication)
  */
 router.put('/devices/:id/update-component-number', protect, updateComponentNumber);
 
 /**
- * @route   GET /api/devices
+ * @route   GET /api/devices/room/:roomId
  * @desc    Retrieve all devices within a specific room. Accessible to the room's creator and users.
- * @query   { roomId: string } - The ID of the room to fetch devices from.
+ * @params  { roomId: string } - The ID of the room.
  * @access  Protected (Requires authentication)
  */
-router.get('/devices/room', protect, getDevicesByRoom);
+router.get('/devices/room/:roomId', protect, getDevicesByRoom);
 
 /**
  * @route   DELETE /api/devices/:id
  * @desc    Delete a device from a room. Only the device creator can perform this action.
- * @params  { id: string } - The ID of the device to delete.
+ * @params  { id: string } - The ID of the device.
  * @access  Protected (Requires authentication)
  */
-router.delete('/devices/delete/:id', protect, deleteDevice);
+router.delete('/devices/:id', protect, deleteDevice);
 
 module.exports = router;

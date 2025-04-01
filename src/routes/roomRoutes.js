@@ -14,8 +14,13 @@ const { protect } = require('../middleware/authMiddleware');
 // Routes Definitions
 
 /**
- * @route   POST /api/rooms
- * @desc    Create a new room in an apartment. Only the apartment creator can perform this action.
+ * @route   POST /api/rooms/create
+ * @desc    Create a new room in an apartment. Only the apartment creator can perform this action. 
+ *          The number of rooms is limited based on the user's subscription plan:
+ *          - Free Plan: 3 rooms
+ *          - Gold Plan: 8 rooms
+ *          - Default: 10 rooms
+ * @body    { name: string, apartment: string }
  * @access  Protected (Requires authentication)
  */
 router.post('/rooms/create', protect, createRoom);
@@ -31,7 +36,8 @@ router.put('/rooms/:id/update-name', protect, updateRoomName);
 
 /**
  * @route   PUT /api/rooms/:id/add-users
- * @desc    Add users to a room. Only the room creator can perform this action.
+ * @desc    Add users to a room. Only the room creator can perform this action. 
+ *          Invalid or duplicate user IDs are automatically filtered out.
  * @params  { id: string } - The ID of the room.
  * @body    { userIds: array } - Array of user IDs to add.
  * @access  Protected (Requires authentication)
@@ -39,7 +45,7 @@ router.put('/rooms/:id/update-name', protect, updateRoomName);
 router.put('/rooms/:id/add-users', protect, addUsersToRoom);
 
 /**
- * @route   GET /api/rooms
+ * @route   GET /api/rooms/user/get-all
  * @desc    Retrieve all rooms the authenticated user is a part of.
  * @access  Protected (Requires authentication)
  */
@@ -48,6 +54,7 @@ router.get('/rooms/user/get-all', protect, getRoomsByUser);
 /**
  * @route   GET /api/rooms/apartment/:apartmentId
  * @desc    Retrieve all rooms in a specific apartment that the user has access to.
+ *          The user must be a member of the apartment to view its rooms.
  * @params  { apartmentId: string } - The ID of the apartment.
  * @access  Protected (Requires authentication)
  */
@@ -59,6 +66,6 @@ router.get('/rooms/apartment/:apartmentId', protect, getRoomsByApartment);
  * @params  { id: string } - The ID of the room to delete.
  * @access  Protected (Requires authentication)
  */
-router.delete('/rooms/delete/:id', protect, deleteRoom);
+router.delete('/rooms/:id', protect, deleteRoom);
 
 module.exports = router;
