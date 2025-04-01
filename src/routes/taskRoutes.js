@@ -2,53 +2,114 @@ const express = require('express');
 const router = express.Router();
 const {
   createTask,
-  getTasksByUser,
-  getTasksByDevice,
-  updateTask,
+} = require('../controllers/control/tasks/createTask');
+const {
   deleteTask,
-} = require('../controllers/control/taskController'); // Adjust the path as necessary
+} = require('../controllers/control/tasks/deleteTask');
+const {
+  getTaskById,
+  getMyTasks,
+  getTasksByDevice,
+  getAssignedTasks,
+  getFilteredTasks,
+} = require('../controllers/control/tasks/taskReader');
+const {
+  updateTaskDetails,
+  updateTaskSchedule,
+  updateTaskStatus,
+  addNotificationRecipient,
+} = require('../controllers/control/tasks/taskUpdate');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
 
-// Routes Definitions
-
+// 📌 TASK CREATION
 /**
  * @route   POST /api/tasks
- * @desc    Create a new task. Only users with access to the device can create tasks.
+ * @desc    Create a new task for a device
  * @access  Protected (Requires authentication)
  */
-router.post('/tasks/create', protect, createTask);
+router.post('/tasks', protect, createTask);
+
+// 📌 TASK RETRIEVAL
+/**
+ * @route   GET /api/tasks/:taskId
+ * @desc    Retrieve a specific task by its ID
+ * @params  { taskId: string } - The ID of the task
+ * @access  Protected (User must have access to the task or device)
+ */
+router.get('/tasks/:taskId', protect, getTaskById);
 
 /**
- * @route   GET /api/tasks/user
- * @desc    Retrieve all tasks associated with the authenticated user.
+ * @route   GET /api/tasks/user/my-tasks
+ * @desc    Retrieve all tasks created by the authenticated user
  * @access  Protected (Requires authentication)
  */
-router.get('/tasks/user', protect, getTasksByUser);
+router.get('/tasks/user/my-tasks', protect, getMyTasks);
 
 /**
  * @route   GET /api/tasks/device/:deviceId
- * @desc    Retrieve all tasks associated with a specific device. Only users with access to the device can view tasks.
- * @params  { deviceId: string } - The ID of the device.
- * @access  Protected (Requires authentication)
+ * @desc    Retrieve all tasks assigned to a specific device
+ * @params  { deviceId: string } - The ID of the device
+ * @access  Protected (User must have access to the device)
  */
 router.get('/tasks/device/:deviceId', protect, getTasksByDevice);
 
 /**
- * @route   PUT /api/tasks/:id
- * @desc    Update a task. Only the creator of the task can update it.
- * @params  { id: string } - The ID of the task to update.
+ * @route   GET /api/tasks/assigned
+ * @desc    Retrieve tasks where the user is a notification recipient
  * @access  Protected (Requires authentication)
  */
-router.put('/tasks/update/:id', protect, updateTask);
+router.get('/tasks/assigned', protect, getAssignedTasks);
 
 /**
- * @route   DELETE /api/tasks/:id
- * @desc    Delete a task. Only the creator of the task can delete it.
- * @params  { id: string } - The ID of the task to delete.
+ * @route   GET /api/tasks/filter
+ * @desc    Retrieve tasks based on filters such as status, date range, and sorting
+ * @query   { status, startDate, endDate, sort, limit, page }
  * @access  Protected (Requires authentication)
  */
-router.delete('/tasks/delete/:id', protect, deleteTask);
+router.get('/tasks/filter', protect, getFilteredTasks);
+
+// 📌 TASK UPDATES
+/**
+ * @route   PUT /api/tasks/:taskId/details
+ * @desc    Update task details (name, description, action)
+ * @params  { taskId: string } - The ID of the task
+ * @access  Protected (Only task/device creator or authorized users)
+ */
+router.put('/tasks/:taskId/details', protect, updateTaskDetails);
+
+/**
+ * @route   PUT /api/tasks/:taskId/schedule
+ * @desc    Update task schedule (start time, recurrence, etc.)
+ * @params  { taskId: string } - The ID of the task
+ * @access  Protected (Only task/device creator or authorized users)
+ */
+router.put('/tasks/:taskId/schedule', protect, updateTaskSchedule);
+
+/**
+ * @route   PUT /api/tasks/:taskId/status
+ * @desc    Update the status of a task (e.g., scheduled, active, completed)
+ * @params  { taskId: string } - The ID of the task
+ * @access  Protected (Only task/device creator or authorized users)
+ */
+router.put('/tasks/:taskId/status', protect, updateTaskStatus);
+
+/**
+ * @route   PUT /api/tasks/:taskId/notifications
+ * @desc    Add a notification recipient to a task
+ * @params  { taskId: string } - The ID of the task
+ * @access  Protected (Only task/device creator or authorized users)
+ */
+router.put('/tasks/:taskId/notifications', protect, addNotificationRecipient);
+
+// 📌 TASK DELETION
+/**
+ * @route   DELETE /api/tasks/:taskId
+ * @desc    Delete a specific task by ID
+ * @params  { taskId: string } - The ID of the task
+ * @access  Protected (Only task/device creator can delete)
+ */
+router.delete('/tasks/:taskId', protect, deleteTask);
 
 module.exports = router;

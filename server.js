@@ -12,6 +12,8 @@ const { errorHandler } = require('./src/middleware/errorHandler');
 const { logger } = require('./src/middleware/logger'); 
 const { notFound } = require('./src/middleware/notFound');
 
+const TaskScheduler = require('./src/schedualr');
+
 // Import Routes
 const authRoutes = require('./src/routes/authRoutes');
 const userRoutes = require('./src/routes/userRoutes');
@@ -40,7 +42,10 @@ const io = socketIo(server, {
 });
 
 // WebSocket logic for user and IoT device
-require('./src/controllers/websocket/websockets')(io);  
+require('./src/websockets')(io);  
+
+// Start Task Scheduler after DB connection is established
+TaskScheduler.start();
 
 // Middleware
 app.use(logger); 
