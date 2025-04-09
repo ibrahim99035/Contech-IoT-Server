@@ -6,12 +6,12 @@ const { getApartmentsByMember } = require('../controllers/control/apartments/get
 const { assignMembers } = require('../controllers/control/apartments/assignMembers');
 const { updateApartmentName } = require('../controllers/control/apartments/updateApartmentName');
 const { deleteApartment } = require('../controllers/control/apartments/deleteApartment');
-const { getApartmentMembers } = require('../controllers/control/apartments/getApartmentMembers'); // <-- New controller
+const { getApartmentMembers } = require('../controllers/control/apartments/getApartmentMembers'); 
+const { removeMember } = require('../controllers/control/apartments/removeMember');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
 
-// Routes Definitions
 
 /**
  * @route   POST /api/apartments/create-apartment
@@ -61,6 +61,14 @@ router.delete('/apartments/delete/:id', protect, deleteApartment);
  * @params  { id: string } - The ID of the apartment.
  * @access  Protected (Requires authentication)
  */
-router.get('/apartments/:id/members', protect, getApartmentMembers); // <-- New route added
+router.get('/apartments/:id/members', protect, getApartmentMembers);
+
+/**
+ * @route   GET /api/apartments/:id/members
+ * @desc    Get all members of a specific apartment, including the creator.
+ * @params  { id: string } - The ID of the apartment.
+ * @access  Protected (Requires authentication)
+ */
+router.delete('/apartments/:apartmentId/remover-member/:memberId', protect, removeMember);
 
 module.exports = router;
