@@ -39,7 +39,7 @@ exports.assignMembers = async (req, res) => {
     }
 
     const currentMembersCount = apartment.members.length;
-    const maxMembers = userSubscription.subscriptionPlan.name === 'free' ? 1 : 3;
+    const maxMembers = userSubscription.subscriptionPlan.name === 'free' ? 3 : 6;
     
     if (currentMembersCount + members.length > maxMembers) {
       await session.abortTransaction();
