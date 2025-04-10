@@ -9,7 +9,7 @@ exports.getApartmentsByMember = async (req, res) => {
     const userId = req.user._id;
     
     // Find apartments where user is either a member OR creator
-    const apartmentsArray = await Apartment.find({
+    const apartments = await Apartment.find({
       $or: [
         { members: userId },
         { creator: userId }
@@ -21,19 +21,23 @@ exports.getApartmentsByMember = async (req, res) => {
     .select('name creator members rooms')
     .lean();
     
-    // Convert array to object of objects using _id as keys
-    const apartmentsObject = {};
-    apartmentsArray.forEach(apartment => {
-      apartmentsObject[apartment._id] = apartment;
-    });
-    
     // Debugging info
     console.log('User ID:', userId);
-    console.log('Found apartments:', Object.keys(apartmentsObject).length);
+    console.log('Found apartments:', apartments.length);
     
-    res.json(apartmentsObject);
+    // Send structured response
+    res.status(200).json({
+      status: "success",
+      message: "Apartments fetched successfully",
+      data: apartments
+    });
+    
   } catch (error) {
     console.error('Error fetching apartments:', error);
-    res.status(500).json({ message: 'Error fetching apartments for the user', error: error.message });
+    res.status(500).json({ 
+      status: "error",
+      message: 'Error fetching apartments for the user', 
+      error: error.message 
+    });
   }
 };
