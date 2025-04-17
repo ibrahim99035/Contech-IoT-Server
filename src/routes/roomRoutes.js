@@ -66,6 +66,6 @@ router.get('/rooms/apartment/:apartmentId', protect, getRoomsByApartment);
  * @params  { id: string } - The ID of the room to delete.
  * @access  Protected (Requires authentication)
  */
-router.delete('/rooms/:id', protect, deleteRoom);
+router.delete('/rooms/delete/:id', protect, deleteRoom);
 
 module.exports = router;
