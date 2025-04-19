@@ -7,6 +7,7 @@ const { addUsersToRoom } = require('../controllers/control/rooms/addUsersToRoom'
 const { getRoomsByUser } = require('../controllers/control/rooms/getRoomsByUser');
 const { getRoomsByApartment } = require('../controllers/control/rooms/getRoomsByApartment');
 const { deleteRoom } = require('../controllers/control/rooms/deleteRoom');
+const { getUsersByRoom } = require('../controllers/control/rooms/getUsersByRoom');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
@@ -61,11 +62,19 @@ router.get('/rooms/user/get-all', protect, getRoomsByUser);
 router.get('/rooms/apartment/:apartmentId', protect, getRoomsByApartment);
 
 /**
- * @route   DELETE /api/rooms/:id
+ * @route   DELETE /api/rooms/delete/:id
  * @desc    Delete a room. Only the room creator can perform this action.
  * @params  { id: string } - The ID of the room to delete.
  * @access  Protected (Requires authentication)
  */
 router.delete('/rooms/delete/:id', protect, deleteRoom);
+
+/**
+ * @route   GET /api/rooms/get-users/:roomId 
+ * @desc    Delete a room. Only the room creator can perform this action.
+ * @params  { id: string } - The ID of the room to delete.
+ * @access  Protected (Requires authentication)
+ */
+router.get('/rooms/get-users/:roomId', protect, getUsersByRoom);
 
 module.exports = router;
