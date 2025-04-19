@@ -8,6 +8,7 @@ const { updateApartmentName } = require('../controllers/control/apartments/updat
 const { deleteApartment } = require('../controllers/control/apartments/deleteApartment');
 const { getApartmentMembers } = require('../controllers/control/apartments/getApartmentMembers'); 
 const { removeMember } = require('../controllers/control/apartments/removeMember');
+const { exitApartment } = require('../controllers/control/apartments/exitApartment');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
@@ -64,11 +65,19 @@ router.delete('/apartments/delete/:id', protect, deleteApartment);
 router.get('/apartments/:id/members', protect, getApartmentMembers);
 
 /**
- * @route   GET /api/apartments/:id/members
+ * @route   DELETE /api/apartments/:apartmentId/remover-member/:memberId
  * @desc    Get all members of a specific apartment, including the creator.
  * @params  { id: string } - The ID of the apartment.
  * @access  Protected (Requires authentication)
  */
 router.delete('/apartments/:apartmentId/remover-member/:memberId', protect, removeMember);
+
+/**
+ * @route   GET /api/apartments/:apartmentId/exit
+ * @desc    Get all members of a specific apartment, including the creator.
+ * @params  { id: string } - The ID of the apartment.
+ * @access  Protected (Requires authentication)
+ */
+router.put('/apartments/:apartmentId/exit', protect, exitApartment);
 
 module.exports = router;

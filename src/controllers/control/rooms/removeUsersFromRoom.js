@@ -1,13 +1,12 @@
 const Room = require('../../../models/Room');
-const Apartment = require('../../../models/Apartment');
 const mongoose = require('mongoose');
 
 /**
- * Add users to a room
+ * Remove users from a room (creator only)
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.addUsersToRoom = async (req, res) => {
+exports.removeUsersFromRoom = async (req, res) => {
   try {
     const roomId = req.params.id;
     let { userIds } = req.body;
@@ -54,94 +53,67 @@ exports.addUsersToRoom = async (req, res) => {
       });
     }
     
-    // Check permission
+    // Check permission - only creator can remove users
     if (room.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Permission denied: Only the creator can add users to this room',
+        message: 'Permission denied: Only the creator can remove users from this room',
         data: null
       });
     }
     
-    // Fetch the apartment to check if users are members
-    const apartment = await Apartment.findById(room.apartment);
-    if (!apartment) {
-      return res.status(404).json({
-        success: false,
-        message: 'Associated apartment not found',
-        data: null
-      });
-    }
-
-    // Convert apartment members and creator to string array for comparison
-    const apartmentMembers = apartment.members.map(id => id.toString());
-    apartmentMembers.push(apartment.creator.toString()); // Include creator
-
-    // Remove creator from the list (if included)
-    const filteredUserIds = validUserIds.filter(id => 
-      id !== req.user._id.toString()
-    );
-
-    // Check if any users remain to be added after filtering
-    if (filteredUserIds.length === 0) {
+    // Ensure creator isn't removing themselves
+    if (validUserIds.includes(room.creator.toString())) {
       return res.status(400).json({
         success: false,
-        message: 'No valid users to add (creator cannot be added as a user)',
+        message: 'Cannot remove the room creator',
         data: null
       });
     }
-
-    // NEW: Filter out users who are not in the apartment
-    const apartmentValidUsers = filteredUserIds.filter(id => apartmentMembers.includes(id));
-    if (apartmentValidUsers.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No valid users to add (users must be members of the apartment)',
-        data: null
-      });
-    }
-
+    
     // Convert existing users to strings for comparison
     const existingUsers = room.users.map(id => id.toString());
-
-    // Find new users that aren't already in the room
-    const newUsers = apartmentValidUsers.filter(id => !existingUsers.includes(id));
-
-    // Check if there are any new users to add
-    if (newUsers.length === 0) {
+    
+    // Find users that are actually in the room
+    const usersToRemove = validUserIds.filter(id => existingUsers.includes(id));
+    
+    // Check if there are any users to remove
+    if (usersToRemove.length === 0) {
       return res.status(200).json({
         success: true,
-        message: 'All valid users are already in the room',
+        message: 'None of the specified users are in the room',
         data: {
           room,
-          addedUsers: []
+          removedUsers: []
         }
       });
     }
-
-    // Add new users to room
-    room.users = [...existingUsers, ...newUsers];
-
+    
+    // Remove users from room
+    room.users = room.users.filter(userId => 
+      !usersToRemove.includes(userId.toString())
+    );
+    
     // Save updated room
     const updatedRoom = await room.save();
-
-    // Return success response with added users info
+    
+    // Return success response with removed users info
     return res.status(200).json({
       success: true,
-      message: 'Users added to room successfully',
+      message: 'Users removed from room successfully',
       data: {
         room: updatedRoom,
-        addedUsers: newUsers,
-        addedCount: newUsers.length,
-        totalUsers: updatedRoom.users.length
+        removedUsers: usersToRemove,
+        removedCount: usersToRemove.length,
+        remainingUsers: updatedRoom.users.length
       }
     });
-
+    
   } catch (error) {
-    console.error('Error adding users to room:', error);
+    console.error('Error removing users from room:', error);
     return res.status(500).json({
       success: false,
-      message: 'Server error while adding users to room',
+      message: 'Server error while removing users from room',
       error: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message
     });
   }
