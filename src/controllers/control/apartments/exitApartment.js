@@ -1,4 +1,6 @@
 const Apartment = require('../../../models/Apartment');
+const Room = require('../../../models/Room');
+const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
 
 /**
@@ -53,13 +55,29 @@ exports.exitApartment = async (req, res) => {
     // Remove the user from the apartment members
     apartment.members = apartment.members.filter(member => !member.equals(userId));
     
+    // Get all rooms in this apartment
+    const rooms = await Room.find({ apartment: apartmentId });
+    
+    // Remove the user from all rooms in this apartment
+    for (const room of rooms) {
+      room.users = room.users.filter(user => !user.equals(userId));
+      await room.save();
+      
+      // Get all devices in this room and remove the member from them
+      const devices = await Device.find({ room: room._id });
+      for (const device of devices) {
+        device.users = device.users.filter(user => !user.equals(userId));
+        await device.save();
+      }
+    }
+    
     // Save the updated apartment
     await apartment.save();
     
     // Return success response
     return res.status(200).json({
       success: true,
-      message: 'You have successfully left the apartment',
+      message: 'You have successfully left the apartment and been removed from all associated rooms and devices',
       data: {
         apartmentId: apartment._id,
         apartmentName: apartment.name,

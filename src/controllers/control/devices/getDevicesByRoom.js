@@ -1,28 +1,105 @@
+/**
+ * Device Controller - handles retrieval of devices by room
+ * @module controllers/DeviceController
+ */
+
 const Device = require('../../../models/Device');
 const Room = require('../../../models/Room');
 const mongoose = require('mongoose');
 
+/**
+ * Retrieves all devices belonging to a specific room
+ * 
+ * @async
+ * @function getDevicesByRoom
+ * @param {Object} req - Express request object
+ * @param {Object} req.query - Query parameters
+ * @param {string} req.query.roomId - ID of the room to fetch devices from
+ * @param {Object} req.user - Authenticated user information
+ * @param {Object} res - Express response object
+ * @returns {Object} JSON response with devices data or error message
+ */
 exports.getDevicesByRoom = async (req, res) => {
   try {
     const { roomId } = req.query;
 
+    // Validate room ID format
     if (!mongoose.Types.ObjectId.isValid(roomId)) {
-      return res.status(400).json({ message: 'Invalid room ID' });
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid room ID format',
+        code: 'INVALID_ID_FORMAT'
+      });
     }
 
-    const room = await Room.findById(roomId);
+    // Check authentication
+    if (!req.user?._id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+        code: 'UNAUTHORIZED'
+      });
+    }
+
+    // Find the requested room
+    const room = await Room.findById(roomId).populate('creator', 'name email');
     if (!room) {
-      return res.status(404).json({ message: 'Room not found' });
+      return res.status(404).json({
+        success: false,
+        message: 'Room not found',
+        code: 'ROOM_NOT_FOUND'
+      });
     }
 
-    if (!room.users.includes(req.user._id.toString()) && room.creator.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Access denied.' });
+    // Check if user has access to the room
+    const isCreator = room.creator._id.toString() === req.user._id.toString();
+    const isMember = room.users.some(userId => userId.toString() === req.user._id.toString());
+    
+    if (!isCreator && !isMember) {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied: you must be the room creator or member to view devices',
+        code: 'ACCESS_DENIED'
+      });
     }
 
-    const devices = await Device.find({ room: roomId }).populate('users', 'name email').lean();
+    // Fetch devices with populated user information
+    const devices = await Device.find({ room: roomId })
+      .populate('creator', 'name email')
+      .populate('users', 'name email')
+      .lean();
 
-    res.json(devices);
+    // Return success response with devices data
+    res.status(200).json({
+      success: true,
+      message: 'Devices retrieved successfully',
+      data: {
+        room: {
+          _id: room._id,
+          name: room.name,
+          creator: room.creator
+        },
+        devices: devices.map(device => ({
+          _id: device._id,
+          name: device.name,
+          type: device.type,
+          status: device.status,
+          componentNumber: device.componentNumber,
+          creator: device.creator,
+          users: device.users,
+          createdAt: device.createdAt,
+          updatedAt: device.updatedAt
+        })),
+        count: devices.length
+      }
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching devices', error: error.message });
+    // Return error response
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching devices',
+      error: error.message,
+      code: 'SERVER_ERROR'
+    });
   }
 };

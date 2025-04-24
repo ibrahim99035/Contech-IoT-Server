@@ -1,4 +1,5 @@
 const Room = require('../../../models/Room');
+const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
 
 /**
@@ -94,13 +95,22 @@ exports.removeUsersFromRoom = async (req, res) => {
       !usersToRemove.includes(userId.toString())
     );
     
+    // Remove users from all devices in this room
+    const devices = await Device.find({ room: roomId });
+    for (const device of devices) {
+      device.users = device.users.filter(user => 
+        !usersToRemove.includes(user.toString())
+      );
+      await device.save();
+    }
+    
     // Save updated room
     const updatedRoom = await room.save();
     
     // Return success response with removed users info
     return res.status(200).json({
       success: true,
-      message: 'Users removed from room successfully',
+      message: 'Users removed from room and associated devices successfully',
       data: {
         room: updatedRoom,
         removedUsers: usersToRemove,
