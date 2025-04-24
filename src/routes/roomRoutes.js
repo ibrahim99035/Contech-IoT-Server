@@ -8,6 +8,8 @@ const { getRoomsByUser } = require('../controllers/control/rooms/getRoomsByUser'
 const { getRoomsByApartment } = require('../controllers/control/rooms/getRoomsByApartment');
 const { deleteRoom } = require('../controllers/control/rooms/deleteRoom');
 const { getUsersByRoom } = require('../controllers/control/rooms/getUsersByRoom');
+const { removeUserFromRoom } = require('../controllers/control/rooms/removeUsersFromRoom');
+const { exitRoom } = require('../controllers/control/rooms/exitRoom');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
@@ -15,7 +17,7 @@ const { protect } = require('../middleware/authMiddleware');
 // Routes Definitions
 
 /**
- * @route   POST /api/rooms/create
+ * @route   POST /api/rooms-handler/rooms/create
  * @desc    Create a new room in an apartment. Only the apartment creator can perform this action. 
  *          The number of rooms is limited based on the user's subscription plan:
  *          - Free Plan: 3 rooms
@@ -27,7 +29,7 @@ const { protect } = require('../middleware/authMiddleware');
 router.post('/rooms/create', protect, createRoom);
 
 /**
- * @route   PUT /api/rooms/:id/update-name
+ * @route   PUT /api/rooms-handler/rooms/:id/update-name
  * @desc    Update the name of a room. Only the room creator can perform this action.
  * @params  { id: string } - The ID of the room to update.
  * @body    { name: string }
@@ -36,7 +38,7 @@ router.post('/rooms/create', protect, createRoom);
 router.put('/rooms/:id/update-name', protect, updateRoomName);
 
 /**
- * @route   PUT /api/rooms/:id/add-users
+ * @route   PUT /api/rooms-handler/rooms/:id/add-users
  * @desc    Add users to a room. Only the room creator can perform this action. 
  *          Invalid or duplicate user IDs are automatically filtered out.
  * @params  { id: string } - The ID of the room.
@@ -46,14 +48,14 @@ router.put('/rooms/:id/update-name', protect, updateRoomName);
 router.put('/rooms/:id/add-users', protect, addUsersToRoom);
 
 /**
- * @route   GET /api/rooms/user/get-all
+ * @route   GET /api/rooms-handler/rooms/user/get-all
  * @desc    Retrieve all rooms the authenticated user is a part of.
  * @access  Protected (Requires authentication)
  */
 router.get('/rooms/user/get-all', protect, getRoomsByUser);
 
 /**
- * @route   GET /api/rooms/apartment/:apartmentId
+ * @route   GET /api/rooms-handler/rooms/apartment/:apartmentId
  * @desc    Retrieve all rooms in a specific apartment that the user has access to.
  *          The user must be a member of the apartment to view its rooms.
  * @params  { apartmentId: string } - The ID of the apartment.
@@ -62,7 +64,7 @@ router.get('/rooms/user/get-all', protect, getRoomsByUser);
 router.get('/rooms/apartment/:apartmentId', protect, getRoomsByApartment);
 
 /**
- * @route   DELETE /api/rooms/delete/:id
+ * @route   DELETE /api/rooms-handler/rooms/delete/:id
  * @desc    Delete a room. Only the room creator can perform this action.
  * @params  { id: string } - The ID of the room to delete.
  * @access  Protected (Requires authentication)
@@ -70,11 +72,27 @@ router.get('/rooms/apartment/:apartmentId', protect, getRoomsByApartment);
 router.delete('/rooms/delete/:id', protect, deleteRoom);
 
 /**
- * @route   GET /api/rooms/get-users/:roomId 
+ * @route   GET /api/rooms-handler/rooms/get-users/:roomId 
  * @desc    Delete a room. Only the room creator can perform this action.
- * @params  { id: string } - The ID of the room to delete.
+ * @params  { roomId: string } - The ID of the room to delete.
  * @access  Protected (Requires authentication)
  */
 router.get('/rooms/get-users/:roomId', protect, getUsersByRoom);
+
+/**
+ * @route   PUT /api/rooms-handler/rooms/remove-user/:id
+ * @desc    Delete a room. Only the room creator can perform this action.
+ * @params  { roomId: string } - The ID of the room 
+ * @access  Protected (Requires authentication)
+ */
+router.put('/rooms/remove-user/:roomId', protect, removeUserFromRoom);
+
+/**
+ * @route   PUT /api/rooms-handler/rooms/exit-room/:roomId
+ * @desc    Delete a room. Only the room creator can perform this action.
+ * @params  { roomId: string } - The ID of the room 
+ * @access  Protected (Requires authentication)
+ */
+router.put('/rooms/exit-room/:roomId', protect, exitRoom);
 
 module.exports = router;

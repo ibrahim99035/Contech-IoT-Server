@@ -1,4 +1,5 @@
 const Room = require('../../../models/Room');
+const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
 
 /**
@@ -52,13 +53,20 @@ exports.exitRoom = async (req, res) => {
     // Remove user from the room
     room.users.splice(userIndex, 1);
     
+    // Remove user from all devices in this room
+    const devices = await Device.find({ room: roomId });
+    for (const device of devices) {
+      device.users = device.users.filter(user => !user.equals(userId));
+      await device.save();
+    }
+    
     // Save updated room
     const updatedRoom = await room.save();
     
     // Return success response
     return res.status(200).json({
       success: true,
-      message: 'You have successfully left the room',
+      message: 'You have successfully left the room and been removed from all associated devices',
       data: {
         roomId: updatedRoom._id,
         roomName: updatedRoom.name,

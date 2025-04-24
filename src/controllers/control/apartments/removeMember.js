@@ -1,4 +1,6 @@
 const Apartment = require('../../../models/Apartment');
+const Room = require('../../../models/Room');
+const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
 
 exports.removeMember = async (req, res) => {
@@ -36,11 +38,27 @@ exports.removeMember = async (req, res) => {
     // Remove the member from the apartment
     apartment.members = apartment.members.filter(member => !member.equals(memberId));
     
+    // Get all rooms in this apartment
+    const rooms = await Room.find({ apartment: apartmentId });
+    
+    // Remove the member from all rooms in this apartment
+    for (const room of rooms) {
+      room.users = room.users.filter(user => !user.equals(memberId));
+      await room.save();
+      
+      // Get all devices in this room and remove the member from them
+      const devices = await Device.find({ room: room._id });
+      for (const device of devices) {
+        device.users = device.users.filter(user => !user.equals(memberId));
+        await device.save();
+      }
+    }
+    
     // Save the updated apartment
     await apartment.save();
     
     res.status(200).json({ 
-      message: 'Member removed successfully',
+      message: 'Member removed successfully from apartment, rooms, and devices',
       apartment: {
         id: apartment._id,
         name: apartment.name,
