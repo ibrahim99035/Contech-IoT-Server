@@ -9,6 +9,7 @@ const { deleteDevice } = require('../controllers/control/devices/deleteDevice');
 const { getDeviceUsers } = require('../controllers/control/devices/getDeviceUsers');
 const { removeUserFromDevice } = require('../controllers/control/devices/removeUserFromDevice');
 const { exitDevice } = require('../controllers/control/devices/exitDevice');
+const { assignUsersToDevice } = require('../controllers/control/devices/assignUsersToDevice');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
@@ -79,5 +80,14 @@ router.put('/devices/remove-user/device/:deviceId/user/:userId', protect, remove
  * @access  Protected (Requires authentication)
  */
 router.put('/devices/exist-device/:deviceId', protect, exitDevice);
+
+/**
+ * @route   PUT /api/devices/:deviceId/assign-users
+ * @desc    Assign users to a device. Only the device creator can perform this action.
+ * @params  { deviceId: string } - The ID of the device.
+ * @body    { userIds: array } - Array of user IDs to assign to the device.
+ * @access  Protected (Requires authentication)
+ */
+router.put('/devices/:deviceId/assign-users', protect, assignUsersToDevice);
 
 module.exports = router;
