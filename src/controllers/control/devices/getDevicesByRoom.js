@@ -13,15 +13,25 @@ const mongoose = require('mongoose');
  * @async
  * @function getDevicesByRoom
  * @param {Object} req - Express request object
- * @param {Object} req.query - Query parameters
- * @param {string} req.query.roomId - ID of the room to fetch devices from
+ * @param {Object} req.params - Route parameters
+ * @param {string} req.params.roomId - ID of the room to fetch devices from
  * @param {Object} req.user - Authenticated user information
  * @param {Object} res - Express response object
  * @returns {Object} JSON response with devices data or error message
  */
 exports.getDevicesByRoom = async (req, res) => {
   try {
-    const { roomId } = req.query;
+    // Get roomId from params instead of query
+    // This is likely the source of the error - we're checking req.query but the ID might be in req.params
+    const roomId = req.params.roomId || req.query.roomId;
+    
+    if (!roomId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Room ID is required',
+        code: 'MISSING_ROOM_ID'
+      });
+    }
 
     // Validate room ID format
     if (!mongoose.Types.ObjectId.isValid(roomId)) {
@@ -94,6 +104,7 @@ exports.getDevicesByRoom = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Error in getDevicesByRoom:', error);
     // Return error response
     res.status(500).json({
       success: false,

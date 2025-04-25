@@ -103,10 +103,11 @@ exports.createDevice = async (req, res) => {
       });
     }
 
-    // Create new device
+    // Create new device - now including creator in the users array
     const device = new Device({ 
       ...req.body, 
       creator: req.user._id,
+      users: [req.user._id], // Add creator to users array
       status: req.body.status || 'off' // Default status if not provided
     });
     
@@ -116,6 +117,13 @@ exports.createDevice = async (req, res) => {
     await Room.findByIdAndUpdate(
       req.body.room, 
       { $push: { devices: device._id } }, 
+      { session }
+    );
+
+    // Update user with the new device
+    await User.findByIdAndUpdate(
+      req.user._id,
+      { $push: { devices: device._id } },
       { session }
     );
 
@@ -135,6 +143,7 @@ exports.createDevice = async (req, res) => {
           status: device.status,
           room: device.room,
           creator: device.creator,
+          users: device.users, 
           componentNumber: device.componentNumber,
           createdAt: device.createdAt
         },
