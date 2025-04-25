@@ -8,7 +8,7 @@ const { getRoomsByUser } = require('../controllers/control/rooms/getRoomsByUser'
 const { getRoomsByApartment } = require('../controllers/control/rooms/getRoomsByApartment');
 const { deleteRoom } = require('../controllers/control/rooms/deleteRoom');
 const { getUsersByRoom } = require('../controllers/control/rooms/getUsersByRoom');
-const { removeUserFromRoom } = require('../controllers/control/rooms/removeUsersFromRoom');
+const { removeUsersFromRoom } = require('../controllers/control/rooms/removeUsersFromRoom');
 const { exitRoom } = require('../controllers/control/rooms/exitRoom');
 
 // Middleware for authentication (Ensures user is authenticated)
@@ -85,7 +85,7 @@ router.get('/rooms/get-users/:roomId', protect, getUsersByRoom);
  * @params  { roomId: string } - The ID of the room 
  * @access  Protected (Requires authentication)
  */
-router.put('/rooms/remove-user/:roomId', protect, removeUserFromRoom);
+router.put('/rooms/remove-user/:roomId', protect, removeUsersFromRoom);
 
 /**
  * @route   PUT /api/rooms-handler/rooms/exit-room/:roomId
