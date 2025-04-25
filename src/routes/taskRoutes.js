@@ -29,7 +29,7 @@ const { protect } = require('../middleware/authMiddleware');
  * @desc    Create a new task for a device
  * @access  Protected (Requires authentication)
  */
-router.post('/tasks', protect, createTask);
+router.post('/tasks/create-task', protect, createTask);
 
 // 📌 TASK RETRIEVAL
 /**
@@ -38,7 +38,7 @@ router.post('/tasks', protect, createTask);
  * @params  { taskId: string } - The ID of the task
  * @access  Protected (User must have access to the task or device)
  */
-router.get('/tasks/:taskId', protect, getTaskById);
+router.get('/tasks/get-task/:taskId', protect, getTaskById);
 
 /**
  * @route   GET /api/tasks/user/my-tasks
@@ -53,14 +53,14 @@ router.get('/tasks/user/my-tasks', protect, getMyTasks);
  * @params  { deviceId: string } - The ID of the device
  * @access  Protected (User must have access to the device)
  */
-router.get('/tasks/device/:deviceId', protect, getTasksByDevice);
+router.get('/tasks/get-tasks/device/:deviceId', protect, getTasksByDevice);
 
 /**
  * @route   GET /api/tasks/assigned
  * @desc    Retrieve tasks where the user is a notification recipient
  * @access  Protected (Requires authentication)
  */
-router.get('/tasks/assigned', protect, getAssignedTasks);
+router.get('/tasks/user/assigned', protect, getAssignedTasks);
 
 /**
  * @route   GET /api/tasks/filter
@@ -77,7 +77,7 @@ router.get('/tasks/filter', protect, getFilteredTasks);
  * @params  { taskId: string } - The ID of the task
  * @access  Protected (Only task/device creator or authorized users)
  */
-router.put('/tasks/:taskId/details', protect, updateTaskDetails);
+router.put('/tasks/update/:taskId/details', protect, updateTaskDetails);
 
 /**
  * @route   PUT /api/tasks/:taskId/schedule
@@ -85,7 +85,7 @@ router.put('/tasks/:taskId/details', protect, updateTaskDetails);
  * @params  { taskId: string } - The ID of the task
  * @access  Protected (Only task/device creator or authorized users)
  */
-router.put('/tasks/:taskId/schedule', protect, updateTaskSchedule);
+router.put('/tasks/:taskId/schedule/update', protect, updateTaskSchedule);
 
 /**
  * @route   PUT /api/tasks/:taskId/status
@@ -101,7 +101,7 @@ router.put('/tasks/:taskId/status', protect, updateTaskStatus);
  * @params  { taskId: string } - The ID of the task
  * @access  Protected (Only task/device creator or authorized users)
  */
-router.put('/tasks/:taskId/notifications', protect, addNotificationRecipient);
+router.put('/tasks/:taskId/notifications/add-recepiant', protect, addNotificationRecipient);
 
 // 📌 TASK DELETION
 /**
@@ -110,6 +110,6 @@ router.put('/tasks/:taskId/notifications', protect, addNotificationRecipient);
  * @params  { taskId: string } - The ID of the task
  * @access  Protected (Only task/device creator can delete)
  */
-router.delete('/tasks/:taskId', protect, deleteTask);
+router.delete('/tasks/delete-task/:taskId', protect, deleteTask);
 
 module.exports = router;
