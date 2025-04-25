@@ -9,11 +9,35 @@ const mongoose = require('mongoose');
  */
 exports.removeUsersFromRoom = async (req, res) => {
   try {
-    const roomId = req.params.id;
+    // Updated to use roomId parameter instead of id
+    const roomId = req.params.roomId;
     let { userIds } = req.body;
     
-    // Validate room ID
+    console.log('Debug - removeUsersFromRoom request:', {
+      roomId: roomId,
+      userIds: userIds,
+      paramsReceived: req.params,
+      requestPath: req.path,
+      requestMethod: req.method
+    });
+    
+    // Check if roomId exists
+    if (!roomId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Room ID is missing from the request',
+        data: null
+      });
+    }
+    
+    // Validate room ID format
     if (!mongoose.Types.ObjectId.isValid(roomId)) {
+      console.log('Debug - Invalid room ID format:', {
+        receivedId: roomId,
+        idType: typeof roomId,
+        idLength: roomId ? roomId.length : 0
+      });
+      
       return res.status(400).json({
         success: false,
         message: 'Invalid room ID format',
@@ -22,18 +46,46 @@ exports.removeUsersFromRoom = async (req, res) => {
     }
     
     // Validate userIds input
-    if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+    if (!userIds) {
       return res.status(400).json({
         success: false,
-        message: 'userIds must be a non-empty array',
+        message: 'userIds is required in the request body',
+        data: null
+      });
+    }
+    
+    if (!Array.isArray(userIds)) {
+      return res.status(400).json({
+        success: false,
+        message: 'userIds must be an array',
+        data: null
+      });
+    }
+    
+    if (userIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'userIds must not be empty',
         data: null
       });
     }
     
     // Filter valid ObjectIds and remove duplicates
     const validUserIds = [...new Set(
-      userIds.filter(id => mongoose.Types.ObjectId.isValid(id))
+      userIds.filter(id => {
+        const isValid = mongoose.Types.ObjectId.isValid(id);
+        if (!isValid) {
+          console.log('Debug - Invalid user ID:', { invalidId: id });
+        }
+        return isValid;
+      })
     )];
+    
+    console.log('Debug - Processed user IDs:', {
+      originalCount: userIds.length,
+      validCount: validUserIds.length,
+      validIds: validUserIds
+    });
     
     // Check if any valid userIds remain after filtering
     if (validUserIds.length === 0) {
@@ -54,8 +106,29 @@ exports.removeUsersFromRoom = async (req, res) => {
       });
     }
     
+    console.log('Debug - Room found:', {
+      roomId: room._id.toString(),
+      creatorId: room.creator.toString(),
+      requestingUserId: req.user ? req.user._id.toString() : 'No user in request',
+      usersCount: room.users.length
+    });
+    
+    // Check if user object exists in request
+    if (!req.user || !req.user._id) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+        data: null
+      });
+    }
+    
     // Check permission - only creator can remove users
     if (room.creator.toString() !== req.user._id.toString()) {
+      console.log('Debug - Permission denied:', {
+        roomCreator: room.creator.toString(),
+        requestingUser: req.user._id.toString()
+      });
+      
       return res.status(403).json({
         success: false,
         message: 'Permission denied: Only the creator can remove users from this room',
@@ -77,6 +150,11 @@ exports.removeUsersFromRoom = async (req, res) => {
     
     // Find users that are actually in the room
     const usersToRemove = validUserIds.filter(id => existingUsers.includes(id));
+    
+    console.log('Debug - Users to remove:', {
+      usersInRoom: existingUsers.length,
+      usersToRemove: usersToRemove.length
+    });
     
     // Check if there are any users to remove
     if (usersToRemove.length === 0) {
@@ -104,8 +182,18 @@ exports.removeUsersFromRoom = async (req, res) => {
       await device.save();
     }
     
+    console.log('Debug - Updated room devices:', {
+      devicesCount: devices.length
+    });
+    
     // Save updated room
     const updatedRoom = await room.save();
+    
+    console.log('Debug - Room update successful:', {
+      roomId: updatedRoom._id.toString(),
+      removedCount: usersToRemove.length,
+      remainingUsers: updatedRoom.users.length
+    });
     
     // Return success response with removed users info
     return res.status(200).json({
