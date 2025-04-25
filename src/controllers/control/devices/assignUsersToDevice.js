@@ -1,3 +1,7 @@
+const Room = require('../../../models/Room');
+const Apartment = require('../../../models/Apartment');
+const User = require('../../../models/User');
+const Device = require('../../../models/Device');
 /**
  * @desc    Assign users to a device
  * @route   PUT /api/devices/:deviceId/assign-users
@@ -9,8 +13,7 @@ const assignUsersToDevice = async (req, res) => {
     try {
       const { deviceId } = req.params;
       const { userIds } = req.body;
-      const requestingUserId = req.user.id; // Assuming auth middleware sets req.user
-  
+      const requestingUserId = req.user._id;  
       // Input validation
       if (!deviceId || !userIds || !Array.isArray(userIds) || userIds.length === 0) {
         return res.status(400).json({
