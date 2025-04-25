@@ -13,7 +13,14 @@ const assignUsersToDevice = async (req, res) => {
     try {
       const { deviceId } = req.params;
       const { userIds } = req.body;
-      const requestingUserId = req.user._id;  
+      const requestingUserId = req.user._id;
+      
+      console.log('Debug - Request details:', {
+        deviceId,
+        userIds,
+        requestingUserId: requestingUserId.toString()
+      });
+  
       // Input validation
       if (!deviceId || !userIds || !Array.isArray(userIds) || userIds.length === 0) {
         return res.status(400).json({
@@ -30,9 +37,23 @@ const assignUsersToDevice = async (req, res) => {
           message: 'Device not found',
         });
       }
+      
+      console.log('Debug - Device found:', {
+        deviceId: device._id.toString(),
+        creatorId: device.creator.toString(),
+        requestingUserId: requestingUserId.toString(),
+        isCreator: device.creator.toString() === requestingUserId.toString()
+      });
   
       // Check if requesting user is the creator of the device
-      if (device.creator.toString() !== requestingUserId) {
+      // Using strict string comparison to ensure correct matching
+      if (device.creator.toString() !== requestingUserId.toString()) {
+        console.log('Debug - Authorization failed:', {
+          deviceCreator: device.creator.toString(),
+          requestingUser: requestingUserId.toString(),
+          isMatch: device.creator.toString() === requestingUserId.toString()
+        });
+        
         return res.status(403).json({
           success: false,
           message: 'Access denied. Only device creator can assign users',
@@ -144,6 +165,11 @@ const assignUsersToDevice = async (req, res) => {
         .populate('creator', 'name');
   
       processResults.device = updatedDevice;
+      
+      console.log('Debug - Assignment successful:', {
+        deviceId: device._id.toString(),
+        addedUsers: processResults.assignmentDetails.addedToDevice
+      });
   
       return res.status(200).json(processResults);
     } catch (error) {
