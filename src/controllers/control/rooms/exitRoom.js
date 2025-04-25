@@ -9,7 +9,7 @@ const mongoose = require('mongoose');
  */
 exports.exitRoom = async (req, res) => {
   try {
-    const roomId = req.params.id;
+    const roomId = req.params.roomId;
     const userId = req.user._id;
     
     // Validate room ID

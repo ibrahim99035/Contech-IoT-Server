@@ -5,6 +5,7 @@ const { createDevice } = require('../controllers/control/devices/createDevice');
 const { updateDeviceName } = require('../controllers/control/devices/updateDeviceName');
 const { updateComponentNumber } = require('../controllers/control/devices/updateComponentNumber');
 const { getDevicesByRoom } = require('../controllers/control/devices/getDevicesByRoom');
+const { getDevicesByUser } = require('../controllers/control/devices/getDevicesbyUser');
 const { deleteDevice } = require('../controllers/control/devices/deleteDevice');
 const { getDeviceUsers } = require('../controllers/control/devices/getDeviceUsers');
 const { removeUserFromDevice } = require('../controllers/control/devices/removeUserFromDevice');
@@ -27,67 +28,72 @@ router.post('/devices/create', protect, createDevice);
  * @desc    Update the name of a device. Only the device creator can perform this action.
  * @params  { id: string } - The ID of the device.
  * @body    { name: string }
- * @access  Protected (Requires authentication)
+ * @access  Protected
  */
 router.put('/devices/:id/update-name', protect, updateDeviceName);
 
 /**
  * @route   PUT /api/devices/:id/update-component-number
  * @desc    Update the component number of a device. The component number is stored as a hashed value.
- *          Only the device creator can perform this action.
  * @params  { id: string } - The ID of the device.
- * @body    { componentNumber: string }
- * @access  Protected (Requires authentication)
+ * @access  Protected
  */
 router.put('/devices/:id/update-component-number', protect, updateComponentNumber);
 
 /**
  * @route   GET /api/devices/room/:roomId
  * @desc    Retrieve all devices within a specific room. Accessible to the room's creator and users.
- * @params  { roomId: string } - The ID of the room.
- * @access  Protected (Requires authentication)
+ * @params  { roomId: string }
+ * @access  Protected
  */
 router.get('/devices/room/:roomId', protect, getDevicesByRoom);
 
 /**
  * @route   DELETE /api/devices/delete/:id
- * @desc    Delete a device from a room. Only the device creator can perform this action.
- * @params  { id: string } - The ID of the device.
- * @access  Protected (Requires authentication)
+ * @desc    Delete a device. Only the device creator can perform this action.
+ * @params  { id: string }
+ * @access  Protected
  */
 router.delete('/devices/delete/:id', protect, deleteDevice);
 
 /**
- * @route   GET /api/devices/delete/:id
- * @desc    Delete a device from a room. Only the device creator can perform this action.
- * @params  { deviceId: string } - The ID of the device.
- * @access  Protected (Requires authentication)
+ * @route   GET /api/devices/get-users/device/:deviceId
+ * @desc    Retrieve all users assigned to a specific device.
+ * @params  { deviceId: string }
+ * @access  Protected
  */
 router.get('/devices/get-users/device/:deviceId', protect, getDeviceUsers);
 
 /**
- * @route   PUT /api/devices/delete/:id
- * @desc    Delete a device from a room. Only the device creator can perform this action.
- * @params  { id: string } - The ID of the device.
- * @access  Protected (Requires authentication)
+ * @route   PUT /api/devices/remove-user/device/:deviceId/user/:userId
+ * @desc    Remove a specific user from a device's user list. Only the device creator can perform this action.
+ * @params  { deviceId: string, userId: string }
+ * @access  Protected
  */
 router.put('/devices/remove-user/device/:deviceId/user/:userId', protect, removeUserFromDevice);
 
 /**
- * @route   PUT /api/devices/delete/:id
- * @desc    Delete a device from a room. Only the device creator can perform this action.
- * @params  { id: string } - The ID of the device.
- * @access  Protected (Requires authentication)
+ * @route   PUT /api/devices/exit-device/:deviceId
+ * @desc    Remove the current user from a device they are part of.
+ * @params  { deviceId: string }
+ * @access  Protected
  */
 router.put('/devices/exist-device/:deviceId', protect, exitDevice);
 
 /**
  * @route   PUT /api/devices/:deviceId/assign-users
  * @desc    Assign users to a device. Only the device creator can perform this action.
- * @params  { deviceId: string } - The ID of the device.
- * @body    { userIds: array } - Array of user IDs to assign to the device.
- * @access  Protected (Requires authentication)
+ * @params  { deviceId: string }
+ * @body    { userIds: string[] }
+ * @access  Protected
  */
 router.put('/devices/:deviceId/assign-users', protect, assignUsersToDevice);
+
+/**
+ * @route   GET /api/devices/my-devices
+ * @desc    Retrieve all devices the authenticated user has access to.
+ * @access  Protected
+ */
+router.get('/devices/get-devices/user', protect, getDevicesByUser); // ✅ NEW ROUTE
 
 module.exports = router;
