@@ -8,7 +8,7 @@ const Room = require('../../../models/Room');
 const mongoose = require('mongoose');
 
 /**
- * Retrieves all devices belonging to a specific room
+ * Retrieves devices belonging to a specific room that the user has access to
  * 
  * @async
  * @function getDevicesByRoom
@@ -22,7 +22,6 @@ const mongoose = require('mongoose');
 exports.getDevicesByRoom = async (req, res) => {
   try {
     // Get roomId from params instead of query
-    // This is likely the source of the error - we're checking req.query but the ID might be in req.params
     const roomId = req.params.roomId || req.query.roomId;
     
     if (!roomId) {
@@ -73,8 +72,15 @@ exports.getDevicesByRoom = async (req, res) => {
       });
     }
 
-    // Fetch devices with populated user information
-    const devices = await Device.find({ room: roomId })
+    // Fetch only devices where the current user is in the users array
+    // or is the creator of the device
+    const devices = await Device.find({
+      room: roomId,
+      $or: [
+        { users: req.user._id },         // User is in the users array
+        { creator: req.user._id }        // User is the creator
+      ]
+    })
       .populate('creator', 'name email')
       .populate('users', 'name email')
       .lean();
