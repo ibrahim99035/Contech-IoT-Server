@@ -5,7 +5,7 @@ const { createDevice } = require('../controllers/control/devices/createDevice');
 const { updateDeviceName } = require('../controllers/control/devices/updateDeviceName');
 const { updateComponentNumber } = require('../controllers/control/devices/updateComponentNumber');
 const { getDevicesByRoom } = require('../controllers/control/devices/getDevicesByRoom');
-const { getDevicesByUser } = require('../controllers/control/devices/getDevicesbyUser');
+// const { getDevicesByUser } = require('../controllers/control/devices/getDevicesbyUser');
 const { deleteDevice } = require('../controllers/control/devices/deleteDevice');
 const { getDeviceUsers } = require('../controllers/control/devices/getDeviceUsers');
 const { removeUserFromDevice } = require('../controllers/control/devices/removeUserFromDevice');
@@ -94,6 +94,6 @@ router.put('/devices/:deviceId/assign-users', protect, assignUsersToDevice);
  * @desc    Retrieve all devices the authenticated user has access to.
  * @access  Protected
  */
-router.get('/devices/get-devices/user', protect, getDevicesByUser); // ✅ NEW ROUTE
+// router.get('/devices/get-devices/user', protect, getDevicesByUser);
 
 module.exports = router;
