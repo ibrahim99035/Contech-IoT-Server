@@ -3,11 +3,11 @@
  * @module controllers/UserDeletionController
  */
 
-const User = require('../models/User');
-const Device = require('../models/Device');
-const Task = require('../models/Task');
-const Apartment = require('../models/Apartment');
-const Room = require('../models/Room');
+const User = require('../../models/User');
+const Device = require('../../models/Device');
+const Task = require('../../models/Task');
+const Apartment = require('../../models/Apartment');
+const Room = require('../../models/Room');
 const mongoose = require('mongoose');
 
 /**
