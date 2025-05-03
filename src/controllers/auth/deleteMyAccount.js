@@ -94,28 +94,33 @@ exports.deleteMyAccount = async (req, res) => {
 
     // Clean up apartments
     // For apartments the user has access to
-    for (const apartmentId of user.apartments) {
-      const apartment = await Apartment.findById(apartmentId);
-      
-      if (apartment) {
-        // If user is the owner of the apartment
-        if (apartment.owner && apartment.owner.toString() === userId.toString()) {
-          // Check if there are other users with access
-          const occupants = await User.find({ apartments: apartmentId, _id: { $ne: userId } });
-          
-          if (occupants.length > 0) {
-            // Transfer ownership to the first occupant
-            apartment.owner = occupants[0]._id;
-            await apartment.save({ session });
+    if (user.apartments && user.apartments.length > 0) {
+      for (const apartmentId of user.apartments) {
+        const apartment = await Apartment.findById(apartmentId);
+        
+        if (apartment) {
+          // If user is the owner of the apartment
+          if (apartment.owner && apartment.owner.toString() === userId.toString()) {
+            // Check if there are other users with access
+            const occupants = await User.find({ apartments: apartmentId, _id: { $ne: userId } });
+            
+            if (occupants.length > 0) {
+              // Transfer ownership to the first occupant
+              apartment.owner = occupants[0]._id;
+              await apartment.save({ session });
+            } else {
+              // Delete the apartment and associated rooms if no other users
+              await Room.deleteMany({ apartment: apartmentId }, { session });
+              await Apartment.findByIdAndDelete(apartmentId, { session });
+            }
           } else {
-            // Delete the apartment and associated rooms if no other users
-            await Room.deleteMany({ apartment: apartmentId }, { session });
-            await Apartment.findByIdAndDelete(apartmentId, { session });
+            // User is not the owner, just remove the reference
+            // Check if apartment.users exists before using filter
+            if (apartment.users && Array.isArray(apartment.users)) {
+              apartment.users = apartment.users.filter(id => !id.equals(userId));
+              await apartment.save({ session });
+            }
           }
-        } else {
-          // User is not the owner, just remove the reference
-          apartment.users = apartment.users.filter(id => !id.equals(userId));
-          await apartment.save({ session });
         }
       }
     }
