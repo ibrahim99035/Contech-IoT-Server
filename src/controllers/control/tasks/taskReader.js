@@ -152,7 +152,8 @@ exports.getTasksByDevice = async (req, res) => {
         }
 
         const tasks = await Task.find({ device: deviceId })
-            .select('name status nextExecution');
+            .populate('device', 'name')
+            .populate('creator', 'name');
             
         console.log('Tasks found:', tasks.length);
         res.status(200).json({ device: device.name, tasks });
