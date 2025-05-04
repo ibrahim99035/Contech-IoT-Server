@@ -9,6 +9,11 @@ const mongoose = require('mongoose');
  */
 exports.deleteTask = async (req, res) => {
     try {
+        // Check if user exists in request
+        if (!req.user) {
+            return res.status(401).json({ error: 'Authentication required' });
+        }
+
         const { taskId } = req.params;
         const userId = req.user._id;
 
@@ -29,8 +34,16 @@ exports.deleteTask = async (req, res) => {
             return res.status(404).json({ error: 'Associated device not found' });
         }
 
-        // 🔒 Authorization: Allow only the **Task Creator** or **Device Creator** to delete
-        if (String(task.creator) !== userId && String(device.creator) !== userId) {
+        // 🔒 Authorization: Use proper ObjectId comparison methods
+        const isTaskCreator = task.creator.equals ? 
+            task.creator.equals(userId) : 
+            String(task.creator) === String(userId);
+            
+        const isDeviceCreator = device.creator.equals ? 
+            device.creator.equals(userId) : 
+            String(device.creator) === String(userId);
+
+        if (!isTaskCreator && !isDeviceCreator) {
             return res.status(403).json({ error: 'Unauthorized: You cannot delete this task' });
         }
 
