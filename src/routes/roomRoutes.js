@@ -10,6 +10,7 @@ const { deleteRoom } = require('../controllers/control/rooms/deleteRoom');
 const { getUsersByRoom } = require('../controllers/control/rooms/getUsersByRoom');
 const { removeUsersFromRoom } = require('../controllers/control/rooms/removeUsersFromRoom');
 const { exitRoom } = require('../controllers/control/rooms/exitRoom');
+const { updateRoomPassword } = require('../controllers/control/rooms/updateRoomPassword'); // Import the new controller
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
@@ -94,5 +95,14 @@ router.put('/rooms/remove-user/:roomId', protect, removeUsersFromRoom);
  * @access  Protected (Requires authentication)
  */
 router.put('/rooms/exit-room/:roomId', protect, exitRoom);
+
+/**
+ * @route   PUT /api/rooms-handler/rooms/:roomId/update-password
+ * @desc    Update the password of a room. Only the room creator can perform this action.
+ * @params  { roomId: string } - The ID of the room.
+ * @body    { newPassword: string } - The new password for the room.
+ * @access  Protected (Requires authentication)
+ */
+router.put('/rooms/:roomId/update-password', protect, updateRoomPassword);
 
 module.exports = router;

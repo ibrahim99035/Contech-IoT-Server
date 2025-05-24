@@ -1,10 +1,13 @@
 const express = require('express');
+
+// Load environment variables
 const dotenv = require('dotenv');
+dotenv.config();
+
 const morgan = require('morgan');
 const cors = require('cors');
 const http = require('http');  
 const socketIo = require('socket.io'); 
-const passport = require('./src/config/passport');
 
 const connectDB = require('./src/config/db');
 
@@ -22,8 +25,8 @@ const roomRoutes = require('./src/routes/roomRoutes');
 const deviceRoutes = require('./src/routes/deviceRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 
-// Load environment variables
-dotenv.config();
+// Passport configuration
+const passport = require('./src/config/passport');
 
 // Connect to database
 connectDB();

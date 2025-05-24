@@ -11,6 +11,7 @@ const { getDeviceUsers } = require('../controllers/control/devices/getDeviceUser
 const { removeUserFromDevice } = require('../controllers/control/devices/removeUserFromDevice');
 const { exitDevice } = require('../controllers/control/devices/exitDevice');
 const { assignUsersToDevice } = require('../controllers/control/devices/assignUsersToDevice');
+const { toggleActivation } = require('../controllers/control/devices/activationController');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
@@ -95,5 +96,13 @@ router.put('/devices/:deviceId/assign-users', protect, assignUsersToDevice);
  * @access  Protected
  */
 // router.get('/devices/get-devices/user', protect, getDevicesByUser);
+
+/**
+ * @route   PUT /api/devices/:deviceId/toggle-activation
+ * @desc    Toggle the activation status of a device. Only the device creator can perform this action.
+ * @params  { deviceId: string }
+ * @access  Protected
+ */
+router.put('/devices/:deviceId/toggle-activation', protect, toggleActivation);
 
 module.exports = router;

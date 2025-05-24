@@ -3,6 +3,7 @@ const Device = require('../../models/Device');
 const Room = require('../../models/Room');
 const { normalizeState } = require('../utils/stateUtils');
 const { checkRoomAccess } = require('../utils/roomUtils');
+const mqttBroker = require('../../mqtt/mqtt-broker');
 
 function registerHandlers(io, socket) {
   // Handle fetch room details with devices
@@ -146,6 +147,12 @@ function registerHandlers(io, socket) {
         io.of('/ws/room-esp').to(`room:${room._id}`).emit('room-state-changed', {
           roomId: room._id,
           updates: updatedDevices
+        });
+        
+        // Publish bulk room state update to MQTT
+        mqttBroker.publishRoomState(room._id, updatedDevices, {
+          updatedBy: 'user',
+          userId: socket.user._id.toString()
         });
       }
       
