@@ -47,7 +47,9 @@ function registerHandlers(io, socket) {
       // Notify all users with access to this device
       io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', { 
         deviceId: device._id, 
-        state: newState
+        state: newState,
+        updatedBy: 'user',
+        userId: socket.user._id.toString() // Or just socket.user._id if clients handle ObjectId
       });
       
       console.log(`Device ${device.name} state updated to ${newState} by user ${socket.user.name}`);

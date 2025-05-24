@@ -7,4 +7,5 @@ exports.deviceSchema = Joi.object({
   room: Joi.string().required(),
   users: Joi.array().items(Joi.string()),
   componentNumber: Joi.string().optional()
+  //order: Joi.number().integer().min(1).max(6).required()
 });

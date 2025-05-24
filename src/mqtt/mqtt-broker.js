@@ -56,6 +56,15 @@ function initialize(socketIo) {
         console.log('Subscribed to room state topics');
       }
     });
+
+    // Subscribe to compact ESP state updates for rooms
+    client.subscribe('home-automation/room/+/esp-compact-state', (err) => {
+      if (err) {
+        console.error('Error subscribing to ESP compact room state topics:', err);
+      } else {
+        console.log('Subscribed to ESP compact room state topics');
+      }
+    });
   });
   
   // Handle error
@@ -108,6 +117,12 @@ async function handleMqttMessage(topic, message) {
       // Room state topic pattern: home-automation/room/{roomId}/state
       const roomId = topic.split('/')[2];
       await handleRoomStateMessage(roomId, payload);
+    }
+    else if (topic.match(/^home-automation\/room\/([^\/]+)\/esp-compact-state$/)) {
+      // ESP compact state update: home-automation/room/{roomId}/esp-compact-state
+      const roomId = topic.split('/')[2];
+      // Payload for compact state is the raw message string
+      await handleEspCompactStateMessage(roomId, message.toString());
     }
   } catch (error) {
     console.error('Error handling MQTT message:', error);
@@ -262,6 +277,72 @@ async function handleRoomStateMessage(roomId, payload) {
     console.log(`Updated ${updatedDevices.length} devices in room ${roomId} via MQTT`);
   } catch (error) {
     console.error('Error handling room state message:', error);
+  }
+}
+
+/**
+ * Handle compact state messages from ESP devices for a room.
+ * Expects message format like "10" (deviceOrder 1, state "off") or "21" (deviceOrder 2, state "on").
+ * @param {String} roomId - Room ID from the MQTT topic
+ * @param {String} compactMessage - The compact state string (e.g., "10")
+ */
+async function handleEspCompactStateMessage(roomId, compactMessage) {
+  try {
+    console.log(`ESP compact state message for room ${roomId}: ${compactMessage}`);
+
+    if (typeof compactMessage !== 'string' || compactMessage.length !== 2) {
+      console.error(`Invalid compact message format for room ${roomId}: ${compactMessage}. Expected 2 characters.`);
+      return;
+    }
+
+    const deviceOrder = parseInt(compactMessage[0], 10);
+    const stateIndicator = compactMessage[1];
+
+    if (isNaN(deviceOrder) || deviceOrder < 1 || deviceOrder > 6) { // Assuming max 6 devices per room by order
+      console.error(`Invalid device order in compact message for room ${roomId}: ${compactMessage[0]}`);
+      return;
+    }
+
+    let targetState;
+    if (stateIndicator === '0') {
+      targetState = 'off';
+    } else if (stateIndicator === '1') {
+      targetState = 'on';
+    } else {
+      console.error(`Invalid state indicator in compact message for room ${roomId}: ${stateIndicator}`);
+      return;
+    }
+
+    const device = await Device.findOne({ room: roomId, order: deviceOrder });
+
+    if (!device) {
+      console.error(`Device not found in room ${roomId} with order ${deviceOrder}`);
+      return;
+    }
+
+    const newState = normalizeState(targetState);
+    device.status = newState;
+    await device.save();
+
+    // Propagate the state change to WebSocket clients
+    // Notify users subscribed to the specific device
+    io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', {
+      deviceId: device._id.toString(),
+      state: newState,
+      updatedBy: 'mqtt-esp-compact' // Specific source
+    });
+
+    // Notify room users
+    io.of('/ws/room-user').to(`room:${roomId}`).emit('room-devices-updated', {
+      roomId: roomId,
+      updates: [{ deviceId: device._id.toString(), state: newState }],
+      updatedBy: 'mqtt-esp-compact'
+    });
+
+    console.log(`Device ${device.name} (Order: ${deviceOrder}) in room ${roomId} state updated via ESP compact MQTT to ${newState}`);
+
+  } catch (error) {
+    console.error(`Error handling ESP compact state message for room ${roomId}:`, error);
   }
 }
 
