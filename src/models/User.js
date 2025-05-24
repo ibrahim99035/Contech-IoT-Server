@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
   active: { type: Boolean, default: true },
   emailActivated: { type: Boolean, default: false },
   contactInfo: { type: String },
+  googleId: { type: String }, // Added for Google OAuth
   apartments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Apartment' }], // Linked apartments
   devices: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Device' }], // Devices accessible
   tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }], // User's tasks
