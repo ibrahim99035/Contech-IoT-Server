@@ -1,5 +1,4 @@
 const taskEvents = require('../taskEventEmitter');
-const Task = require('../../models/Task');
 const mqttBroker = require('../../mqtt/mqtt-broker');
 
 function registerTaskHandlers(io) {

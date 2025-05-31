@@ -49,7 +49,8 @@ function registerHandlers(io, socket) {
         deviceId: device._id, 
         state: newState,
         updatedBy: 'user',
-        userId: socket.user._id.toString() // Or just socket.user._id if clients handle ObjectId
+        userId: socket.user._id.toString(),
+	roomId: device.room
       });
       
       console.log(`Device ${device.name} state updated to ${newState} by user ${socket.user.name}`);
