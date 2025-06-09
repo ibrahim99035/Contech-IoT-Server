@@ -1,11 +1,14 @@
-// src/mqtt/mqtt-broker.js
 const mqtt = require('mqtt');
 const taskEvents = require('../websockets/taskEventEmitter');
 const { normalizeState } = require('../websockets/utils/stateUtils');
 const Device = require('../models/Device');
+const Room = require('../models/Room');
 
 let client;
 let io;
+
+// ESP-Room mapping storage (in production, use Redis or database)
+const espRoomMappings = new Map();
 
 /**
  * Initialize the MQTT client and connect to the MQTT broker
@@ -57,12 +60,21 @@ function initialize(socketIo) {
       }
     });
 
-    // Subscribe to compact ESP state updates for rooms
-    client.subscribe('home-automation/room/+/esp-compact-state', (err) => {
+    // Subscribe to ESP compact state updates
+    client.subscribe('home-automation/esp/+/compact-state', (err) => {
       if (err) {
-        console.error('Error subscribing to ESP compact room state topics:', err);
+        console.error('Error subscribing to ESP compact state topics:', err);
       } else {
-        console.log('Subscribed to ESP compact room state topics');
+        console.log('Subscribed to ESP compact state topics');
+      }
+    });
+
+    // Subscribe to ESP authentication requests
+    client.subscribe('home-automation/esp/+/auth', (err) => {
+      if (err) {
+        console.error('Error subscribing to ESP auth topics:', err);
+      } else {
+        console.log('Subscribed to ESP auth topics');
       }
     });
   });
@@ -118,11 +130,17 @@ async function handleMqttMessage(topic, message) {
       const roomId = topic.split('/')[2];
       await handleRoomStateMessage(roomId, payload);
     }
-    else if (topic.match(/^home-automation\/room\/([^\/]+)\/esp-compact-state$/)) {
-      // ESP compact state update: home-automation/room/{roomId}/esp-compact-state
-      const roomId = topic.split('/')[2];
-      // Payload for compact state is the raw message string
-      await handleEspCompactStateMessage(roomId, message.toString());
+    // Handle ESP compact state updates
+    else if (topic.match(/^home-automation\/esp\/([^\/]+)\/compact-state$/)) {
+      // ESP compact state: home-automation/esp/{espId}/compact-state
+      const espId = topic.split('/')[2];
+      await handleEspCompactStateMessage(espId, message.toString(), payload);
+    }
+    // Handle ESP authentication requests
+    else if (topic.match(/^home-automation\/esp\/([^\/]+)\/auth$/)) {
+      // ESP auth request: home-automation/esp/{espId}/auth
+      const espId = topic.split('/')[2];
+      await handleEspAuthMessage(espId, payload);
     }
   } catch (error) {
     console.error('Error handling MQTT message:', error);
@@ -130,9 +148,197 @@ async function handleMqttMessage(topic, message) {
 }
 
 /**
- * Handle device state messages
- * @param {String} deviceId - Device ID
- * @param {Object} payload - Message payload
+ * Handle ESP authentication requests
+ * ESP sends: { roomId: "...", roomPassword: "..." }
+ * @param {String} espId - ESP device identifier
+ * @param {Object} payload - Authentication payload
+ */
+async function handleEspAuthMessage(espId, payload) {
+  try {
+    const { roomId, roomPassword } = payload;
+    
+    if (!roomId) {
+      return publishEspAuthResponse(espId, {
+        success: false,
+        error: 'Room ID is required'
+      });
+    }
+    
+    // Find room
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return publishEspAuthResponse(espId, {
+        success: false,
+        error: 'Room not found'
+      });
+    }
+    
+    // Check room password
+    if (room.roomPassword) {
+      if (!roomPassword) {
+        return publishEspAuthResponse(espId, {
+          success: false,
+          error: 'Room password required'
+        });
+      }
+      const isMatch = await room.matchRoomPassword(roomPassword);
+      if (!isMatch) {
+        return publishEspAuthResponse(espId, {
+          success: false,
+          error: 'Invalid room password'
+        });
+      }
+    }
+    
+    // Get all devices in the room for ESP reference
+    const devices = await Device.find({ room: roomId }).sort({ order: 1 });
+    
+    // Store ESP-room mapping
+    espRoomMappings.set(espId, {
+      roomId: roomId,
+      roomName: room.name,
+      authenticatedAt: new Date(),
+      devices: devices.map(d => ({
+        order: d.order,
+        deviceId: d._id.toString(),
+        deviceName: d.name,
+        currentState: d.status
+      }))
+    });
+    
+    // Subscribe ESP to room-specific state updates
+    subscribeEspToRoom(espId, roomId);
+    
+    // Authentication successful
+    publishEspAuthResponse(espId, {
+      success: true,
+      roomId: roomId,
+      roomName: room.name,
+      availableDevices: devices.map(device => ({
+        order: device.order,
+        deviceId: device._id.toString(),
+        deviceName: device.name,
+        currentState: device.status
+      }))
+    });
+    
+    console.log(`ESP ${espId} authenticated for room ${room.name} with ${devices.length} available devices`);
+    
+  } catch (error) {
+    console.error('Error handling ESP auth:', error);
+    publishEspAuthResponse(espId, {
+      success: false,
+      error: 'Server error during authentication'
+    });
+  }
+}
+
+/**
+ * Handle ESP compact state messages
+ * ESP sends compact state as raw string: "21" (device order 2, state on)
+ * @param {String} espId - ESP device identifier  
+ * @param {String} compactMessage - Raw compact message
+ * @param {Object} payload - Parsed payload (might contain additional data)
+ */
+async function handleEspCompactStateMessage(espId, compactMessage, payload) {
+  try {
+    // Extract compact state from payload or use raw message
+    const compactState = payload.compactState || compactMessage.trim();
+    
+    console.log(`ESP ${espId} compact state: ${compactState}`);
+    
+    if (typeof compactState !== 'string' || compactState.length !== 2) {
+      return publishEspCompactResponse(espId, {
+        success: false,
+        error: 'Compact state must be exactly 2 digits'
+      });
+    }
+    
+    const deviceOrder = parseInt(compactState[0], 10);
+    const stateIndicator = compactState[1];
+    
+    if (isNaN(deviceOrder) || deviceOrder < 1 || deviceOrder > 6) {
+      return publishEspCompactResponse(espId, {
+        success: false,
+        error: 'Invalid device order (must be 1-6)'
+      });
+    }
+    
+    if (stateIndicator !== '0' && stateIndicator !== '1') {
+      return publishEspCompactResponse(espId, {
+        success: false,
+        error: 'Invalid state indicator (must be 0 or 1)'
+      });
+    }
+    
+    // Get room ID from ESP mapping
+    const espMapping = espRoomMappings.get(espId);
+    if (!espMapping) {
+      return publishEspCompactResponse(espId, {
+        success: false,
+        error: 'ESP not authenticated. Please authenticate first.'
+      });
+    }
+    
+    const roomId = espMapping.roomId;
+    
+    // Find device by order in the specified room
+    const device = await Device.findOne({ 
+      room: roomId, 
+      order: deviceOrder 
+    });
+    
+    if (!device) {
+      return publishEspCompactResponse(espId, {
+        success: false,
+        error: `No device found at order ${deviceOrder} in room`
+      });
+    }
+    
+    const newState = stateIndicator === '1' ? 'on' : 'off';
+    const normalizedState = normalizeState(newState);
+    
+    // Update device in database
+    device.status = normalizedState;
+    await device.save();
+    
+    // Notify WebSocket clients
+    io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', {
+      deviceId: device._id.toString(),
+      state: normalizedState,
+      updatedBy: 'esp-compact'
+    });
+    
+    if (device.room) {
+      io.of('/ws/room-user').to(`room:${device.room}`).emit('room-devices-updated', {
+        roomId: device.room.toString(),
+        updates: [{ deviceId: device._id.toString(), state: normalizedState }],
+        updatedBy: 'esp-compact'
+      });
+    }
+    
+    // Respond to ESP
+    publishEspCompactResponse(espId, {
+      success: true,
+      deviceOrder: deviceOrder,
+      newState: normalizedState,
+      deviceName: device.name,
+      deviceId: device._id.toString()
+    });
+    
+    console.log(`ESP compact update: Device ${device.name} (Order: ${deviceOrder}) -> ${normalizedState}`);
+    
+  } catch (error) {
+    console.error('Error handling ESP compact state:', error);
+    publishEspCompactResponse(espId, {
+      success: false,
+      error: 'Server error processing compact state'
+    });
+  }
+}
+
+/**
+ * Handle device state messages (including forwarding to ESP)
  */
 async function handleDeviceStateMessage(deviceId, payload) {
   try {
@@ -165,6 +371,9 @@ async function handleDeviceStateMessage(deviceId, payload) {
         }],
         updatedBy: 'mqtt'
       });
+      
+      // Notify ESP devices in this room
+      publishEspStateUpdate(device.room.toString(), deviceId, newState, device.order);
     }
     
     console.log(`Device ${device.name} state updated via MQTT to ${newState}`);
@@ -175,8 +384,6 @@ async function handleDeviceStateMessage(deviceId, payload) {
 
 /**
  * Handle device status messages (online/offline)
- * @param {String} deviceId - Device ID
- * @param {Object} payload - Message payload
  */
 async function handleDeviceStatusMessage(deviceId, payload) {
   try {
@@ -207,8 +414,6 @@ async function handleDeviceStatusMessage(deviceId, payload) {
 
 /**
  * Handle room state messages
- * @param {String} roomId - Room ID
- * @param {Object} payload - Message payload with multiple device updates
  */
 async function handleRoomStateMessage(roomId, payload) {
   try {
@@ -242,7 +447,8 @@ async function handleRoomStateMessage(roomId, payload) {
         
         updatedDevices.push({
           deviceId: device._id,
-          state: newState
+          state: newState,
+          order: device.order
         });
       } catch (deviceError) {
         console.error(`Error updating device ${update.deviceId}:`, deviceError);
@@ -253,12 +459,6 @@ async function handleRoomStateMessage(roomId, payload) {
     if (updatedDevices.length > 0) {
       // Notify individual devices
       updatedDevices.forEach(device => {
-        io.of('/ws/device').to(`device:${device.deviceId}`).emit('state-update', {
-          state: device.state,
-          updatedBy: 'mqtt'
-        });
-        
-        // Notify users subscribed to the specific device
         io.of('/ws/user').to(`device:${device.deviceId}`).emit('state-updated', {
           deviceId: device.deviceId,
           state: device.state,
@@ -269,9 +469,12 @@ async function handleRoomStateMessage(roomId, payload) {
       // Notify room-user namespace about bulk updates
       io.of('/ws/room-user').to(`room:${roomId}`).emit('room-devices-updated', {
         roomId: roomId,
-        updates: updatedDevices,
+        updates: updatedDevices.map(d => ({ deviceId: d.deviceId, state: d.state })),
         updatedBy: 'mqtt'
       });
+      
+      // Notify ESP devices in this room
+      publishEspRoomStateUpdate(roomId, updatedDevices);
     }
     
     console.log(`Updated ${updatedDevices.length} devices in room ${roomId} via MQTT`);
@@ -281,78 +484,134 @@ async function handleRoomStateMessage(roomId, payload) {
 }
 
 /**
- * Handle compact state messages from ESP devices for a room.
- * Expects message format like "10" (deviceOrder 1, state "off") or "21" (deviceOrder 2, state "on").
- * @param {String} roomId - Room ID from the MQTT topic
- * @param {String} compactMessage - The compact state string (e.g., "10")
+ * Subscribe ESP to room-specific topics for receiving state updates
  */
-async function handleEspCompactStateMessage(roomId, compactMessage) {
-  try {
-    console.log(`ESP compact state message for room ${roomId}: ${compactMessage}`);
-
-    if (typeof compactMessage !== 'string' || compactMessage.length !== 2) {
-      console.error(`Invalid compact message format for room ${roomId}: ${compactMessage}. Expected 2 characters.`);
-      return;
-    }
-
-    const deviceOrder = parseInt(compactMessage[0], 10);
-    const stateIndicator = compactMessage[1];
-
-    if (isNaN(deviceOrder) || deviceOrder < 1 || deviceOrder > 6) { // Assuming max 6 devices per room by order
-      console.error(`Invalid device order in compact message for room ${roomId}: ${compactMessage[0]}`);
-      return;
-    }
-
-    let targetState;
-    if (stateIndicator === '0') {
-      targetState = 'off';
-    } else if (stateIndicator === '1') {
-      targetState = 'on';
-    } else {
-      console.error(`Invalid state indicator in compact message for room ${roomId}: ${stateIndicator}`);
-      return;
-    }
-
-    const device = await Device.findOne({ room: roomId, order: deviceOrder });
-
-    if (!device) {
-      console.error(`Device not found in room ${roomId} with order ${deviceOrder}`);
-      return;
-    }
-
-    const newState = normalizeState(targetState);
-    device.status = newState;
-    await device.save();
-
-    // Propagate the state change to WebSocket clients
-    // Notify users subscribed to the specific device
-    io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', {
-      deviceId: device._id.toString(),
-      state: newState,
-      updatedBy: 'mqtt-esp-compact' // Specific source
-    });
-
-    // Notify room users
-    io.of('/ws/room-user').to(`room:${roomId}`).emit('room-devices-updated', {
-      roomId: roomId,
-      updates: [{ deviceId: device._id.toString(), state: newState }],
-      updatedBy: 'mqtt-esp-compact'
-    });
-
-    console.log(`Device ${device.name} (Order: ${deviceOrder}) in room ${roomId} state updated via ESP compact MQTT to ${newState}`);
-
-  } catch (error) {
-    console.error(`Error handling ESP compact state message for room ${roomId}:`, error);
+function subscribeEspToRoom(espId, roomId) {
+  if (!client || !client.connected) {
+    return console.error('MQTT client not connected');
   }
+  
+  // ESP will subscribe to these topics to receive state updates
+  console.log(`ESP ${espId} should subscribe to:`);
+  console.log(`- home-automation/esp/room/${roomId}/state-update`);
+  console.log(`- home-automation/esp/room/${roomId}/bulk-update`);
+  console.log(`- home-automation/esp/room/${roomId}/task-update`);
 }
 
 /**
- * Register task event handlers to publish updates to MQTT
+ * Publish authentication response to ESP
+ */
+function publishEspAuthResponse(espId, response) {
+  if (!client || !client.connected) {
+    return console.error('MQTT client not connected');
+  }
+  
+  client.publish(
+    `home-automation/esp/${espId}/auth/response`,
+    JSON.stringify(response),
+    { qos: 1 }
+  );
+}
+
+/**
+ * Publish compact state response to ESP
+ */
+function publishEspCompactResponse(espId, response) {
+  if (!client || !client.connected) {
+    return console.error('MQTT client not connected');
+  }
+  
+  client.publish(
+    `home-automation/esp/${espId}/compact-state/response`,
+    JSON.stringify(response),
+    { qos: 1 }
+  );
+}
+
+/**
+ * Publish state update to ESP devices in a room
+ * This handles bidirectional communication: when users change states, notify ESPs
+ */
+function publishEspStateUpdate(roomId, deviceId, newState, deviceOrder) {
+  if (!client || !client.connected) {
+    return console.error('MQTT client not connected');
+  }
+  
+  const stateUpdate = {
+    deviceId: deviceId,
+    deviceOrder: deviceOrder,
+    state: newState,
+    compactState: `${deviceOrder}${newState === 'on' ? '1' : '0'}`, // Compact format for ESP
+    timestamp: new Date()
+  };
+  
+  // Publish to room-specific ESP topic
+  client.publish(
+    `home-automation/esp/room/${roomId}/state-update`,
+    JSON.stringify(stateUpdate),
+    { qos: 1 }
+  );
+  
+  console.log(`Published state update to ESP devices in room ${roomId}: Device ${deviceOrder} -> ${newState}`);
+}
+
+/**
+ * Publish bulk room state updates to ESP devices
+ */
+function publishEspRoomStateUpdate(roomId, updatedDevices) {
+  if (!client || !client.connected) {
+    return console.error('MQTT client not connected');
+  }
+  
+  const roomUpdate = {
+    roomId: roomId,
+    updates: updatedDevices.map(d => ({
+      deviceId: d.deviceId,
+      deviceOrder: d.order,
+      state: d.state,
+      compactState: `${d.order}${d.state === 'on' ? '1' : '0'}` // Compact format for ESP
+    })),
+    timestamp: new Date()
+  };
+  
+  client.publish(
+    `home-automation/esp/room/${roomId}/bulk-update`,
+    JSON.stringify(roomUpdate),
+    { qos: 1 }
+  );
+  
+  console.log(`Published bulk update to ESP devices in room ${roomId}: ${updatedDevices.length} devices`);
+}
+
+/**
+ * Publish task completion to ESP devices
+ */
+function publishEspTaskUpdate(roomId, taskData) {
+  if (!client || !client.connected) {
+    return console.error('MQTT client not connected');
+  }
+  
+  client.publish(
+    `home-automation/esp/room/${roomId}/task-update`,
+    JSON.stringify({
+      taskId: taskData._id,
+      deviceId: taskData.device._id,
+      deviceOrder: taskData.device.order,
+      status: taskData.status,
+      message: taskData.message,
+      timestamp: new Date()
+    }),
+    { qos: 1 }
+  );
+}
+
+/**
+ * Register task event handlers to publish updates to MQTT and ESP
  */
 function registerTaskEventHandlers() {
   taskEvents.on('task-executed', async (task) => {
     try {
-      // Publish task execution to MQTT
+      // Publish task execution to device-specific MQTT topic
       client.publish(
         `home-automation/${task.device._id}/task`, 
         JSON.stringify({
@@ -362,6 +621,16 @@ function registerTaskEventHandlers() {
           timestamp: new Date()
         })
       );
+      
+      // Publish to ESP devices in the room if device has a room
+      if (task.device.room) {
+        publishEspTaskUpdate(task.device.room.toString(), {
+          _id: task._id,
+          device: task.device,
+          status: 'executed',
+          message: `Task "${task.name}" was executed.`
+        });
+      }
     } catch (error) {
       console.error('Error publishing task execution to MQTT:', error);
     }
@@ -369,7 +638,7 @@ function registerTaskEventHandlers() {
   
   taskEvents.on('task-failed', async (task, error) => {
     try {
-      // Publish task failure to MQTT
+      // Publish task failure to device-specific MQTT topic
       client.publish(
         `home-automation/${task.device._id}/task`,
         JSON.stringify({
@@ -379,6 +648,16 @@ function registerTaskEventHandlers() {
           timestamp: new Date()
         })
       );
+      
+      // Publish to ESP devices in the room if device has a room
+      if (task.device.room) {
+        publishEspTaskUpdate(task.device.room.toString(), {
+          _id: task._id,
+          device: task.device,
+          status: 'failed',
+          message: `Task "${task.name}" failed: ${error}`
+        });
+      }
     } catch (err) {
       console.error('Error publishing task failure to MQTT:', err);
     }
@@ -386,10 +665,8 @@ function registerTaskEventHandlers() {
 }
 
 /**
- * Publish a device state update to MQTT
- * @param {String} deviceId - Device ID
- * @param {String} state - Device state
- * @param {Object} options - Additional options
+ * Publish a device state update to MQTT (called when users change states)
+ * This ensures ESP devices receive user-initiated state changes
  */
 function publishDeviceState(deviceId, state, options = {}) {
   if (!client || !client.connected) {
@@ -403,6 +680,7 @@ function publishDeviceState(deviceId, state, options = {}) {
     ...options
   };
   
+  // Publish to device-specific topic
   client.publish(
     `home-automation/${deviceId}/state`,
     JSON.stringify(payload),
@@ -410,13 +688,19 @@ function publishDeviceState(deviceId, state, options = {}) {
   );
   
   console.log(`Published state ${state} to device ${deviceId} via MQTT`);
+  
+  // Also notify ESP devices if this device belongs to a room
+  Device.findById(deviceId).then(device => {
+    if (device && device.room) {
+      publishEspStateUpdate(device.room.toString(), deviceId, normalizeState(state), device.order);
+    }
+  }).catch(err => {
+    console.error('Error finding device for ESP notification:', err);
+  });
 }
 
 /**
  * Publish room devices state update to MQTT
- * @param {String} roomId - Room ID
- * @param {Array} updates - Array of device updates
- * @param {Object} options - Additional options
  */
 function publishRoomState(roomId, updates, options = {}) {
   if (!client || !client.connected) {
@@ -440,6 +724,41 @@ function publishRoomState(roomId, updates, options = {}) {
   );
   
   console.log(`Published state updates for ${updates.length} devices in room ${roomId} via MQTT`);
+  
+  // Also create ESP-friendly updates
+  Device.find({ 
+    _id: { $in: updates.map(u => u.deviceId) },
+    room: roomId 
+  }).then(devices => {
+    const espUpdates = devices.map(device => {
+      const update = updates.find(u => u.deviceId.toString() === device._id.toString());
+      return {
+        deviceId: device._id,
+        state: normalizeState(update.state),
+        order: device.order
+      };
+    });
+    
+    if (espUpdates.length > 0) {
+      publishEspRoomStateUpdate(roomId, espUpdates);
+    }
+  }).catch(err => {
+    console.error('Error finding devices for ESP room notification:', err);
+  });
+}
+
+/**
+ * Get ESP room mapping (for debugging/monitoring)
+ */
+function getEspRoomMapping(espId) {
+  return espRoomMappings.get(espId);
+}
+
+/**
+ * Remove ESP room mapping (cleanup)
+ */
+function removeEspRoomMapping(espId) {
+  return espRoomMappings.delete(espId);
 }
 
 /**
@@ -450,11 +769,20 @@ function close() {
     client.end();
     console.log('MQTT connection closed');
   }
+  
+  // Clear ESP mappings
+  espRoomMappings.clear();
 }
 
 module.exports = {
   initialize,
   publishDeviceState,
   publishRoomState,
-  close
+  publishEspStateUpdate,
+  publishEspRoomStateUpdate,
+  publishEspTaskUpdate,
+  getEspRoomMapping,
+  removeEspRoomMapping,
+  close,
+  client // Export client for direct access if needed
 };
