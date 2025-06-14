@@ -12,6 +12,8 @@ const { removeUserFromDevice } = require('../controllers/control/devices/removeU
 const { exitDevice } = require('../controllers/control/devices/exitDevice');
 const { assignUsersToDevice } = require('../controllers/control/devices/assignUsersToDevice');
 const { toggleActivation } = require('../controllers/control/devices/activationController');
+const { getAvailableOrders } = require('../controllers/control/devices/GetAvailableOrders');
+const { updateDeviceOrder } = require('../controllers/control/devices/UpdateDeviceOrder');
 
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
@@ -104,5 +106,30 @@ router.put('/devices/:deviceId/assign-users', protect, assignUsersToDevice);
  * @access  Protected
  */
 router.put('/devices/:deviceId/toggle-activation', protect, toggleActivation);
+
+/**
+ * @route   GET /api/devices/room/:roomId/orders
+ * @desc    Get available orders (1-6) for devices in a specific room. Only room creator can access.
+ * @params  { roomId: string }
+ * @access  Protected
+ */
+router.get('/devices/room/:roomId/orders', protect, getAvailableOrders);
+
+/**
+ * @route   GET /api/devices/room/:roomId/orders/:deviceId
+ * @desc    Get available orders for a room and current order of a specific device. Only room creator can access.
+ * @params  { roomId: string, deviceId: string }
+ * @access  Protected
+ */
+router.get('/devices/room/:roomId/orders/:deviceId', protect, getAvailableOrders);
+
+/**
+ * @route   PUT /api/devices/:deviceId/order
+ * @desc    Update the order of a specific device (1-6). Only device creator or room creator can perform this action.
+ * @params  { deviceId: string }
+ * @body    { order: number }
+ * @access  Protected
+ */
+router.put('/devices/:deviceId/update-order', protect, updateDeviceOrder);
 
 module.exports = router;
