@@ -6,6 +6,6 @@ exports.deviceSchema = Joi.object({
   status: Joi.string().valid('on', 'off').default('off'),
   room: Joi.string().required(),
   users: Joi.array().items(Joi.string()),
-  componentNumber: Joi.string().optional()
-  //order: Joi.number().integer().min(1).max(6).required()
+  componentNumber: Joi.string().optional(),
+  order: Joi.number().integer().min(1).max(6).required() 
 });
