@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const moment = require('moment-timezone'); // Add this dependency
 
 const taskSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -6,32 +7,27 @@ const taskSchema = new mongoose.Schema({
   creator: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   device: { type: mongoose.Schema.Types.ObjectId, ref: 'Device', required: true },
   
+  // Add timezone field
+  timezone: { type: String, required: true }, // e.g., 'America/New_York', 'Europe/London'
+  
   // Action to perform
   action: { 
     type: { type: String, enum: ['status_change', 'temperature_set', 'other'], required: true },
-    value: { type: mongoose.Schema.Types.Mixed, required: true } // e.g., 'on'/'off' for status_change, or a number for temperature
+    value: { type: mongoose.Schema.Types.Mixed, required: true }
   },
   
   // Execution timing
   schedule: {
-    startDate: { type: Date, required: true },
-    startTime: { type: String, required: true }, // Format: "HH:MM" in 24-hour format
-    endDate: { type: Date }, // Optional end date for recurring tasks
+    startDate: { type: Date, required: true }, // Store in UTC, but interpret in user's timezone
+    startTime: { type: String, required: true }, // Format: "HH:MM" in 24-hour format (user's local time)
+    endDate: { type: Date }, // Optional end date for recurring tasks (UTC)
     
     // Recurrence pattern
     recurrence: { 
       type: { type: String, enum: ['once', 'daily', 'weekly', 'monthly', 'custom'], default: 'once' },
-      
-      // For weekly recurrence - days of week (0 = Sunday, 1 = Monday, etc.)
       daysOfWeek: [{ type: Number, min: 0, max: 6 }],
-      
-      // For monthly recurrence
       dayOfMonth: { type: Number, min: 1, max: 31 },
-      
-      // For custom recurrence - cron expression (e.g., "0 9 * * 1,3,5" for Mon, Wed, Fri at 9am)
       cronExpression: { type: String },
-      
-      // Frequency for any recurrence type (e.g., every 2 weeks)
       interval: { type: Number, default: 1 }
     }
   },
@@ -42,12 +38,12 @@ const taskSchema = new mongoose.Schema({
     enum: ['scheduled', 'active', 'completed', 'failed', 'cancelled'], 
     default: 'scheduled' 
   },
-  lastExecuted: { type: Date },
-  nextExecution: { type: Date },
+  lastExecuted: { type: Date }, // UTC
+  nextExecution: { type: Date }, // UTC - calculated based on user's timezone
   
   // Execution results
   executionHistory: [{
-    timestamp: { type: Date },
+    timestamp: { type: Date }, // UTC
     status: { type: String, enum: ['success', 'failure'] },
     message: { type: String }
   }],
@@ -66,44 +62,40 @@ const taskSchema = new mongoose.Schema({
     device: { type: mongoose.Schema.Types.ObjectId, ref: 'Device' },
     operator: { type: String, enum: ['equals', 'not_equals', 'greater_than', 'less_than', 'between'] },
     value: { type: mongoose.Schema.Types.Mixed },
-    additionalValue: { type: mongoose.Schema.Types.Mixed } // For 'between' operator
+    additionalValue: { type: mongoose.Schema.Types.Mixed }
   }]
 }, { timestamps: true });
 
-// Calculate and update the next execution time
-taskSchema.methods.updateNextExecution = function() {
-  const now = new Date();
-  const startDate = new Date(this.schedule.startDate);
+// Helper method to get current time in user's timezone
+taskSchema.methods.getCurrentTimeInUserTimezone = function() {
+  return moment().tz(this.timezone);
+};
+
+// Helper method to convert user's local time to UTC
+taskSchema.methods.convertLocalTimeToUTC = function(localDate, localTime) {
+  // Create a moment object in the user's timezone
+  const userDateTime = moment.tz(localDate, this.timezone).format('YYYY-MM-DD');
+  const fullDateTime = moment.tz(`${userDateTime} ${localTime}`, 'YYYY-MM-DD HH:mm', this.timezone);
   
-  // For one-time tasks
-  if (this.schedule.recurrence.type === 'once') {
-    // If the task is in the future, set nextExecution
-    const taskDateTime = new Date(startDate);
-    const [hours, minutes] = this.schedule.startTime.split(':').map(Number);
-    taskDateTime.setHours(hours, minutes, 0, 0);
-    
-    this.nextExecution = taskDateTime > now ? taskDateTime : null;
-    return;
-  }
-  
-  // For recurring tasks
-  let nextDate = new Date(Math.max(startDate, now));
-  
-  // Set the time part from the task's startTime
+  // Convert to UTC
+  return fullDateTime.utc().toDate();
+};
+
+// Helper method to get next occurrence in user's timezone
+taskSchema.methods.getNextOccurrenceInUserTimezone = function(currentUserTime) {
   const [hours, minutes] = this.schedule.startTime.split(':').map(Number);
-  nextDate.setHours(hours, minutes, 0, 0);
+  let nextOccurrence = currentUserTime.clone().hours(hours).minutes(minutes).seconds(0).milliseconds(0);
   
   // If today's execution time has passed, move to next occurrence
-  if (nextDate <= now) {
+  if (nextOccurrence.isSameOrBefore(currentUserTime)) {
     switch (this.schedule.recurrence.type) {
       case 'daily':
-        nextDate.setDate(nextDate.getDate() + this.schedule.recurrence.interval);
+        nextOccurrence.add(this.schedule.recurrence.interval, 'days');
         break;
         
       case 'weekly':
-        // Find the next occurrence based on daysOfWeek
         if (this.schedule.recurrence.daysOfWeek && this.schedule.recurrence.daysOfWeek.length > 0) {
-          const currentDay = nextDate.getDay();
+          const currentDay = nextOccurrence.day(); // 0 = Sunday
           const days = [...this.schedule.recurrence.daysOfWeek].sort();
           
           // Find the next day of week
@@ -111,49 +103,97 @@ taskSchema.methods.updateNextExecution = function() {
           if (!nextDay) {
             // If no days left this week, go to first day next week
             nextDay = days[0];
-            nextDate.setDate(nextDate.getDate() + (7 - currentDay + nextDay));
+            const daysToAdd = (7 - currentDay + nextDay) % 7 || 7;
+            nextOccurrence.add(daysToAdd, 'days');
           } else {
-            nextDate.setDate(nextDate.getDate() + (nextDay - currentDay));
+            nextOccurrence.add(nextDay - currentDay, 'days');
           }
         } else {
-          // If no specific days are set, just add the interval weeks
-          nextDate.setDate(nextDate.getDate() + (7 * this.schedule.recurrence.interval));
+          nextOccurrence.add(7 * this.schedule.recurrence.interval, 'days');
         }
         break;
         
       case 'monthly':
-        // Set to the specified day of month
         if (this.schedule.recurrence.dayOfMonth) {
-          nextDate.setDate(1); // Go to first of month
-          nextDate.setMonth(nextDate.getMonth() + 1); // Go to next month
-          nextDate.setDate(Math.min(this.schedule.recurrence.dayOfMonth, 
-                                   new Date(nextDate.getFullYear(), nextDate.getMonth() + 1, 0).getDate()));
+          // Move to next month and set the day
+          nextOccurrence.add(this.schedule.recurrence.interval, 'months');
+          nextOccurrence.date(Math.min(this.schedule.recurrence.dayOfMonth, nextOccurrence.daysInMonth()));
         } else {
-          // If no specific day, just add a month
-          nextDate.setMonth(nextDate.getMonth() + this.schedule.recurrence.interval);
+          nextOccurrence.add(this.schedule.recurrence.interval, 'months');
         }
         break;
         
       case 'custom':
-        // For custom recurrence, we would use a cron parser library
-        // This is a placeholder - in a real implementation, you would use a library like 'cron-parser'
-        nextDate.setDate(nextDate.getDate() + 1);
+        // For custom recurrence, would use cron-parser
+        nextOccurrence.add(1, 'day'); // Placeholder
         break;
+        
+      default: // 'once'
+        return null;
     }
   }
   
-  // Check if the next execution is after the end date (if specified)
-  if (this.schedule.endDate && nextDate > new Date(this.schedule.endDate)) {
-    this.nextExecution = null;
-    this.status = 'completed';
-  } else {
-    this.nextExecution = nextDate;
+  return nextOccurrence;
+};
+
+// Calculate and update the next execution time (timezone-aware)
+taskSchema.methods.updateNextExecution = function() {
+  const currentUserTime = this.getCurrentTimeInUserTimezone();
+  const startDate = moment.tz(this.schedule.startDate, this.timezone);
+  
+  // For one-time tasks
+  if (this.schedule.recurrence.type === 'once') {
+    const taskDateTime = this.convertLocalTimeToUTC(this.schedule.startDate, this.schedule.startTime);
+    
+    // Only set nextExecution if it's in the future
+    this.nextExecution = taskDateTime > new Date() ? taskDateTime : null;
+    return;
   }
+  
+  // For recurring tasks, find the next occurrence
+  const nextUserTime = this.getNextOccurrenceInUserTimezone(currentUserTime);
+  
+  if (!nextUserTime) {
+    this.nextExecution = null;
+    return;
+  }
+  
+  // Check if the next execution is after the end date (if specified)  
+  if (this.schedule.endDate) {
+    const endDate = moment.tz(this.schedule.endDate, this.timezone);
+    if (nextUserTime.isAfter(endDate)) {
+      this.nextExecution = null;
+      this.status = 'completed';
+      return;
+    }
+  }
+  
+  // Convert the next execution time from user's timezone to UTC
+  this.nextExecution = nextUserTime.utc().toDate();
+};
+
+// Method to get next execution time in user's timezone (for display purposes)
+taskSchema.methods.getNextExecutionInUserTimezone = function() {
+  if (!this.nextExecution) return null;
+  return moment.utc(this.nextExecution).tz(this.timezone);
+};
+
+// Method to format execution time for user display
+taskSchema.methods.getFormattedNextExecution = function() {
+  const nextExec = this.getNextExecutionInUserTimezone();
+  if (!nextExec) return null;
+  
+  return {
+    date: nextExec.format('YYYY-MM-DD'),
+    time: nextExec.format('HH:mm'),
+    timezone: this.timezone,
+    formatted: nextExec.format('YYYY-MM-DD HH:mm z')
+  };
 };
 
 // Pre-save hook to update nextExecution
 taskSchema.pre('save', function(next) {
-  if (this.isNew || this.isModified('schedule')) {
+  if (this.isNew || this.isModified('schedule') || this.isModified('timezone')) {
     this.updateNextExecution();
   }
   next();
