@@ -15,7 +15,7 @@ exports.createTask = async (req, res) => {
             return res.status(400).json({ error: error.details.map(err => err.message) });
         }
 
-        const { name, description, device, action, schedule, notifications, conditions } = req.body;
+        const { name, description, device, action, schedule, notifications, conditions, timezone } = req.body;
         const userId = req.user._id;
 
         // 🔍 Check if the device exists and fetch its access permissions
@@ -25,7 +25,7 @@ exports.createTask = async (req, res) => {
         }
 
         // 🔒 Check if user has permission to assign a task to this device
-        if (String(foundDevice.creator) !== userId && !foundDevice.users.includes(userId)) {
+        if (String(foundDevice.creator) !== String(userId) && !foundDevice.users.includes(userId)) {
             return res.status(403).json({ error: 'You do not have permission to assign tasks to this device' });
         }
 
@@ -39,11 +39,23 @@ exports.createTask = async (req, res) => {
             schedule,
             notifications,
             conditions,
+            timezone: timezone || 'UTC', // Default to UTC if no timezone provided
+            status: 'active' // Set status to active so it gets scheduled
         });
 
+        // The pre-save hook will automatically calculate nextExecution
         await task.save();
 
-        res.status(201).json({ message: 'Task created successfully', task });
+        // Get the formatted next execution for response
+        const formattedNextExecution = task.getFormattedNextExecution();
+
+        res.status(201).json({ 
+            message: 'Task created successfully', 
+            task: {
+                ...task.toObject(),
+                nextExecutionFormatted: formattedNextExecution
+            }
+        });
     } catch (error) {
         console.error('Error creating task:', error);
         res.status(500).json({ error: 'Internal server error' });

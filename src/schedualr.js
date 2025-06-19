@@ -2,6 +2,7 @@ const Task = require('./models/Task');
 const Device = require('./models/Device');
 const User = require('./models/User');
 const { taskEvents } = require('./websockets/taskEventEmitter');
+const moment = require('moment-timezone');
 
 class TaskScheduler {
   constructor() {
@@ -11,7 +12,7 @@ class TaskScheduler {
 
   // Start the task scheduler service
   async start() {
-    console.log('Starting task scheduler service...');
+    console.log('Starting timezone-aware task scheduler service...');
     
     // Schedule regular checks for new tasks
     setInterval(async () => {
@@ -43,7 +44,7 @@ class TaskScheduler {
     }
   }
 
-  // Schedule a specific task
+  // Schedule a specific task (timezone-aware)
   scheduleTask(task) {
     // If the task is already scheduled, remove it first
     if (this.activeJobs.has(task._id.toString())) {
@@ -51,14 +52,15 @@ class TaskScheduler {
     }
     
     const now = new Date();
-    const executionTime = new Date(task.nextExecution);
+    const executionTime = new Date(task.nextExecution); // This is already in UTC
     
     // Calculate milliseconds until execution
     const timeUntilExecution = executionTime.getTime() - now.getTime();
     
     // Only schedule if it's in the future
     if (timeUntilExecution > 0) {
-      console.log(`Scheduling task ${task.name} to execute in ${timeUntilExecution}ms`);
+      const formattedExecution = task.getFormattedNextExecution();
+      console.log(`Scheduling task "${task.name}" to execute at ${formattedExecution.formatted} (in ${Math.round(timeUntilExecution/60000)} minutes)`);
       
       // Schedule the task execution
       const timer = setTimeout(async () => {
@@ -104,7 +106,8 @@ class TaskScheduler {
         return;
       }
 
-      console.log(`Executing task: ${task.name}`);
+      const executionTimeInUserTz = task.getFormattedNextExecution();
+      console.log(`Executing task: ${task.name} (scheduled for ${executionTimeInUserTz?.formatted || 'unknown time'})`);
 
       // Check if conditions are met before executing
       if (task.conditions && task.conditions.length > 0) {
@@ -190,7 +193,7 @@ class TaskScheduler {
           task.status = 'completed';
           task.nextExecution = null;
       } else {
-          // Otherwise, calculate next execution time
+          // Otherwise, calculate next execution time (timezone-aware)
           task.updateNextExecution();
 
           // If there's no next execution (e.g., end date reached), mark as completed
@@ -212,7 +215,7 @@ class TaskScheduler {
     }
   }
 
-  // Check if all conditions for a task are met
+  // Check if all conditions for a task are met (timezone-aware)
   async checkConditions(task) {
     if (!task.conditions || task.conditions.length === 0) {
       return true;
@@ -227,7 +230,6 @@ class TaskScheduler {
           if (condition.device) {
             const sensorDevice = await Device.findById(condition.device);
             if (sensorDevice) {
-              // This would integrate with your actual device communication system
               const sensorValue = await this.getDeviceValue(sensorDevice);
               
               // Check the condition based on the operator
@@ -254,23 +256,30 @@ class TaskScheduler {
           break;
           
         case 'time_window':
-          const now = new Date();
-          const currentHour = now.getHours();
-          const currentMinute = now.getMinutes();
-          const currentTime = currentHour * 60 + currentMinute;
+          // Use the task's timezone for time window checking
+          const currentUserTime = task.getCurrentTimeInUserTimezone();
+          const currentHour = currentUserTime.hour();
+          const currentMinute = currentUserTime.minute();
+          const currentTimeMinutes = currentHour * 60 + currentMinute;
           
           // Parse time window values (assuming they're stored as "HH:MM" format)
           const [startHour, startMinute] = condition.value.split(':').map(Number);
-          const startTime = startHour * 60 + startMinute;
+          const startTimeMinutes = startHour * 60 + startMinute;
           
-          let endTime;
           if (condition.operator === 'between' && condition.additionalValue) {
             const [endHour, endMinute] = condition.additionalValue.split(':').map(Number);
-            endTime = endHour * 60 + endMinute;
-            conditionMet = currentTime >= startTime && currentTime <= endTime;
+            const endTimeMinutes = endHour * 60 + endMinute;
+            
+            // Handle time windows that cross midnight
+            if (startTimeMinutes <= endTimeMinutes) {
+              conditionMet = currentTimeMinutes >= startTimeMinutes && currentTimeMinutes <= endTimeMinutes;
+            } else {
+              // Time window spans midnight (e.g., 22:00 to 06:00)
+              conditionMet = currentTimeMinutes >= startTimeMinutes || currentTimeMinutes <= endTimeMinutes;
+            }
           } else {
             // For specific time
-            conditionMet = currentTime === startTime;
+            conditionMet = Math.abs(currentTimeMinutes - startTimeMinutes) <= 1; // Allow 1 minute tolerance
           }
           break;
           
@@ -285,7 +294,6 @@ class TaskScheduler {
           
         case 'user_presence':
           // This would integrate with your user presence detection system
-          // For example, checking if a user's mobile device is connected to the home network
           conditionMet = true; // Placeholder
           break;
       }
@@ -302,29 +310,19 @@ class TaskScheduler {
 
   // Perform an action on a device
   async performDeviceAction(device, action) {
-    // This would integrate with your actual device control system
     console.log(`Performing action on device ${device.name}: ${action.type} = ${action.value}`);
     
-    // Example implementation
     switch (action.type) {
       case 'status_change':
-        // Update the device status in the database
         await Device.findByIdAndUpdate(device._id, { status: action.value });
-        
-        // Here you would also send the command to the physical device
-        // For example:
-        // await deviceControlService.sendCommand(device.componentNumber, 'setStatus', action.value);
         break;
         
       case 'temperature_set':
         // For a thermostat device
-        // await deviceControlService.sendCommand(device.componentNumber, 'setTemperature', action.value);
         break;
         
-      // Handle other action types
       default:
         // Custom actions
-        // await deviceControlService.sendCommand(device.componentNumber, action.type, action.value);
         break;
     }
     
@@ -333,15 +331,11 @@ class TaskScheduler {
 
   // Get a value from a device (for condition checking)
   async getDeviceValue(device) {
-    // This would integrate with your actual device communication system
-    // For example:
-    // return await deviceControlService.getValue(device.componentNumber);
-    
     // Placeholder implementation
     return device.status === 'on' ? 1 : 0;
   }
 
-  // Send a notification about a task
+  // Send a notification about a task (timezone-aware)
   async sendNotification(taskId, type, errorMessage = null) {
     try {
       const task = await Task.findById(taskId)
@@ -359,42 +353,68 @@ class TaskScheduler {
         : [task.creator];
       
       let subject, message;
+      const formattedTime = task.getFormattedNextExecution();
       
       switch (type) {
         case 'upcoming':
           subject = `Upcoming Task: ${task.name}`;
-          message = `Your task "${task.name}" for device "${task.device.name}" will be executed in ${task.notifications.beforeExecution} minutes.`;
+          message = `Your task "${task.name}" for device "${task.device.name}" will be executed at ${formattedTime?.formatted || 'scheduled time'} (in ${task.notifications.beforeExecution} minutes).`;
           break;
           
         case 'success':
           subject = `Task Executed Successfully: ${task.name}`;
-          message = `Your task "${task.name}" for device "${task.device.name}" was executed successfully.`;
+          message = `Your task "${task.name}" for device "${task.device.name}" was executed successfully at ${moment().tz(task.timezone).format('YYYY-MM-DD HH:mm z')}.`;
           break;
           
         case 'failure':
           subject = `Task Execution Failed: ${task.name}`;
-          message = `Your task "${task.name}" for device "${task.device.name}" failed to execute. Error: ${errorMessage || 'Unknown error'}`;
+          message = `Your task "${task.name}" for device "${task.device.name}" failed to execute at ${moment().tz(task.timezone).format('YYYY-MM-DD HH:mm z')}. Error: ${errorMessage || 'Unknown error'}`;
           break;
       }
       
       // Send emails to all recipients
-      // This is a placeholder - you would use your actual email service
       const emails = recipients.map(user => user.email);
       
       console.log(`Sending ${type} notification for task "${task.name}" to:`, emails);
       console.log(`Subject: ${subject}`);
       console.log(`Message: ${message}`);
       
-      // Example nodemailer implementation
-      // const transporter = nodemailer.createTransport({...});
-      // await transporter.sendMail({
-      //   from: 'home-automation@example.com',
-      //   to: emails.join(','),
-      //   subject,
-      //   text: message
-      // });
     } catch (error) {
       console.error(`Error sending notification for task ${taskId}:`, error);
+    }
+  }
+
+  // Method to reschedule all tasks for a user when their timezone changes
+  async rescheduleUserTasks(userId, newTimezone) {
+    try {
+      const userTasks = await Task.find({
+        creator: userId,
+        status: 'active',
+        nextExecution: { $ne: null }
+      });
+
+      for (const task of userTasks) {
+        // Unschedule the current task
+        this.unscheduleTask(task._id.toString());
+        
+        // Update the timezone
+        task.timezone = newTimezone;
+        
+        // Recalculate next execution
+        task.updateNextExecution();
+        
+        // Save the task
+        await task.save();
+        
+        // Reschedule if there's a next execution
+        if (task.nextExecution) {
+          this.scheduleTask(task);
+        }
+      }
+      
+      console.log(`Rescheduled ${userTasks.length} tasks for user ${userId} to timezone ${newTimezone}`);
+    } catch (error) {
+      console.error(`Error rescheduling tasks for user ${userId}:`, error);
     }
   }
 }
