@@ -19,6 +19,7 @@ const { deviceSchema } = require('../../../validation/deviceValidation');
  * @param {string} req.body.name - Device name
  * @param {string} req.body.type - Device type (e.g., Light, Thermostat)
  * @param {string} req.body.room - Room ID where device will be installed
+ * @param {number} req.body.order - Device order position (1-6)
  * @param {Object} req.user - Authenticated user information
  * @param {Object} res - Express response object
  * @returns {Object} JSON response with device data or error message
@@ -67,6 +68,20 @@ exports.createDevice = async (req, res) => {
         success: false,
         message: 'Permission denied: only the room creator can add devices',
         code: 'PERMISSION_DENIED'
+      });
+    }
+
+    // Check if the requested order position is already taken in the room
+    const existingDeviceWithOrder = await Device.findOne({ 
+      room: req.body.room, 
+      order: req.body.order 
+    }).session(session);
+    
+    if (existingDeviceWithOrder) {
+      return res.status(400).json({
+        success: false,
+        message: `Order position ${req.body.order} is already taken in this room`,
+        code: 'ORDER_POSITION_TAKEN'
       });
     }
 
@@ -145,6 +160,7 @@ exports.createDevice = async (req, res) => {
           creator: device.creator,
           users: device.users, 
           componentNumber: device.componentNumber,
+          order: device.order,
           createdAt: device.createdAt
         },
         room: {
