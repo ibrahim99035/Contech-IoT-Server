@@ -4,7 +4,9 @@
  */
 
 const Device = require('../../../models/Device');
-
+const Room = require('../../../models/Room'); // Import Room model
+const mongoose = require('mongoose'); // Import mongoose for ObjectId validation
+ 
 /**
  * Gets available orders (1-6) for a specific room and returns current device order
  * 
@@ -31,7 +33,7 @@ exports.getAvailableOrders = async (req, res) => {
       });
     }
 
-    // Validate roomId parameter
+    // Validate roomId
     if (!roomId) {
       return res.status(400).json({
         success: false,
@@ -39,59 +41,35 @@ exports.getAvailableOrders = async (req, res) => {
         code: 'MISSING_ROOM_ID'
       });
     }
-
-    // Get all devices in the room with their orders and populate room info
-    const devicesInRoom = await Device.find({ 
-      room: roomId, 
-      activated: true 
-    }).populate('room', 'name creator').select('_id name order room');
-
-    // Check if room exists by checking if any devices were found or get room info from first device
-    if (devicesInRoom.length === 0) {
-      // Check if room exists by trying to find any device (even deactivated) in this room
-      const anyDeviceInRoom = await Device.findOne({ room: roomId }).populate('room', 'name creator');
-      
-      if (!anyDeviceInRoom || !anyDeviceInRoom.room) {
-        return res.status(404).json({
-          success: false,
-          message: 'Room not found',
-          code: 'ROOM_NOT_FOUND'
-        });
-      }
-
-      // Room exists but no active devices - check permission
-      if (anyDeviceInRoom.room.creator.toString() !== req.user._id.toString()) {
-        return res.status(403).json({
-          success: false,
-          message: 'Permission denied: only the room creator can manage device orders',
-          code: 'PERMISSION_DENIED'
-        });
-      }
-
-      // Return response with no devices
-      return res.status(200).json({
-        success: true,
-        message: 'Available orders retrieved successfully',
-        data: {
-          room: {
-            _id: anyDeviceInRoom.room._id,
-            name: anyDeviceInRoom.room.name,
-            totalDevices: 0
-          },
-          orders: {
-            available: [1, 2, 3, 4, 5, 6],
-            occupied: [],
-            total: [1, 2, 3, 4, 5, 6]
-          },
-          devicesInRoom: []
-        }
+    if (!mongoose.Types.ObjectId.isValid(roomId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Room ID format',
+        code: 'INVALID_ID_FORMAT'
       });
     }
 
-    // Get room info from first device
-    const room = devicesInRoom[0].room;
+    // Validate deviceId if provided
+    if (deviceId && !mongoose.Types.ObjectId.isValid(deviceId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Device ID format',
+        code: 'INVALID_ID_FORMAT'
+      });
+    }
+
+    // Find the room directly by its ID
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: 'Room not found',
+        code: 'ROOM_NOT_FOUND'
+      });
+    }
 
     // Verify user permission (only room creator can manage device orders)
+    // This uses the 'creator' field from the directly fetched 'room' object.
     if (room.creator.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
@@ -100,75 +78,84 @@ exports.getAvailableOrders = async (req, res) => {
       });
     }
 
-    // Get current device info if deviceId is provided
-    let currentDevice = null;
+    // Get all activated devices in the room with their orders
+    // This assumes the Device model has a 'room' field (ObjectId) and 'activated' field (Boolean).
+    const devicesInRoom = await Device.find({ 
+      room: roomId, 
+      activated: true 
+    }).select('_id name order'); // No need to populate room info, we already have it.
+
+    let currentDeviceData = null;
     if (deviceId) {
-      currentDevice = devicesInRoom.find(device => device._id.toString() === deviceId);
+      const targetDevice = await Device.findById(deviceId).select('_id name order room activated');
       
-      if (!currentDevice) {
-        // Device might exist but not in this room or not activated
-        const deviceExists = await Device.findById(deviceId).select('_id name order room activated');
-        
-        if (!deviceExists) {
-          return res.status(404).json({
-            success: false,
-            message: 'Device not found',
-            code: 'DEVICE_NOT_FOUND'
-          });
-        }
-
-        if (deviceExists.room.toString() !== roomId) {
-          return res.status(400).json({
-            success: false,
-            message: 'Device does not belong to the specified room',
-            code: 'DEVICE_ROOM_MISMATCH'
-          });
-        }
-
-        if (!deviceExists.activated) {
-          return res.status(400).json({
-            success: false,
-            message: 'Device is deactivated',
-            code: 'DEVICE_DEACTIVATED'
-          });
-        }
+      if (!targetDevice) {
+        return res.status(404).json({
+          success: false,
+          message: 'Device not found',
+          code: 'DEVICE_NOT_FOUND'
+        });
       }
+
+      // Ensure the device belongs to the specified room
+      if (!targetDevice.room || targetDevice.room.toString() !== roomId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Device does not belong to the specified room',
+          code: 'DEVICE_ROOM_MISMATCH'
+        });
+      }
+
+      // Ensure the device is activated if we're getting its order details
+      if (!targetDevice.activated) {
+        return res.status(400).json({
+          success: false,
+          message: 'Cannot get available orders for a deactivated device',
+          code: 'DEVICE_DEACTIVATED'
+        });
+      }
+      currentDeviceData = {
+        _id: targetDevice._id,
+        name: targetDevice.name,
+        currentOrder: targetDevice.order // Assumes Device model has an 'order' field
+      };
     }
 
     // Calculate available orders (1-6)
     const allOrders = [1, 2, 3, 4, 5, 6];
+    
+    // Occupied orders are from other activated devices in the room.
+    // If a deviceId is provided, its current order is not considered "occupied" by others,
+    // meaning it's available for the current device itself.
     const occupiedOrders = devicesInRoom
-      .filter(device => device.order && device._id.toString() !== deviceId)
-      .map(device => device.order);
+      .filter(d => d.order && (!deviceId || d._id.toString() !== deviceId))
+      .map(d => d.order);
     
     const availableOrders = allOrders.filter(order => !occupiedOrders.includes(order));
 
     // Prepare response data
     const responseData = {
       room: {
-        _id: room._id,
-        name: room.name,
-        totalDevices: devicesInRoom.length
+        _id: room._id, // From the directly fetched room object
+        name: room.name, // From the directly fetched room object
+        totalActiveDevices: devicesInRoom.length // Count of active devices found
       },
       orders: {
         available: availableOrders.sort((a, b) => a - b),
         occupied: occupiedOrders.sort((a, b) => a - b),
         total: allOrders
       },
-      devicesInRoom: devicesInRoom.map(device => ({
-        _id: device._id,
-        name: device.name,
-        order: device.order
+      // List of active devices in the room with their current orders
+      activeDevicesInRoom: devicesInRoom.map(d => ({
+        _id: d._id,
+        name: d.name,
+        order: d.order
       })).sort((a, b) => (a.order || 999) - (b.order || 999))
     };
 
     // Add current device info if provided and found
-    if (currentDevice) {
-      responseData.currentDevice = {
-        _id: currentDevice._id,
-        name: currentDevice.name,
-        currentOrder: currentDevice.order
-      };
+    if (currentDeviceData) {
+      responseData.currentDevice = currentDeviceData;
     }
 
     res.status(200).json({
