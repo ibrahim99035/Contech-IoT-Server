@@ -1,16 +1,15 @@
 /**
- * Room Controller - Create Room
+ * Room Controller - Create Room with Types
  * 
  * This controller handles the creation of a new room within an apartment.
- * It includes validation, permission checks, subscription limit verification,
- * and transaction management for data consistency.
+ * Now includes room type support.
  * 
  * @module controllers/room/createRoom
  */
 
 const Room = require('../../../models/Room');
 const Apartment = require('../../../models/Apartment');
-const User = require('../../../models/User'); // Added User model import
+const User = require('../../../models/User');
 const mongoose = require('mongoose');
 const { Subscription } = require('../../../models/subscriptionSystemModels');
 const { roomSchema } = require('../../../validation/roomValidation');
@@ -25,15 +24,6 @@ const ROOM_LIMITS = {
 
 /**
  * Create a new room within an apartment
- * 
- * @param {Object} req - Express request object
- * @param {Object} req.body - Request body containing room details
- * @param {string} req.body.apartment - ID of the apartment to add the room to
- * @param {string} req.body.name - Name of the room
- * @param {Object} req.user - Authenticated user object
- * @param {string} req.user._id - ID of the authenticated user
- * @param {Object} res - Express response object
- * @returns {Object} Created room or error message
  */
 exports.createRoom = async (req, res) => {
   const session = await mongoose.startSession();
@@ -73,7 +63,7 @@ exports.createRoom = async (req, res) => {
     // Check if user has a valid subscription
     const userSubscription = await Subscription.findOne({ 
       user: req.user._id,
-      status: 'active' // Only consider active subscriptions
+      status: 'active'
     }).populate('subscriptionPlan').session(session);
     
     if (!userSubscription) {
@@ -117,6 +107,7 @@ exports.createRoom = async (req, res) => {
       ...req.body, 
       creator: req.user._id,
       users: [req.user._id],
+      type: req.body.type || 'other',
       createdAt: new Date(),
       metadata: {
         createdFrom: req.headers['user-agent'],
@@ -145,7 +136,7 @@ exports.createRoom = async (req, res) => {
       .populate('users', 'name email')
       .populate('creator', 'name email');
 
-    // Return the created room with populated user details
+    // Return the created room
     return res.status(201).json({
       success: true,
       data: populatedRoom,
@@ -157,10 +148,8 @@ exports.createRoom = async (req, res) => {
     await session.abortTransaction();
     session.endSession();
     
-    // Determine appropriate status code
     const statusCode = error.status || 500;
 
-    // Return appropriate error response
     return res.status(statusCode).json({ 
       success: false,
       message: error.message || 'An error occurred while creating the room',
