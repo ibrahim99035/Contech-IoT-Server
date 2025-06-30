@@ -85,6 +85,13 @@ exports.getDevicesByRoom = async (req, res) => {
       .populate('users', 'name email')
       .lean();
 
+    // Get used orders from devices
+    const usedOrders = devices.map(device => device.order);
+    
+    // Generate array of available orders (1-6 minus used orders)
+    const allOrders = [1, 2, 3, 4, 5, 6];
+    const availableOrders = allOrders.filter(order => !usedOrders.includes(order));
+
     // Return success response with devices data
     res.status(200).json({
       success: true,
@@ -100,13 +107,15 @@ exports.getDevicesByRoom = async (req, res) => {
           name: device.name,
           type: device.type,
           status: device.status,
+          order: device.order,
           componentNumber: device.componentNumber,
           creator: device.creator,
           users: device.users,
           createdAt: device.createdAt,
           updatedAt: device.updatedAt
         })),
-        count: devices.length
+        count: devices.length,
+        availableOrders: availableOrders
       }
     });
   } catch (error) {
