@@ -3,13 +3,14 @@
  * 
  * This controller retrieves all rooms belonging to a specific apartment
  * that the authenticated user has access to, including populated device
- * and user information.
+ * and user information, along with room type and corresponding image URL.
  * 
  * @module controllers/room/getRoomsByApartment
  */
 
 const Room = require('../../../models/Room');
 const Apartment = require('../../../models/Apartment');
+const Image = require('../../../models/Image');
 const mongoose = require('mongoose');
 
 /**
@@ -106,6 +107,21 @@ exports.getRoomsByApartment = async (req, res) => {
       .limit(limit)
       .lean();
 
+    // Get all unique room types from the fetched rooms
+    const roomTypes = [...new Set(rooms.map(room => room.type))];
+    
+    // Fetch corresponding images for these room types
+    const images = await Image.find({
+      type: { $in: roomTypes },
+      isActive: true
+    }).select('type url').lean();
+
+    // Create a map of room type to image URL for quick lookup
+    const imageMap = {};
+    images.forEach(image => {
+      imageMap[image.type] = image.url;
+    });
+
     // Calculate total pages
     const totalPages = Math.ceil(totalRooms / limit);
 
@@ -117,6 +133,8 @@ exports.getRoomsByApartment = async (req, res) => {
         rooms: rooms.map(room => ({
           id: room._id,
           name: room.name,
+          type: room.type,
+          url: imageMap[room.type] || null, // Image URL for the room type
           description: room.description,
           isCreator: room.creator._id.toString() === req.user._id.toString(),
           creator: room.creator,
