@@ -9,6 +9,13 @@ const { deleteMyAccount } = require('../controllers/auth/deleteMyAccount');
 // UPDATED: Import modern Google auth functions
 const { modernGoogleLogin, checkGoogleLink, unlinkGoogle } = require('../controllers/auth/googleAuth');
 
+// NEW: Import OAuth2 handlers
+const { 
+  oauthAuthorize, 
+  oauthToken, 
+  handleAccountLinking 
+} = require('../controllers/auth/oauthHandler');
+
 const { protect } = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
 const requireVerifiedEmail = require('../middleware/emailVerification');
@@ -50,15 +57,14 @@ router.put('/update-password', protect, updatePassword);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password', resetPassword);
 
-// UPDATED: Modern Google OAuth Routes (no Passport dependency)
-router.post(
-  '/google', 
-  logOAuthRequest,
-  modernGoogleLogin  // Direct function call, no Passport middleware
-);
-
-// Google account management (requires authentication)
+// Google OAuth Routes (for web/mobile)
+router.post('/google', logOAuthRequest, modernGoogleLogin);
 router.get('/google/status', protect, logOAuthRequest, checkGoogleLink);
 router.delete('/google/unlink', protect, logOAuthRequest, unlinkGoogle);
+
+// NEW: OAuth2 Routes for Google Assistant Account Linking
+router.get('/oauth/authorize', logOAuthRequest, oauthAuthorize);
+router.post('/oauth/token', logOAuthRequest, oauthToken);
+router.post('/oauth/link', protect, logOAuthRequest, handleAccountLinking);
 
 module.exports = router;

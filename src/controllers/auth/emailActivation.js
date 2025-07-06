@@ -21,7 +21,7 @@ exports.sendActivationToken = async (req, res) => {
     }
 
     // Check for environment variables
-    if (!process.env.JWT_SECRET || !process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.FRONTEND_URL) {
+    if (!process.env.JWT_SECRET || !process.env.EMAIL_USER || !process.env.EMAIL_PASS || !process.env.FRONTEND_URL_TOKEN) {
       console.error('Missing required environment variables');
       return res.status(500).json({ message: 'Server configuration error' });
     }
@@ -34,7 +34,7 @@ exports.sendActivationToken = async (req, res) => {
     );
 
     // Generate activation URL
-    const activationUrl = `${process.env.FRONTEND_URL}/activate?token=${activationToken}`;
+    const activationUrl = `${process.env.FRONTEND_URL_TOKEN}/activate?token=${activationToken}`;
 
     // Nodemailer setup - disable debug in production
     const transporter = nodemailer.createTransport({
