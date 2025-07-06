@@ -24,7 +24,8 @@ const apartmentRoutes = require('./src/routes/apartmentRoutes');
 const roomRoutes = require('./src/routes/roomRoutes');
 const deviceRoutes = require('./src/routes/deviceRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
-const imageRoutes = require('./src/routes/imageRoutes'); // New image routes
+const imageRoutes = require('./src/routes/imageRoutes'); 
+const googleAssistantRoutes = require('./src/routes/googleAssistantRoutes');
 
 // Passport configuration
 const passport = require('./src/config/passport');
@@ -68,7 +69,8 @@ app.use('/api/apartments-handler', apartmentRoutes);
 app.use('/api/rooms-handler', roomRoutes); 
 app.use('/api/device-handler', deviceRoutes); 
 app.use('/api/task-handler', taskRoutes); 
-app.use('/api/images', imageRoutes); // New image routes
+app.use('/api/images', imageRoutes); 
+app.use('/api/google-assistant', googleAssistantRoutes);
 
 // Error Handling Middleware
 app.use(notFound);
