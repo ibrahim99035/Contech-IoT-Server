@@ -32,6 +32,8 @@ exports.createDevice = async (req, res) => {
     // Validate request body against schema
     const { error } = deviceSchema.validate(req.body);
     if (error) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'Validation error',
@@ -42,6 +44,8 @@ exports.createDevice = async (req, res) => {
 
     // Check authentication
     if (!req.user?._id) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(401).json({
         success: false,
         message: 'Authentication required',
@@ -55,6 +59,8 @@ exports.createDevice = async (req, res) => {
       .session(session);
       
     if (!room) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(404).json({
         success: false,
         message: 'Room not found',
@@ -64,6 +70,8 @@ exports.createDevice = async (req, res) => {
 
     // Verify user permission (only room creator can add devices)
     if (room.creator.toString() !== req.user._id.toString()) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(403).json({
         success: false,
         message: 'Permission denied: only the room creator can add devices',
@@ -78,6 +86,8 @@ exports.createDevice = async (req, res) => {
     }).session(session);
     
     if (existingDeviceWithOrder) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: `Order position ${req.body.order} is already taken in this room`,
@@ -91,6 +101,8 @@ exports.createDevice = async (req, res) => {
       .session(session);
       
     if (!userSubscription || !userSubscription.subscriptionPlan) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'No active subscription found',
@@ -106,6 +118,8 @@ exports.createDevice = async (req, res) => {
 
     // Check if room has reached device limit
     if (room.devices.length >= deviceLimit) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(403).json({
         success: false,
         message: `Subscription limit reached: your ${userSubscription.subscriptionPlan.name} plan allows only ${deviceLimit} devices per room`,
@@ -118,14 +132,22 @@ exports.createDevice = async (req, res) => {
       });
     }
 
-    // Create new device - now including creator in the users array
-    const device = new Device({ 
+    // Set device-specific defaults based on type
+    const deviceData = { 
       ...req.body, 
       creator: req.user._id,
       users: [req.user._id], // Add creator to users array
       status: req.body.status || 'off' // Default status if not provided
-    });
-    
+    };
+
+    // Set type-specific defaults
+    if (req.body.type === 'Lock') {
+      deviceData.status = req.body.status || 'locked';
+      deviceData.lockState = req.body.lockState || 'locked';
+    }
+
+    // Create new device
+    const device = new Device(deviceData);
     await device.save({ session });
 
     // Update room with new device
@@ -161,6 +183,7 @@ exports.createDevice = async (req, res) => {
           users: device.users, 
           componentNumber: device.componentNumber,
           order: device.order,
+          lockState: device.lockState,
           createdAt: device.createdAt
         },
         room: {

@@ -72,6 +72,16 @@ app.use('/api/task-handler', taskRoutes);
 app.use('/api/images', imageRoutes); 
 app.use('/api/google-assistant', googleAssistantRoutes);
 
+// Health Check
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date(),
+    uptime: process.uptime(),
+    version: process.env.npm_package_version || '1.0.0'
+  });
+});
+
 // Error Handling Middleware
 app.use(notFound);
 app.use(errorHandler);

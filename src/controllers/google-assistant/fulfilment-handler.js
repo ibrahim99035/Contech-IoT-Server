@@ -1,6 +1,6 @@
 /**
  * controllers/google-assistant/fulfilment-handler.js
- * Complete Google Assistant Fulfillment Handler
+ * Complete Google Assistant Fulfillment Handler - All Device Types with Socket.io Integration
  */
 
 const Device = require('../../models/Device');
@@ -70,10 +70,10 @@ function mapDeviceToGoogleFormat(device) {
     traits: traits,
     name: {
       name: device.name,
-      nicknames: device.nicknames || [device.name]
+      nicknames: device.nicknames && device.nicknames.length > 0 ? device.nicknames : [device.name]
     },
     willReportState: false,
-    roomHint: device.room || undefined,
+    roomHint: device.room?.name || undefined,
     deviceInfo: {
       manufacturer: 'Contech',
       model: device.type,
@@ -94,11 +94,11 @@ function getDeviceState(device) {
   };
 
   // Add additional state properties based on device capabilities
-  if (device.brightness !== undefined) {
+  if (device.capabilities?.brightness && device.brightness !== undefined) {
     state.brightness = device.brightness;
   }
   
-  if (device.color) {
+  if (device.capabilities?.color && device.color) {
     state.color = device.color;
   }
   
@@ -116,26 +116,27 @@ function getDeviceState(device) {
 }
 
 /**
- * Execute device command
+ * Execute device command and emit Socket.io updates
  */
-async function executeDeviceCommand(device, execution, user) {
+async function executeDeviceCommand(device, execution, user, io) {
   const updateData = {};
   const responseStates = { online: true };
 
   // Handle OnOff command
   if (execution.command === 'action.devices.commands.OnOff') {
-    updateData.status = execution.params.on ? 'on' : 'off';
+    const rawState = execution.params.on ? 'on' : 'off';
+    updateData.status = normalizeState(rawState);
     responseStates.on = execution.params.on;
   }
 
   // Handle Brightness command
-  if (execution.command === 'action.devices.commands.BrightnessAbsolute') {
+  if (execution.command === 'action.devices.commands.BrightnessAbsolute' && device.capabilities?.brightness) {
     updateData.brightness = execution.params.brightness;
     responseStates.brightness = execution.params.brightness;
   }
 
   // Handle Color command
-  if (execution.command === 'action.devices.commands.ColorAbsolute') {
+  if (execution.command === 'action.devices.commands.ColorAbsolute' && device.capabilities?.color) {
     if (execution.params.color) {
       updateData.color = execution.params.color;
       responseStates.color = execution.params.color;
@@ -143,19 +144,20 @@ async function executeDeviceCommand(device, execution, user) {
   }
 
   // Handle Thermostat commands
-  if (execution.command === 'action.devices.commands.ThermostatTemperatureSetpoint') {
+  if (execution.command === 'action.devices.commands.ThermostatTemperatureSetpoint' && device.type === 'thermostat') {
     updateData.targetTemperature = execution.params.thermostatTemperatureSetpoint;
     responseStates.thermostatTemperatureSetpoint = execution.params.thermostatTemperatureSetpoint;
   }
   
-  if (execution.command === 'action.devices.commands.ThermostatSetMode') {
+  if (execution.command === 'action.devices.commands.ThermostatSetMode' && device.type === 'thermostat') {
     updateData.thermostatMode = execution.params.thermostatMode;
     responseStates.thermostatMode = execution.params.thermostatMode;
   }
 
   // Handle Lock command
-  if (execution.command === 'action.devices.commands.LockUnlock') {
-    updateData.status = execution.params.lock ? 'locked' : 'unlocked';
+  if (execution.command === 'action.devices.commands.LockUnlock' && device.type === 'lock') {
+    const rawState = execution.params.lock ? 'locked' : 'unlocked';
+    updateData.status = normalizeState(rawState);
     responseStates.isLocked = execution.params.lock;
   }
 
@@ -163,11 +165,38 @@ async function executeDeviceCommand(device, execution, user) {
   await Device.findByIdAndUpdate(device._id, updateData);
 
   // Publish to MQTT
-  mqttBroker.publishDeviceState(device._id, updateData.status || device.status, {
+  mqttBroker.publishDeviceState(device._id, normalizeState(updateData.status) || device.status, {
     updatedBy: 'google-assistant',
     userId: user._id.toString(),
     ...updateData
   });
+
+  // Emit Socket.io updates to mobile apps
+  if (io) {
+    const deviceNamespace = io.of('/ws/device');
+    const userNamespace = io.of('/ws/user');
+    
+    // Notify the specific device via websocket
+    deviceNamespace.to(`device:${device._id}`).emit('state-update', { 
+      deviceId: device._id, 
+      state: normalizeState(updateData.status) || device.status,
+      updatedBy: 'google-assistant',
+      userId: user._id.toString(),
+      ...updateData
+    });
+    
+    // Notify all users with access to this device
+    userNamespace.to(`device:${device._id}`).emit('state-updated', { 
+      deviceId: device._id, 
+      state: normalizeState(updateData.status) || device.status,
+      updatedBy: 'google-assistant',
+      userId: user._id.toString(),
+      roomId: device.room,
+      ...updateData
+    });
+    
+    console.log(`📱 Socket.io notifications sent for device ${device.name} updated by Google Assistant`);
+  }
 
   return responseStates;
 }
@@ -183,6 +212,9 @@ exports.googleAssistantFulfillment = async (req, res) => {
     const user = req.user;
     const intent = validateRequest(req.body);
     
+    // Get Socket.io instance from app
+    const io = req.app.get('io');
+    
     console.log(`👤 User: ${user.email}, Intent: ${intent}`);
 
     // SYNC: List user's devices
@@ -193,7 +225,7 @@ exports.googleAssistantFulfillment = async (req, res) => {
           { creator: user._id }
         ],
         active: true // Only include active devices
-      });
+      }).populate('room', 'name'); // Populate room name for roomHint
 
       const googleDevices = devices.map(mapDeviceToGoogleFormat);
       
@@ -270,7 +302,7 @@ exports.googleAssistantFulfillment = async (req, res) => {
             // Execute each command
             let responseStates = { online: true };
             for (const execution of command.execution) {
-              const executionResult = await executeDeviceCommand(device, execution, user);
+              const executionResult = await executeDeviceCommand(device, execution, user, io);
               responseStates = { ...responseStates, ...executionResult };
             }
 
