@@ -4,7 +4,6 @@ services:
   # MongoDB Database
   mongodb:
     image: mongo:7.0
-    container_name: smart_home_mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
