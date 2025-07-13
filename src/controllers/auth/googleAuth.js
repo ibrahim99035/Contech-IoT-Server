@@ -1,5 +1,5 @@
 /**
- * MODERN APPROACH: Google Authentication without deprecated packages
+ * FIXED: Google Authentication without deprecated packages
  * Using Google's official auth library for token verification
  * 
  * Install: npm install google-auth-library
@@ -13,7 +13,7 @@ const { SubscriptionPlan, Subscription } = require('../../models/subscriptionSys
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 /**
- * Modern Google Login Handler
+ * FIXED: Modern Google Login Handler
  * Verifies Google ID token directly without Passport
  */
 const modernGoogleLogin = async (req, res) => {
@@ -67,13 +67,27 @@ const modernGoogleLogin = async (req, res) => {
     if (user) {
       console.log(`✅ [Database] Existing user found: ${user._id}`);
       
-      // If user exists but doesn't have googleId, add it
+      // FIXED: Update existing user with Google ID and activate email
+      let userUpdated = false;
+      
       if (!user.googleId) {
         console.log(`🔄 [Database] Adding Google ID to existing user`);
         user.googleId = googleId;
-        await user.save();
-        console.log(`✅ [Database] Google ID added successfully`);
+        userUpdated = true;
       }
+      
+      // FIXED: Always activate email for Google users
+      if (!user.emailActivated) {
+        console.log(`🔄 [Database] Activating email for Google user`);
+        user.emailActivated = true;
+        userUpdated = true;
+      }
+      
+      if (userUpdated) {
+        await user.save();
+        console.log(`✅ [Database] User updated successfully`);
+      }
+      
     } else {
       // Create new user
       console.log(`🆕 [Database] Creating new user for Google authentication`);
@@ -85,7 +99,7 @@ const modernGoogleLogin = async (req, res) => {
         password: randomPassword,
         role: 'customer',
         active: true,
-        emailActivated: emailVerified || true,
+        emailActivated: true, // FIXED: Always true for Google users
         googleId: googleId,
       });
       
@@ -117,10 +131,11 @@ const modernGoogleLogin = async (req, res) => {
       console.log(`✅ [Subscription] Free subscription created`);
     }
 
-    // Generate JWT token
+    // FIXED: Generate JWT token with 'id' field for compatibility
     const token = jwt.sign(
       { 
-        userId: user._id,
+        id: user._id,        // FIXED: Use 'id' for compatibility with authMiddleware
+        userId: user._id,    // Keep userId for future compatibility
         email: user.email,
         role: user.role 
       },
@@ -129,6 +144,7 @@ const modernGoogleLogin = async (req, res) => {
     );
 
     console.log(`🎉 [Modern Google] Authentication successful`);
+    console.log(`🎫 [Modern Google] JWT token generated for user: ${user._id}`);
 
     // Send successful response
     res.status(200).json({
@@ -141,7 +157,7 @@ const modernGoogleLogin = async (req, res) => {
         email: user.email,
         role: user.role,
         active: user.active,
-        emailActivated: user.emailActivated,
+        emailActivated: user.emailActivated, // This will now be true
         googleId: user.googleId,
         hasGoogleAuth: true
       }
@@ -175,11 +191,13 @@ const checkGoogleLink = async (req, res) => {
       data: {
         hasGoogleAuth: hasGoogleId,
         googleId: hasGoogleId ? 'linked' : 'not linked',
+        emailActivated: user.emailActivated, // Include email activation status
         user: {
           id: user._id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role: user.role,
+          emailActivated: user.emailActivated
         }
       }
     });
@@ -235,7 +253,8 @@ const unlinkGoogle = async (req, res) => {
           id: updatedUser._id,
           name: updatedUser.name,
           email: updatedUser.email,
-          role: updatedUser.role
+          role: updatedUser.role,
+          emailActivated: updatedUser.emailActivated
         }
       }
     });
