@@ -47,12 +47,9 @@ services:
     networks:
       - smart_home_network
 
-  # Node.js Application
+  # Node.js Application - Changed to use GHCR image
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: production
+    image: ghcr.io/ibrahim99035/contech-iot-server:latest
     container_name: smart_home_app
     restart: unless-stopped
     depends_on:
@@ -65,7 +62,7 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: ${REDIS_PASSWORD}
-      MQTT_BROKER_URL: mqtt://mqtt:1883
+      MQTT_BROKER_URL: mqtts://39a6527dc2544b59bc5a1ac4ba2be2bc.s1.eu.hivemq.cloud:8883
       MQTT_USERNAME: ${MQTT_USERNAME}
       MQTT_PASSWORD: ${MQTT_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
