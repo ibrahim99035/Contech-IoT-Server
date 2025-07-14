@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+# Add this permissions section
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
@@ -115,6 +121,9 @@ jobs:
             # Pull latest changes
             git pull origin main
             
+            # Login to GitHub Container Registry
+            echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            
             # Update Docker image
             docker-compose pull app
             
@@ -128,10 +137,12 @@ jobs:
             if curl -f http://localhost/health > /dev/null 2>&1; then
               echo "Deployment successful!"
               
-              # Send notification
-              curl -X POST -H 'Content-type: application/json' \
-                --data '{"text":"🚀 Smart Home App deployed successfully to production!"}' \
-                ${{ secrets.SLACK_WEBHOOK_URL }}
+              # Send notification (only if webhook URL is set)
+              if [ -n "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+                curl -X POST -H 'Content-type: application/json' \
+                  --data '{"text":"🚀 Smart Home App deployed successfully to production!"}' \
+                  ${{ secrets.SLACK_WEBHOOK_URL }}
+              fi
             else
               echo "Deployment failed - health check failed"
               exit 1
