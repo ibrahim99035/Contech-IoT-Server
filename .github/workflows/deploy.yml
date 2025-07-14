@@ -6,7 +6,6 @@ on:
   pull_request:
     branches: [ main ]
 
-# Add this permissions section
 permissions:
   contents: read
   packages: write
@@ -107,16 +106,30 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
+      - name: Debug secrets
+        run: |
+          echo "VPS_HOST is set: ${{ secrets.VPS_HOST != '' }}"
+          echo "VPS_USER is set: ${{ secrets.VPS_USER != '' }}"
+          echo "VPS_PORT is set: ${{ secrets.VPS_PORT != '' }}"
+          echo "VPS_SSH_KEY is set: ${{ secrets.VPS_SSH_KEY != '' }}"
+      
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          port: ${{ secrets.VPS_PORT }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          timeout: 60s
+          command_timeout: 10m
           script: |
             # Navigate to deployment directory
-            cd /opt/contech-smart-home-app
+            cd /opt/contech-smart-home-app || { echo "Directory not found, creating..."; sudo mkdir -p /opt/contech-smart-home-app; sudo chown $USER:$USER /opt/contech-smart-home-app; cd /opt/contech-smart-home-app; }
+            
+            # Initialize git repo if not exists
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/${{ github.repository }}.git .
+            fi
             
             # Pull latest changes
             git pull origin main
@@ -131,10 +144,11 @@ jobs:
             docker-compose up -d --no-deps app
             
             # Wait for health check
+            echo "Waiting for application to start..."
             sleep 30
             
             # Verify deployment
-            if curl -f http://localhost/health > /dev/null 2>&1; then
+            if curl -f http://localhost:5000/health > /dev/null 2>&1; then
               echo "Deployment successful!"
               
               # Send notification (only if webhook URL is set)
@@ -145,6 +159,8 @@ jobs:
               fi
             else
               echo "Deployment failed - health check failed"
+              echo "Checking application logs..."
+              docker-compose logs app
               exit 1
             fi
             
