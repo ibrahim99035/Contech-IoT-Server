@@ -1,15 +1,11 @@
 const Task = require('../../../models/Task');
 const Device = require('../../../models/Device');
 const taskSchema = require('../../../validation/taskValidator');
+const { checkTaskLimits } = require('../../../middleware/checkSubscriptionLimits');
 
-/**
- * @desc Create a new task
- * @route POST /api/tasks
- * @access Private
- */
 exports.createTask = async (req, res) => {
     try {
-        // Validate request body using Joi
+        // Validate request body
         const { error } = taskSchema.validate(req.body, { abortEarly: false });
         if (error) {
             return res.status(400).json({ error: error.details.map(err => err.message) });
@@ -18,18 +14,17 @@ exports.createTask = async (req, res) => {
         const { name, description, device, action, schedule, notifications, conditions, timezone } = req.body;
         const userId = req.user._id;
 
-        // 🔍 Check if the device exists and fetch its access permissions
+        // Check device exists and permissions
         const foundDevice = await Device.findById(device);
         if (!foundDevice) {
             return res.status(404).json({ error: 'Device not found' });
         }
 
-        // 🔒 Check if user has permission to assign a task to this device
         if (String(foundDevice.creator) !== String(userId) && !foundDevice.users.includes(userId)) {
             return res.status(403).json({ error: 'You do not have permission to assign tasks to this device' });
         }
 
-        // ✅ Create the task
+        // The limit check is now handled by middleware
         const task = new Task({
             name,
             description,
@@ -39,21 +34,22 @@ exports.createTask = async (req, res) => {
             schedule,
             notifications,
             conditions,
-            timezone: timezone || 'UTC', // Default to UTC if no timezone provided
-            status: 'active' // Set status to active so it gets scheduled
+            timezone: timezone || 'UTC',
+            status: 'active'
         });
 
-        // The pre-save hook will automatically calculate nextExecution
         await task.save();
 
-        // Get the formatted next execution for response
         const formattedNextExecution = task.getFormattedNextExecution();
 
         res.status(201).json({ 
+            success: true,
             message: 'Task created successfully', 
-            task: {
-                ...task.toObject(),
-                nextExecutionFormatted: formattedNextExecution
+            data: {
+                task: {
+                    ...task.toObject(),
+                    nextExecutionFormatted: formattedNextExecution
+                }
             }
         });
     } catch (error) {

@@ -13,13 +13,14 @@ const { exitApartment } = require('../controllers/control/apartments/exitApartme
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
 
+const { checkApartmentLimits } = require('../middleware/checkSubscriptionLimits');
 
 /**
  * @route   POST /api/apartments/create-apartment
  * @desc    Create a new apartment. Automatically adds the creator as a member.
  * @access  Protected (Requires authentication)
  */
-router.post('/apartments/create-apartment', protect, createApartment);
+router.post('/apartments/create-apartment', protect, checkApartmentLimits, createApartment);
 
 /**
  * @route   GET /api/apartments/member
