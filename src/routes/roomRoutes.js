@@ -15,6 +15,8 @@ const { updateRoomPassword } = require('../controllers/control/rooms/updateRoomP
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
 
+const { checkRoomLimits } = require('../middleware/checkSubscriptionLimits');
+
 // Routes Definitions
 
 /**
@@ -27,7 +29,7 @@ const { protect } = require('../middleware/authMiddleware');
  * @body    { name: string, apartment: string }
  * @access  Protected (Requires authentication)
  */
-router.post('/rooms/create', protect, createRoom);
+router.post('/rooms/create', protect, checkRoomLimits, createRoom);
 
 /**
  * @route   PUT /api/rooms-handler/rooms/:id/update-name

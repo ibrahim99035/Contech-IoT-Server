@@ -18,13 +18,15 @@ const { updateDeviceOrder } = require('../controllers/control/devices/UpdateDevi
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
 
+const { checkDeviceLimits } = require('../middleware/checkSubscriptionLimits');
+
 /**
  * @route   POST /api/devices/create
  * @desc    Create a new device within a specific room. Only the room creator can perform this action.
  * @body    { name: string, room: string }
  * @access  Protected (Requires authentication)
  */
-router.post('/devices/create', protect, createDevice);
+router.post('/devices/create', protect, checkDeviceLimits, createDevice);
 
 /**
  * @route   PUT /api/devices/:id/update-name

@@ -23,13 +23,15 @@ const {
 // Middleware for authentication (Ensures user is authenticated)
 const { protect } = require('../middleware/authMiddleware');
 
+const { checkTaskLimits } = require('../middleware/checkSubscriptionLimits');
+
 // 📌 TASK CREATION
 /**
  * @route   POST /api/tasks
  * @desc    Create a new task for a device
  * @access  Protected (Requires authentication)
  */
-router.post('/tasks/create-task', protect, createTask);
+router.post('/tasks/create-task', protect, checkTaskLimits, createTask);
 
 // 📌 TASK RETRIEVAL
 /**
