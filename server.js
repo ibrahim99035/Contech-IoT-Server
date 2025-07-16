@@ -26,6 +26,7 @@ const deviceRoutes = require('./src/routes/deviceRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const imageRoutes = require('./src/routes/imageRoutes'); 
 const googleAssistantRoutes = require('./src/routes/googleAssistantRoutes');
+const adminRoutes = require('./src/routes/adminRoutes');
 
 // Passport configuration
 const passport = require('./src/config/passport');
@@ -71,6 +72,7 @@ app.use('/api/device-handler', deviceRoutes);
 app.use('/api/task-handler', taskRoutes); 
 app.use('/api/images', imageRoutes); 
 app.use('/api/google-assistant', googleAssistantRoutes);
+app.use('/api/admin-dashboard', adminRoutes);
 
 // Health Check
 app.get('/health', (req, res) => {
