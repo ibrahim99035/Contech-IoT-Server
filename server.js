@@ -73,7 +73,7 @@ async function startServer() {
 
     // Routes
     app.use('/api/auth', authRoutes);
-    app.use('/api/admin-dashboard', userRoutes); 
+    // app.use('/api/admin-dashboard', userRoutes); 
     app.use('/api/apartments-handler', apartmentRoutes); 
     app.use('/api/rooms-handler', roomRoutes); 
     app.use('/api/device-handler', deviceRoutes); 

@@ -100,7 +100,7 @@ router.delete('/users/delete-user-account-permanently/:id', protect, authorizeRo
  * @returns {Object} analysis - Comprehensive apartment analytics
  * @returns {Object} pagination - Pagination information
  */
-router.get('/apartments/get-all-apartments-with-comprehensive-analysis', protect, authorizeRoles('admin'), getAllApartments);
+router.get('/apartments/all-apartments-with-analysis', protect, authorizeRoles('admin'), getAllApartments);
 
 /**
  * @route   GET /api/admin/apartments/search-and-filter-apartments-with-advanced-options
