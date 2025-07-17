@@ -5,41 +5,56 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const protect = async (req, res, next) => {
+  try {
     let token;
-
+    
+    // Extract token from Authorization header
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        try {
-            token = req.headers.authorization.split(' ')[1];
-            console.log(`🔐 [Auth Middleware] Token received: ${token.substring(0, 20)}...`);
-            
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            console.log(`✅ [Auth Middleware] Token decoded successfully for user: ${decoded.userId || decoded.id}`);
-            
-            // FIXED: Check for both userId and id to handle different token formats
-            const userId = decoded.userId || decoded.id;
-            
-            if (!userId) {
-                console.error(`❌ [Auth Middleware] No user ID found in token payload`);
-                return res.status(401).json({ message: 'Not authorized, invalid token format' });
-            }
-            
-            req.user = await User.findById(userId).select('-password');
-            
-            if (!req.user) {
-                console.error(`❌ [Auth Middleware] User not found for ID: ${userId}`);
-                return res.status(401).json({ message: 'Not authorized, user not found' });
-            }
-            
-            console.log(`✅ [Auth Middleware] User authenticated: ${req.user.email}`);
-            next();
-        } catch (err) {
-            console.error(`❌ [Auth Middleware] Token verification failed:`, err.message);
-            res.status(401).json({ message: 'Not authorized, token failed' });
-        }
-    } else {
-        console.error(`❌ [Auth Middleware] No authorization header found`);
-        res.status(401).json({ message: 'Not authorized, no token' });
+      token = req.headers.authorization.split(' ')[1];
     }
+
+    if (!token) {
+      return res.status(401).json({
+        message: 'No token provided'
+      });
+    }
+
+    console.log('🔐 [Auth Middleware] Token received:', token.substring(0, 20) + '...');
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('✅ [Auth Middleware] Token decoded successfully for user:', decoded.id);
+
+    // CRITICAL: Actually fetch the user and set req.user
+    const user = await User.findById(decoded.id).select('-password');
+    
+    if (!user) {
+      console.log('❌ [Auth Error] User not found:', decoded.id);
+      return res.status(401).json({
+        message: 'User not found'
+      });
+    }
+
+    // IMPORTANT: Make sure the user object has a role property
+    if (!user.role) {
+      console.log('❌ [Auth Error] User has no role:', user);
+      return res.status(401).json({
+        message: 'User role not defined'
+      });
+    }
+
+    // Set req.user with the complete user object
+    req.user = user;
+    console.log('✅ [Auth Middleware] User authenticated:', user.email, 'Role:', user.role);
+    
+    next();
+  } catch (error) {
+    console.log('❌ [Auth Error]:', error.message);
+    return res.status(401).json({
+      message: 'Invalid token',
+      error: error.message
+    });
+  }
 };
 
 module.exports = { protect };
