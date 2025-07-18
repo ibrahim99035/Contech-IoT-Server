@@ -5,6 +5,7 @@ const { loginUser } = require('../controllers/auth/login');
 const { updatePassword, forgotPassword, resetPassword } = require('../controllers/auth/passwordHandler');
 const { sendActivationToken, activateEmailWithToken } = require('../controllers/auth/emailActivation');
 const { deleteMyAccount } = require('../controllers/auth/deleteMyAccount');
+const { verifyToken } = require('../controllers/auth/verify')
 
 // UPDATED: Import modern Google auth functions
 const { modernGoogleLogin, checkGoogleLink, unlinkGoogle } = require('../controllers/auth/googleAuth');
@@ -56,6 +57,8 @@ router.post('/activation-token', sendActivationToken);
 router.put('/update-password', protect, updatePassword);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password', resetPassword);
+
+router.get('/verify', protect, verifyToken);
 
 // Google OAuth Routes (for web/mobile)
 router.post('/google', logOAuthRequest, modernGoogleLogin);
