@@ -10,9 +10,8 @@ const verifyToken = async (req, res) => {
       id: req.user._id,
       email: req.user.email,
       role: req.user.role,
-      firstName: req.user.firstName,
-      lastName: req.user.lastName,
-      isEmailVerified: req.user.isEmailVerified,
+      name: req.user.name,
+      emailActivated: req.user.emailActivated,
       createdAt: req.user.createdAt
     },
     role: req.user.role, // Include role at root level for backward compatibility
