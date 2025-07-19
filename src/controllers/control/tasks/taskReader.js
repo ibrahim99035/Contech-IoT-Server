@@ -97,16 +97,54 @@ exports.getMyTasks = async (req, res) => {
         const userId = req.user._id;
         console.log('User ID:', userId);
 
+        // Add validation for userId
+        if (!userId) {
+            console.error('ERROR: userId is null or undefined');
+            return res.status(401).json({ error: 'Invalid user ID' });
+        }
+
+        // Check if Task model is properly imported
+        if (!Task) {
+            console.error('ERROR: Task model not imported');
+            return res.status(500).json({ error: 'Task model not available' });
+        }
+
+        console.log('Executing database query...');
         const tasks = await Task.find({ creator: userId })
             .select('name device status nextExecution')
-            .populate('device', 'name');
+            .populate({
+                path: 'device',
+                select: 'name',
+                // Handle case where device might not exist
+                options: { strictPopulate: false }
+            })
+            .lean(); // Add lean() for better performance and to avoid potential circular reference issues
             
-        console.log('Tasks found:', tasks.length);
-        res.status(200).json({ tasks });
+        console.log('Tasks found:', tasks ? tasks.length : 0);
+        console.log('Sample task:', tasks && tasks.length > 0 ? tasks[0] : 'No tasks');
+        
+        // Ensure tasks is always an array
+        const safeTasks = Array.isArray(tasks) ? tasks : [];
+        
+        res.status(200).json({ tasks: safeTasks });
 
     } catch (error) {
         console.error('ERROR in getMyTasks:', error);
-        res.status(500).json({ error: 'Server error', message: error.message });
+        console.error('Error stack:', error.stack);
+        
+        // More specific error handling
+        if (error.name === 'CastError') {
+            return res.status(400).json({ error: 'Invalid user ID format' });
+        }
+        
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ error: 'Data validation error', details: error.message });
+        }
+        
+        res.status(500).json({ 
+            error: 'Server error', 
+            message: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message 
+        });
     }
 };
 
