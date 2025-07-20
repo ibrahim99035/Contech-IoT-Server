@@ -1,6 +1,6 @@
 /**
  * models/AuthorizationCode.js
- * Authorization Code Model for OAuth2 flow
+ * Model for storing OAuth2 authorization codes
  */
 
 const mongoose = require('mongoose');
@@ -9,7 +9,8 @@ const authorizationCodeSchema = new mongoose.Schema({
   code: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    index: true
   },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -31,13 +32,15 @@ const authorizationCodeSchema = new mongoose.Schema({
   expiresAt: {
     type: Date,
     required: true,
-    default: () => new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
+    default: () => new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
+    index: { expires: 0 } // MongoDB TTL index - automatically removes expired documents
   }
-}, {
-  timestamps: true
+}, { 
+  timestamps: true 
 });
 
-// Auto-delete expired codes
-authorizationCodeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+// Index for efficient cleanup and querying
+authorizationCodeSchema.index({ code: 1, clientId: 1 });
+authorizationCodeSchema.index({ userId: 1 });
 
 module.exports = mongoose.model('AuthorizationCode', authorizationCodeSchema);
