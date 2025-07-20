@@ -1,7 +1,7 @@
 const Task = require('./models/Task');
 const Device = require('./models/Device');
 const User = require('./models/User');
-const { taskEvents } = require('./websockets/taskEventEmitter');
+const taskEvents = require('./websockets/taskEventEmitter'); 
 const moment = require('moment-timezone');
 
 class TaskScheduler {
