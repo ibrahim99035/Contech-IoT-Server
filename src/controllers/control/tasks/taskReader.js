@@ -85,65 +85,80 @@ exports.getTaskById = async (req, res) => {
 };
 
 exports.getMyTasks = async (req, res) => {
-    console.log('=== getMyTasks DEBUGGING ===');
-    console.log('Request user:', req.user);
-    
+    console.log('=== [DEBUG] getMyTasks START ===');
+    console.log('🔐 Request user object:', req.user);
+
     try {
+        // Check if user is attached to the request
         if (!req.user) {
-            console.error('ERROR: req.user is null or undefined');
+            console.error('❌ [ERROR] req.user is null or undefined');
             return res.status(401).json({ error: 'Authentication required: User not found in request' });
         }
-        
-        const userId = req.user._id;
-        console.log('User ID:', userId);
 
-        // Add validation for userId
+        const userId = req.user._id;
+        console.log('✅ User ID extracted from token:', userId);
+
+        // Validate extracted user ID
         if (!userId) {
-            console.error('ERROR: userId is null or undefined');
+            console.error('❌ [ERROR] userId is null or invalid');
             return res.status(401).json({ error: 'Invalid user ID' });
         }
 
-        // Check if Task model is properly imported
-        if (!Task) {
-            console.error('ERROR: Task model not imported');
-            return res.status(500).json({ error: 'Task model not available' });
+        // Check if Task model is available
+        if (typeof Task === 'undefined') {
+            console.error('❌ [ERROR] Task model is undefined or not imported');
+            return res.status(500).json({ error: 'Server misconfiguration: Task model not available' });
         }
 
-        console.log('Executing database query...');
+        console.log('📦 Querying database for tasks created by user...');
+
         const tasks = await Task.find({ creator: userId })
             .select('name device status nextExecution')
             .populate({
                 path: 'device',
                 select: 'name',
-                // Handle case where device might not exist
-                options: { strictPopulate: false }
+                options: { strictPopulate: false }, // Prevent populate errors if device is null
             })
-            .lean(); // Add lean() for better performance and to avoid potential circular reference issues
-            
-        console.log('Tasks found:', tasks ? tasks.length : 0);
-        console.log('Sample task:', tasks && tasks.length > 0 ? tasks[0] : 'No tasks');
-        
-        // Ensure tasks is always an array
+            .lean();
+
+        if (!Array.isArray(tasks)) {
+            console.warn('⚠️ [WARN] Task.find did not return an array. Normalizing...');
+        }
+
+        console.log(`📊 Number of tasks found: ${Array.isArray(tasks) ? tasks.length : 0}`);
+        if (Array.isArray(tasks) && tasks.length > 0) {
+            console.log('🔍 Sample task:', tasks[0]);
+        } else {
+            console.log('ℹ️ No tasks found for this user.');
+        }
+
+        // Normalize the result
         const safeTasks = Array.isArray(tasks) ? tasks : [];
-        
-        res.status(200).json({ tasks: safeTasks });
+
+        console.log('✅ Sending tasks response...');
+        return res.status(200).json({ tasks: safeTasks });
 
     } catch (error) {
-        console.error('ERROR in getMyTasks:', error);
-        console.error('Error stack:', error.stack);
-        
-        // More specific error handling
+        console.error('🔥 [ERROR] Exception thrown in getMyTasks:', error.message);
+        console.error('📛 Stack trace:\n', error.stack);
+
+        // Handle known Mongoose errors specifically
         if (error.name === 'CastError') {
+            console.warn('⚠️ [WARN] Invalid ObjectId format');
             return res.status(400).json({ error: 'Invalid user ID format' });
         }
-        
+
         if (error.name === 'ValidationError') {
-            return res.status(400).json({ error: 'Data validation error', details: error.message });
+            console.warn('⚠️ [WARN] Mongoose validation error:', error.message);
+            return res.status(400).json({ error: 'Validation error', details: error.message });
         }
-        
-        res.status(500).json({ 
+
+        // Fallback error response
+        return res.status(500).json({ 
             error: 'Server error', 
-            message: process.env.NODE_ENV === 'production' ? 'Internal server error' : error.message 
+            message: process.env.NODE_ENV === 'production' 
+                ? 'Internal server error' 
+                : error.message 
         });
     }
 };
