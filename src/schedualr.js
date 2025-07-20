@@ -158,12 +158,10 @@ class TaskScheduler {
 
           // Emit success event
           taskEvents.emit('task-executed', { 
-              task: { 
-                  _id: task._id.toString(), 
-                  name: task.name, 
-                  device: { _id: task.device._id.toString(), name: task.device.name }, 
-                  creator: { _id: task.creator._id.toString(), name: task.creator.name } 
-              } 
+              _id: task._id.toString(), 
+              name: task.name, 
+              device: { _id: task.device._id.toString(), name: task.device.name }, 
+              creator: { _id: task.creator._id.toString(), name: task.creator.name } 
           });
 
       } catch (error) {
