@@ -108,79 +108,84 @@ class TaskScheduler {
 
       const executionTimeInUserTz = task.getFormattedNextExecution();
       console.log(`Executing task: ${task.name} (scheduled for ${executionTimeInUserTz?.formatted || 'unknown time'})`);
+      console.log(`Task action: ${task.action.type} = ${task.action.value}`); // Debug log
 
       // Check if conditions are met before executing
       if (task.conditions && task.conditions.length > 0) {
-          const conditionsMet = await this.checkConditions(task);
-          if (!conditionsMet) {
-              console.log(`Conditions not met for task ${task.name}, skipping execution`);
+        const conditionsMet = await this.checkConditions(task);
+        if (!conditionsMet) {
+          console.log(`Conditions not met for task ${task.name}, skipping execution`);
 
-              // Record the skipped execution
-              task.executionHistory.push({
-                  timestamp: new Date(),
-                  status: 'failure',
-                  message: 'Execution conditions not met'
-              });
+          // Record the skipped execution
+          task.executionHistory.push({
+            timestamp: new Date(),
+            status: 'failure',
+            message: 'Execution conditions not met'
+          });
 
-              // Emit failure event
-              taskEvents.emit('task-failed', { 
-                  taskId: task._id.toString(), 
-                  deviceId: task.device._id.toString(), 
-                  userId: task.creator._id.toString(),
-                  message: 'Task skipped: Conditions not met' 
-              });
+          // Fixed: Emit with correct parameter structure
+          taskEvents.emit('task-failed', {
+            taskId: task._id.toString(),
+            name: task.name,
+            device: { _id: task.device._id.toString(), name: task.device.name },
+            creator: { _id: task.creator._id.toString(), name: task.creator.name },
+            message: 'Task skipped: Conditions not met'
+          });
 
-              // Update next execution time and save
-              task.updateNextExecution();
-              await task.save();
+          // Update next execution time and save
+          task.updateNextExecution();
+          await task.save();
 
-              // Schedule next execution if it exists
-              if (task.nextExecution) {
-                  this.scheduleTask(task);
-              }
-
-              return;
+          // Schedule next execution if it exists
+          if (task.nextExecution) {
+            this.scheduleTask(task);
           }
+
+          return;
+        }
       }
 
       // Execute the action on the device
       try {
-          await this.performDeviceAction(task.device, task.action);
+        console.log(`About to perform action: ${task.action.type} = ${task.action.value} on device ${task.device.name}`);
+        await this.performDeviceAction(task.device, task.action);
 
-          console.log(`Task executed successfully: ${task.name}`);
+        console.log(`Task executed successfully: ${task.name}`);
 
-          // Record successful execution
-          task.executionHistory.push({
-              timestamp: new Date(),
-              status: 'success',
-              message: `Successfully executed action: ${task.action.type} = ${task.action.value}`
-          });
+        // Record successful execution
+        task.executionHistory.push({
+          timestamp: new Date(),
+          status: 'success',
+          message: `Successfully executed action: ${task.action.type} = ${task.action.value}`
+        });
 
-          // Emit success event
-          taskEvents.emit('task-executed', { 
-              _id: task._id.toString(), 
-              name: task.name, 
-              device: { _id: task.device._id.toString(), name: task.device.name }, 
-              creator: { _id: task.creator._id.toString(), name: task.creator.name } 
-          });
+        // Fixed: Emit with correct parameter structure
+        taskEvents.emit('task-executed', {
+          _id: task._id.toString(),
+          name: task.name,
+          device: { _id: task.device._id.toString(), name: task.device.name },
+          creator: { _id: task.creator._id.toString(), name: task.creator.name },
+          action: task.action
+        });
 
       } catch (error) {
-          console.error(`Error executing task ${task.name}:`, error);
+        console.error(`Error executing task ${task.name}:`, error);
 
-          // Record failed execution
-          task.executionHistory.push({
-              timestamp: new Date(),
-              status: 'failure',
-              message: `Error: ${error.message}`
-          });
+        // Record failed execution
+        task.executionHistory.push({
+          timestamp: new Date(),
+          status: 'failure',
+          message: `Error: ${error.message}`
+        });
 
-          // Emit failure event
-          taskEvents.emit('task-failed', { 
-              taskId: task._id.toString(), 
-              deviceId: task.device._id.toString(), 
-              userId: task.creator._id.toString(),
-              message: `Task execution failed: ${error.message}`
-          });
+        // Fixed: Emit with correct parameter structure
+        taskEvents.emit('task-failed', {
+          taskId: task._id.toString(),
+          name: task.name,
+          device: { _id: task.device._id.toString(), name: task.device.name },
+          creator: { _id: task.creator._id.toString(), name: task.creator.name },
+          message: `Task execution failed: ${error.message}`
+        });
       }
 
       // Update task status and next execution time
@@ -188,16 +193,16 @@ class TaskScheduler {
 
       // If it's a one-time task, mark as completed
       if (task.schedule.recurrence.type === 'once') {
-          task.status = 'completed';
-          task.nextExecution = null;
+        task.status = 'completed';
+        task.nextExecution = null;
       } else {
-          // Otherwise, calculate next execution time (timezone-aware)
-          task.updateNextExecution();
+        // Otherwise, calculate next execution time (timezone-aware)
+        task.updateNextExecution();
 
-          // If there's no next execution (e.g., end date reached), mark as completed
-          if (!task.nextExecution) {
-              task.status = 'completed';
-          }
+        // If there's no next execution (e.g., end date reached), mark as completed
+        if (!task.nextExecution) {
+          task.status = 'completed';
+        }
       }
 
       // Save the updated task
@@ -205,7 +210,7 @@ class TaskScheduler {
 
       // Schedule next execution if it exists
       if (task.nextExecution) {
-          this.scheduleTask(task);
+        this.scheduleTask(task);
       }
 
     } catch (error) {
@@ -310,17 +315,39 @@ class TaskScheduler {
   async performDeviceAction(device, action) {
     console.log(`Performing action on device ${device.name}: ${action.type} = ${action.value}`);
     
+    const { normalizeState } = require('./websockets/utils/stateUtils');
+    
     switch (action.type) {
       case 'status_change':
-        await Device.findByIdAndUpdate(device._id, { status: action.value });
+        // Normalize the action value to ensure correct state
+        const normalizedState = normalizeState(action.value);
+        console.log(`Original action value: ${action.value}, Normalized: ${normalizedState}`);
+        
+        // Update device in database
+        await Device.findByIdAndUpdate(device._id, { status: normalizedState });
+        
+        // Publish to MQTT with the correct state
+        const mqttBroker = require('./mqtt/mqtt-broker');
+        mqttBroker.publishDeviceState(device._id, normalizedState, {
+          updatedBy: 'task',
+          taskTriggered: true
+        });
+        
+        console.log(`Device ${device.name} state updated to: ${normalizedState}`);
         break;
         
       case 'temperature_set':
         // For a thermostat device
+        const temperature = parseFloat(action.value);
+        await Device.findByIdAndUpdate(device._id, { 
+          temperature: temperature,
+          status: 'on' // Typically turn on when setting temperature
+        });
         break;
         
       default:
-        // Custom actions
+        console.log(`Custom action type: ${action.type} with value: ${action.value}`);
+        // Handle custom actions here
         break;
     }
     
