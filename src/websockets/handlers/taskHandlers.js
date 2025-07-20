@@ -2,98 +2,104 @@ const taskEvents = require('../taskEventEmitter');
 const mqttBroker = require('../../mqtt/mqtt-broker');
 
 function registerTaskHandlers(io) {
-    taskEvents.on('task-executed', async (task) => {
-        try {
-            console.log(`Task executed: ${task.name}`);
+  taskEvents.on('task-executed', async (taskData) => {
+    try {
+      console.log(`Task executed: ${taskData.name}`);
 
-            // Broadcast update to the device
-            io.of('/ws/device').to(`device:${task.device._id}`).emit('task-update', {
-                taskId: task._id,
-                device: task.device._id,
-                status: 'executed',
-                message: `Task "${task.name}" was executed.`,
-            });
+      // Broadcast update to the device
+      io.of('/ws/device').to(`device:${taskData.device._id}`).emit('task-update', {
+        taskId: taskData._id,
+        device: taskData.device._id,
+        status: 'executed',
+        message: `Task "${taskData.name}" was executed.`,
+        action: taskData.action // Include action details
+      });
 
-            // Broadcast update to the user
-            io.of('/ws/user').to(`user:${task.creator._id}`).emit('task-update', {
-                taskId: task._id,
-                user: task.creator._id,
-                status: 'executed',
-                message: `Your task "${task.name}" has been executed.`,
-            });
+      // Broadcast update to the user
+      io.of('/ws/user').to(`user:${taskData.creator._id}`).emit('task-update', {
+        taskId: taskData._id,
+        user: taskData.creator._id,
+        status: 'executed',
+        message: `Your task "${taskData.name}" has been executed.`,
+        device: taskData.device,
+        action: taskData.action
+      });
 
-            // Publish task execution to MQTT
-            try {
-                if (mqttBroker.client && mqttBroker.client.connected) {
-                    mqttBroker.client.publish(
-                        `home-automation/${task.device._id}/task`, 
-                        JSON.stringify({
-                            taskId: task._id,
-                            status: 'executed',
-                            message: `Task "${task.name}" was executed.`,
-                            timestamp: new Date(),
-                            device: task.device._id,
-                            creator: task.creator._id
-                        }),
-                        { qos: 1 }
-                    );
-                    console.log(`Task execution published to MQTT for device ${task.device._id}`);
-                }
-            } catch (mqttError) {
-                console.error('Error publishing task execution to MQTT:', mqttError);
-            }
-
-        } catch (error) {
-            console.error('Error broadcasting task execution:', error);
+      // Publish task execution to MQTT
+      try {
+        const mqttBroker = require('../../mqtt/mqtt-broker');
+        if (mqttBroker.client && mqttBroker.client.connected) {
+          mqttBroker.client.publish(
+            `home-automation/${taskData.device._id}/task`,
+            JSON.stringify({
+              taskId: taskData._id,
+              status: 'executed',
+              message: `Task "${taskData.name}" was executed.`,
+              timestamp: new Date(),
+              device: taskData.device._id,
+              creator: taskData.creator._id,
+              action: taskData.action
+            }),
+            { qos: 1 }
+          );
+          console.log(`Task execution published to MQTT for device ${taskData.device._id}`);
         }
-    });
+      } catch (mqttError) {
+        console.error('Error publishing task execution to MQTT:', mqttError);
+      }
 
-    taskEvents.on('task-failed', async (task, error) => {
-        try {
-            console.log(`Task failed: ${task.name}`);
+    } catch (error) {
+      console.error('Error broadcasting task execution:', error);
+    }
+  });
 
-            // Broadcast failure to the device
-            io.of('/ws/device').to(`device:${task.device._id}`).emit('task-update', {
-                taskId: task._id,
-                device: task.device._id,
-                status: 'failed',
-                message: `Task "${task.name}" failed: ${error}`,
-            });
+  taskEvents.on('task-failed', async (taskData) => {
+    try {
+      console.log(`Task failed: ${taskData.name} - ${taskData.message}`);
 
-            // Broadcast failure to the user
-            io.of('/ws/user').to(`user:${task.creator._id}`).emit('task-update', {
-                taskId: task._id,
-                user: task.creator._id,
-                status: 'failed',
-                message: `Your task "${task.name}" failed: ${error}`,
-            });
+      // Broadcast failure to the device
+      io.of('/ws/device').to(`device:${taskData.device._id}`).emit('task-update', {
+        taskId: taskData.taskId,
+        device: taskData.device._id,
+        status: 'failed',
+        message: taskData.message,
+      });
 
-            // Publish task failure to MQTT
-            try {
-                if (mqttBroker.client && mqttBroker.client.connected) {
-                    mqttBroker.client.publish(
-                        `home-automation/${task.device._id}/task`,
-                        JSON.stringify({
-                            taskId: task._id,
-                            status: 'failed',
-                            message: `Task "${task.name}" failed: ${error}`,
-                            timestamp: new Date(),
-                            device: task.device._id,
-                            creator: task.creator._id,
-                            error: error
-                        }),
-                        { qos: 1 }
-                    );
-                    console.log(`Task failure published to MQTT for device ${task.device._id}`);
-                }
-            } catch (mqttError) {
-                console.error('Error publishing task failure to MQTT:', mqttError);
-            }
+      // Broadcast failure to the user
+      io.of('/ws/user').to(`user:${taskData.creator._id}`).emit('task-update', {
+        taskId: taskData.taskId,
+        user: taskData.creator._id,
+        status: 'failed',
+        message: taskData.message,
+        device: taskData.device
+      });
 
-        } catch (err) {
-            console.error('Error broadcasting task failure:', err);
+      // Publish task failure to MQTT
+      try {
+        const mqttBroker = require('../../mqtt/mqtt-broker');
+        if (mqttBroker.client && mqttBroker.client.connected) {
+          mqttBroker.client.publish(
+            `home-automation/${taskData.device._id}/task`,
+            JSON.stringify({
+              taskId: taskData.taskId,
+              status: 'failed',
+              message: taskData.message,
+              timestamp: new Date(),
+              device: taskData.device._id,
+              creator: taskData.creator._id
+            }),
+            { qos: 1 }
+          );
+          console.log(`Task failure published to MQTT for device ${taskData.device._id}`);
         }
-    });
+      } catch (mqttError) {
+        console.error('Error publishing task failure to MQTT:', mqttError);
+      }
+
+    } catch (error) {
+      console.error('Error broadcasting task failure:', error);
+    }
+  });
 }
 
 module.exports = { registerTaskHandlers };
