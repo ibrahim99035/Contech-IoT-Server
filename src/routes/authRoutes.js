@@ -12,9 +12,9 @@ const { modernGoogleLogin, checkGoogleLink, unlinkGoogle } = require('../control
 
 // NEW: Import OAuth2 handlers
 const { 
-  oauthAuthorize, 
-  oauthToken, 
-  handleAccountLinking 
+  oauthAuthorize,
+  oauthToken,
+  googleOAuthCallback
 } = require('../controllers/auth/oauthHandler');
 
 const { protect } = require('../middleware/authMiddleware');
@@ -68,6 +68,6 @@ router.delete('/google/unlink', protect, logOAuthRequest, unlinkGoogle);
 // NEW: OAuth2 Routes for Google Assistant Account Linking
 router.get('/oauth/authorize', logOAuthRequest, oauthAuthorize);
 router.post('/oauth/token', logOAuthRequest, oauthToken);
-router.post('/oauth/link', protect, logOAuthRequest, handleAccountLinking);
+router.get('/auth/google/callback', googleOAuthCallback);
 
 module.exports = router;
