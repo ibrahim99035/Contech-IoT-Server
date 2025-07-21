@@ -68,6 +68,6 @@ router.delete('/google/unlink', protect, logOAuthRequest, unlinkGoogle);
 // NEW: OAuth2 Routes for Google Assistant Account Linking
 router.get('/oauth/authorize', logOAuthRequest, oauthAuthorize);
 router.post('/oauth/token', logOAuthRequest, oauthToken);
-router.get('/auth/google/callback', googleOAuthCallback);
+router.get('/google/callback', googleOAuthCallback);
 
 module.exports = router;
