@@ -1,18 +1,18 @@
 /**
  * controllers/auth/oauthHandler.js
- * OAuth2 Token Exchange for Google Assistant Account Linking
- * FIXED: Removed frontend redirect dependency and fixed environment variables
+ * FIXED OAuth2 Handler for Google Assistant Account Linking
+ * This version properly handles Google OAuth flow - users authenticate via Google
  */
 
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const axios = require('axios');
 const User = require('../../models/User');
 const AuthorizationCode = require('../../models/AuthorizationCode');
 
 /**
- * OAuth2 Authorization Endpoint - DIRECT FLOW
- * Instead of redirecting to a login page, this will handle direct authorization
- * Returns authorization code directly for testing or can be called with user credentials
+ * OAuth2 Authorization Endpoint - FIXED for Google OAuth Flow
+ * This redirects users to Google for authentication
  */
 const oauthAuthorize = async (req, res) => {
   try {
@@ -21,10 +21,7 @@ const oauthAuthorize = async (req, res) => {
       client_id, 
       redirect_uri, 
       scope, 
-      state,
-      // NEW: Direct authorization parameters for testing
-      email,
-      password 
+      state 
     } = req.query;
     
     console.log('🔐 [OAuth Authorize] Request:', { 
@@ -32,30 +29,23 @@ const oauthAuthorize = async (req, res) => {
       client_id: client_id?.substring(0, 20) + '...', 
       redirect_uri, 
       scope, 
-      state,
-      email: email ? 'provided' : 'not provided'
+      state 
     });
     
     // Validate OAuth2 parameters
     if (response_type !== 'code') {
       console.error('❌ [OAuth Authorize] Invalid response_type:', response_type);
-      return res.status(400).json({ 
-        error: 'unsupported_response_type',
-        error_description: 'Only "code" response_type is supported'
-      });
+      const errorUrl = `${redirect_uri}?error=unsupported_response_type&error_description=Only+code+response_type+supported&state=${state}`;
+      return res.redirect(errorUrl);
     }
     
-    // FIXED: Use correct environment variable names
-    const expectedClientId = process.env.GOOGLE_ACTIONS_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
+    // Validate client ID (Google Assistant's client ID)
+    const expectedClientId = process.env.GOOGLE_ACTIONS_CLIENT_ID;
     
     if (client_id !== expectedClientId) {
       console.error('❌ [OAuth Authorize] Invalid client_id');
-      console.error('Expected:', expectedClientId?.substring(0, 20) + '...');
-      console.error('Received:', client_id?.substring(0, 20) + '...');
-      return res.status(400).json({ 
-        error: 'invalid_client',
-        error_description: 'Invalid client ID'
-      });
+      const errorUrl = `${redirect_uri}?error=invalid_client&error_description=Invalid+client+ID&state=${state}`;
+      return res.redirect(errorUrl);
     }
     
     if (!redirect_uri || !state) {
@@ -66,83 +56,169 @@ const oauthAuthorize = async (req, res) => {
       });
     }
 
-    // OPTION 1: Direct authorization with credentials (for testing)
-    if (email && password) {
-      console.log('🔐 [OAuth Authorize] Direct authorization with credentials');
+    // Store the OAuth request parameters in session/temporary storage
+    // We need to remember these when Google redirects back to us
+    const sessionId = crypto.randomBytes(16).toString('hex');
+    
+    // Store OAuth session data (you might want to use Redis or database for this)
+    // For now, we'll use a simple in-memory store (replace with persistent storage in production)
+    global.oauthSessions = global.oauthSessions || new Map();
+    global.oauthSessions.set(sessionId, {
+      clientId: client_id,
+      redirectUri: redirect_uri,
+      scope: scope || 'smart_home',
+      state: state,
+      createdAt: Date.now()
+    });
+    
+    // Clean up old sessions (older than 10 minutes)
+    for (const [key, session] of global.oauthSessions.entries()) {
+      if (Date.now() - session.createdAt > 10 * 60 * 1000) {
+        global.oauthSessions.delete(key);
+      }
+    }
+    
+    // Build Google OAuth URL
+    const googleOAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    googleOAuthUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID);
+    googleOAuthUrl.searchParams.set('redirect_uri', process.env.GOOGLE_OAUTH_REDIRECT_URI);
+    googleOAuthUrl.searchParams.set('response_type', 'code');
+    googleOAuthUrl.searchParams.set('scope', 'openid email profile');
+    googleOAuthUrl.searchParams.set('state', sessionId); // Use our session ID as state
+    googleOAuthUrl.searchParams.set('access_type', 'offline');
+    googleOAuthUrl.searchParams.set('prompt', 'consent');
+    
+    console.log('🔐 [OAuth Authorize] Redirecting to Google OAuth');
+    console.log('Session ID:', sessionId);
+    
+    // Redirect user to Google for authentication
+    res.redirect(googleOAuthUrl.toString());
+    
+  } catch (error) {
+    console.error('❌ [OAuth Authorize] Error:', error);
+    const { redirect_uri, state } = req.query;
+    if (redirect_uri && state) {
+      const errorUrl = `${redirect_uri}?error=server_error&error_description=Internal+server+error&state=${state}`;
+      return res.redirect(errorUrl);
+    }
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * Google OAuth Callback Handler
+ * This is where Google redirects users after they authenticate
+ */
+const googleOAuthCallback = async (req, res) => {
+  try {
+    const { code, state: sessionId, error } = req.query;
+    
+    console.log('🔐 [Google OAuth Callback] Received:', { 
+      hasCode: !!code, 
+      sessionId, 
+      error 
+    });
+    
+    if (error) {
+      console.error('❌ [Google OAuth Callback] OAuth error:', error);
+      return res.status(400).send('Authentication failed');
+    }
+    
+    if (!code || !sessionId) {
+      console.error('❌ [Google OAuth Callback] Missing code or session ID');
+      return res.status(400).send('Invalid callback request');
+    }
+    
+    // Retrieve OAuth session data
+    global.oauthSessions = global.oauthSessions || new Map();
+    const oauthSession = global.oauthSessions.get(sessionId);
+    
+    if (!oauthSession) {
+      console.error('❌ [Google OAuth Callback] Session not found:', sessionId);
+      return res.status(400).send('Session expired or invalid');
+    }
+    
+    // Clean up session
+    global.oauthSessions.delete(sessionId);
+    
+    try {
+      // Exchange code for Google access token
+      const tokenResponse = await axios.post('https://oauth2.googleapis.com/token', {
+        client_id: process.env.GOOGLE_CLIENT_ID,
+        client_secret: process.env.GOOGLE_CLIENT_SECRET,
+        code: code,
+        grant_type: 'authorization_code',
+        redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URI
+      });
       
-      // Find and verify user
-      const user = await User.findOne({ email });
-      if (!user || !(await user.matchPassword(password))) {
-        console.error('❌ [OAuth Authorize] Invalid credentials for:', email);
-        return res.status(401).json({ 
-          error: 'access_denied',
-          error_description: 'Invalid email or password'
+      const { access_token } = tokenResponse.data;
+      
+      // Get user info from Google
+      const userResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+        headers: { Authorization: `Bearer ${access_token}` }
+      });
+      
+      const googleUser = userResponse.data;
+      console.log('✅ [Google OAuth Callback] User authenticated:', googleUser.email);
+      
+      // Find or create user in your system
+      let user = await User.findOne({ email: googleUser.email });
+      
+      if (!user) {
+        // Create new user from Google profile
+        user = new User({
+          email: googleUser.email,
+          name: googleUser.name,
+          googleId: googleUser.id,
+          avatar: googleUser.picture,
+          isVerified: true, // Google users are already verified
+          role: 'user'
         });
+        await user.save();
+        console.log('✅ [Google OAuth Callback] New user created:', user.email);
+      } else if (!user.googleId) {
+        // Update existing user with Google ID
+        user.googleId = googleUser.id;
+        user.isVerified = true;
+        if (googleUser.picture) user.avatar = googleUser.picture;
+        await user.save();
+        console.log('✅ [Google OAuth Callback] User updated with Google ID:', user.email);
       }
       
-      // Generate authorization code
+      // Generate authorization code for the original OAuth flow
       const authCode = crypto.randomBytes(32).toString('hex');
       
-      // Store the authorization code
       const authRecord = new AuthorizationCode({
         code: authCode,
         userId: user._id,
-        clientId: client_id,
-        redirectUri: redirect_uri,
-        scope: scope || 'smart_home',
+        clientId: oauthSession.clientId,
+        redirectUri: oauthSession.redirectUri,
+        scope: oauthSession.scope,
         expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
       });
       
       await authRecord.save();
       
-      console.log('✅ [OAuth Authorize] Authorization code generated for user:', user.email);
+      console.log('✅ [Google OAuth Callback] Authorization code generated');
       
-      // Return the redirect URL with authorization code
-      const redirectUrl = `${redirect_uri}?code=${authCode}&state=${state}`;
+      // Redirect back to Google Assistant with authorization code
+      const successUrl = `${oauthSession.redirectUri}?code=${authCode}&state=${oauthSession.state}`;
+      return res.redirect(successUrl);
       
-      return res.json({
-        success: true,
-        message: 'Authorization successful',
-        authorization_code: authCode,
-        redirect_url: redirectUrl,
-        user: {
-          id: user._id,
-          email: user.email,
-          name: user.name
-        }
-      });
+    } catch (apiError) {
+      console.error('❌ [Google OAuth Callback] API error:', apiError.response?.data || apiError.message);
+      const errorUrl = `${oauthSession.redirectUri}?error=server_error&error_description=Authentication+failed&state=${oauthSession.state}`;
+      return res.redirect(errorUrl);
     }
     
-    // OPTION 2: Return authorization form or instructions
-    console.log('🔐 [OAuth Authorize] No direct credentials provided');
-    
-    return res.status(200).json({
-      success: true,
-      message: 'Authorization required',
-      instructions: 'To complete authorization, make another request with email and password parameters',
-      oauth_params: {
-        response_type,
-        client_id: client_id?.substring(0, 20) + '...',
-        redirect_uri,
-        scope,
-        state
-      },
-      next_step: `Add email and password parameters to this request to get authorization code`,
-      example: `${req.protocol}://${req.get('host')}${req.originalUrl}&email=user@example.com&password=userpassword`
-    });
-    
   } catch (error) {
-    console.error('❌ [OAuth Authorize] Error:', error);
-    res.status(500).json({ 
-      error: 'server_error',
-      error_description: 'Internal server error during authorization'
-    });
+    console.error('❌ [Google OAuth Callback] Error:', error);
+    return res.status(500).send('Internal server error');
   }
 };
 
 /**
- * OAuth2 Token Exchange Endpoint
- * FIXED: Updated to use correct environment variables
+ * OAuth2 Token Exchange Endpoint - Same as before
  */
 const oauthToken = async (req, res) => {
   try {
@@ -151,44 +227,35 @@ const oauthToken = async (req, res) => {
     console.log('🔐 [OAuth Token] Request:', {
       grant_type,
       client_id: client_id?.substring(0, 20) + '...',
-      client_secret: client_secret ? 'provided' : 'not provided',
-      code: code ? 'provided' : 'not provided',
-      refresh_token: refresh_token ? 'provided' : 'not provided'
+      client_secret: client_secret ? 'provided' : 'missing',
+      code: code ? 'provided' : 'missing',
+      refresh_token: refresh_token ? 'provided' : 'missing'
     });
     
-    // FIXED: Use correct environment variable names and provide fallbacks
-    const expectedClientId = process.env.GOOGLE_ACTIONS_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-    const expectedClientSecret = process.env.GOOGLE_ACTIONS_CLIENT_SECRET || process.env.GOOGLE_CLIENT_SECRET;
-    
     // Validate client credentials
-    if (client_id !== expectedClientId) {
-      console.error('❌ [OAuth Token] Invalid client_id');
-      return res.status(400).json({ 
-        error: 'invalid_client',
-        error_description: 'Invalid client ID'
-      });
-    }
+    const expectedClientId = process.env.GOOGLE_ACTIONS_CLIENT_ID;
+    const expectedClientSecret = process.env.GOOGLE_ACTIONS_CLIENT_SECRET;
     
-    if (client_secret !== expectedClientSecret) {
-      console.error('❌ [OAuth Token] Invalid client_secret');
+    if (client_id !== expectedClientId || client_secret !== expectedClientSecret) {
+      console.error('❌ [OAuth Token] Invalid client credentials');
       return res.status(400).json({ 
         error: 'invalid_client',
-        error_description: 'Invalid client secret'
+        error_description: 'Invalid client credentials'
       });
     }
 
+    // Handle authorization code grant
     if (grant_type === 'authorization_code') {
-      console.log('🔐 [OAuth Token] Exchanging authorization code for tokens');
+      console.log('🔐 [OAuth Token] Processing authorization code grant');
       
       if (!code) {
-        console.error('❌ [OAuth Token] Missing authorization code');
         return res.status(400).json({ 
           error: 'invalid_request',
           error_description: 'Authorization code is required'
         });
       }
       
-      // Find and verify authorization code
+      // Find and validate authorization code
       const authRecord = await AuthorizationCode.findOne({ code, clientId: client_id });
       
       if (!authRecord) {
@@ -211,21 +278,21 @@ const oauthToken = async (req, res) => {
       // Get user
       const user = await User.findById(authRecord.userId);
       if (!user) {
-        console.error('❌ [OAuth Token] User not found for authorization code');
+        console.error('❌ [OAuth Token] User not found');
         await AuthorizationCode.deleteOne({ code });
         return res.status(400).json({ 
           error: 'invalid_grant',
-          error_description: 'User associated with code not found'
+          error_description: 'User not found'
         });
       }
       
-      // Generate tokens (matching your existing JWT structure)
+      // Generate tokens
       const accessToken = jwt.sign(
         { 
-          id: user._id, // Use 'id' to match your authMiddleware
+          id: user._id,
           email: user.email,
           role: user.role,
-          iss: 'smart-home-api',
+          iss: 'contech-home-automation',
           aud: client_id,
           scope: authRecord.scope
         },
@@ -235,16 +302,16 @@ const oauthToken = async (req, res) => {
       
       const refreshTokenPayload = jwt.sign(
         { 
-          id: user._id, 
+          id: user._id,
           type: 'refresh',
-          iss: 'smart-home-api',
+          iss: 'contech-home-automation',
           aud: client_id
         },
         process.env.JWT_SECRET,
         { expiresIn: '30d' }
       );
       
-      // Delete used authorization code
+      // Clean up used authorization code
       await AuthorizationCode.deleteOne({ code });
       
       console.log('✅ [OAuth Token] Tokens generated for user:', user.email);
@@ -258,11 +325,11 @@ const oauthToken = async (req, res) => {
       });
     }
 
+    // Handle refresh token grant
     if (grant_type === 'refresh_token') {
-      console.log('🔐 [OAuth Token] Refreshing access token');
+      console.log('🔐 [OAuth Token] Processing refresh token grant');
       
       if (!refresh_token) {
-        console.error('❌ [OAuth Token] Missing refresh token');
         return res.status(400).json({ 
           error: 'invalid_request',
           error_description: 'Refresh token is required'
@@ -281,16 +348,14 @@ const oauthToken = async (req, res) => {
       }
       
       if (decoded.type !== 'refresh') {
-        console.error('❌ [OAuth Token] Token is not a refresh token');
         return res.status(400).json({ 
           error: 'invalid_grant',
-          error_description: 'Token is not a valid refresh token'
+          error_description: 'Invalid refresh token type'
         });
       }
       
       const user = await User.findById(decoded.id);
       if (!user) {
-        console.error('❌ [OAuth Token] User not found for refresh token');
         return res.status(400).json({ 
           error: 'invalid_grant',
           error_description: 'User not found'
@@ -299,10 +364,10 @@ const oauthToken = async (req, res) => {
 
       const newAccessToken = jwt.sign(
         { 
-          id: user._id, // Use 'id' to match your authMiddleware
+          id: user._id,
           email: user.email,
           role: user.role,
-          iss: 'smart-home-api',
+          iss: 'contech-home-automation',
           aud: client_id
         },
         process.env.JWT_SECRET,
@@ -318,88 +383,24 @@ const oauthToken = async (req, res) => {
       });
     }
 
+    // Unsupported grant type
     console.error('❌ [OAuth Token] Unsupported grant type:', grant_type);
-    res.status(400).json({ 
+    return res.status(400).json({ 
       error: 'unsupported_grant_type',
       error_description: `Grant type "${grant_type}" is not supported`
     });
     
   } catch (error) {
     console.error('❌ [OAuth Token] Error:', error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       error: 'server_error',
-      error_description: 'Internal server error during token exchange'
-    });
-  }
-};
-
-/**
- * Handle Account Linking after successful login
- * This can be used if you want to implement account linking via API
- */
-const handleAccountLinking = async (req, res) => {
-  try {
-    const { redirect_uri, state, client_id } = req.body;
-    const user = req.user; // User is already authenticated by protect middleware
-    
-    console.log('🔗 [Account Linking] User:', user.email);
-    console.log('🔗 [Account Linking] Client ID:', client_id?.substring(0, 20) + '...');
-    console.log('🔗 [Account Linking] Redirect URI:', redirect_uri);
-    
-    // FIXED: Validate the client_id with correct environment variable
-    const expectedClientId = process.env.GOOGLE_ACTIONS_CLIENT_ID || process.env.GOOGLE_CLIENT_ID;
-    
-    if (client_id !== expectedClientId) {
-      console.error('❌ [Account Linking] Invalid client ID');
-      return res.status(400).json({ 
-        success: false,
-        error: 'invalid_client',
-        message: 'Invalid client ID' 
-      });
-    }
-
-    // Generate authorization code
-    const authCode = crypto.randomBytes(32).toString('hex');
-    
-    // Store the authorization code
-    const authRecord = new AuthorizationCode({
-      code: authCode,
-      userId: user._id,
-      clientId: client_id,
-      redirectUri: redirect_uri,
-      scope: 'smart_home',
-      expiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 minutes
-    });
-    
-    await authRecord.save();
-    
-    console.log('✅ [Account Linking] Authorization code generated');
-    
-    // Return the authorization code and redirect URL
-    res.json({
-      success: true,
-      message: 'Account linked successfully',
-      authCode: authCode,
-      redirectUrl: `${redirect_uri}?code=${authCode}&state=${state}`,
-      user: {
-        id: user._id,
-        email: user.email,
-        name: user.name
-      }
-    });
-    
-  } catch (error) {
-    console.error('❌ [Account Linking] Error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'server_error',
-      message: 'Failed to link account'
+      error_description: 'Internal server error'
     });
   }
 };
 
 module.exports = {
   oauthAuthorize,
-  oauthToken,
-  handleAccountLinking
+  googleOAuthCallback,
+  oauthToken
 };
