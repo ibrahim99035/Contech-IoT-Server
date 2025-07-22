@@ -7,13 +7,11 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const axios = require('axios');
+const crypto = require('crypto');
 const User = require('../../models/User');
 const AuthorizationCode = require('../../models/AuthorizationCode');
+const AccessToken = require('../../models/AccessToken');
 
-/**
- * OAuth2 Authorization Endpoint - FIXED for Google OAuth Flow
- * This redirects users to Google for authentication
- */
 const oauthAuthorize = async (req, res) => {
   try {
     const { 
@@ -56,43 +54,53 @@ const oauthAuthorize = async (req, res) => {
       });
     }
 
-    // Store the OAuth request parameters in session/temporary storage
-    // We need to remember these when Google redirects back to us
-    const sessionId = crypto.randomBytes(16).toString('hex');
+    // For testing: create a test user or use existing user
+    // In production, you'd check if user is authenticated and get their real ID
+    let userId;
     
-    // Store OAuth session data (you might want to use Redis or database for this)
-    // For now, we'll use a simple in-memory store (replace with persistent storage in production)
-    global.oauthSessions = global.oauthSessions || new Map();
-    global.oauthSessions.set(sessionId, {
+    // Option 1: For testing - create/find a test user
+    const User = require('../models/User'); // Adjust path as needed
+    let testUser = await User.findOne({ email: 'test@googleactions.com' });
+    if (!testUser) {
+      testUser = new User({
+        name: 'Google Actions Test User',
+        email: 'test@googleactions.com',
+        // Add other required fields for your User model
+      });
+      await testUser.save();
+    }
+    userId = testUser._id;
+    
+    // Option 2: If you want to use session-based auth, check if user is logged in:
+    // if (!req.session?.userId) {
+    //   // Redirect to login page with return URL
+    //   const loginUrl = `/login?return_to=${encodeURIComponent(req.originalUrl)}`;
+    //   return res.redirect(loginUrl);
+    // }
+    // userId = req.session.userId;
+    
+    // Generate authorization code
+    const authCode = crypto.randomBytes(32).toString('hex');
+    
+    // Save authorization code to MongoDB
+    const authorizationCode = new AuthorizationCode({
+      code: authCode,
+      userId: userId,
       clientId: client_id,
       redirectUri: redirect_uri,
-      scope: scope || 'smart_home',
-      state: state,
-      createdAt: Date.now()
+      scope: scope || 'smart_home'
     });
     
-    // Clean up old sessions (older than 10 minutes)
-    for (const [key, session] of global.oauthSessions.entries()) {
-      if (Date.now() - session.createdAt > 10 * 60 * 1000) {
-        global.oauthSessions.delete(key);
-      }
-    }
+    await authorizationCode.save();
     
-    // Build Google OAuth URL
-    const googleOAuthUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-    googleOAuthUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID);
-    googleOAuthUrl.searchParams.set('redirect_uri', process.env.GOOGLE_OAUTH_REDIRECT_URI);
-    googleOAuthUrl.searchParams.set('response_type', 'code');
-    googleOAuthUrl.searchParams.set('scope', 'openid email profile');
-    googleOAuthUrl.searchParams.set('state', sessionId); // Use our session ID as state
-    googleOAuthUrl.searchParams.set('access_type', 'offline');
-    googleOAuthUrl.searchParams.set('prompt', 'consent');
+    console.log('✅ [OAuth Authorize] Generated auth code, redirecting to Google');
     
-    console.log('🔐 [OAuth Authorize] Redirecting to Google OAuth');
-    console.log('Session ID:', sessionId);
+    // Redirect back to Google with the authorization code
+    const redirectUrl = new URL(redirect_uri);
+    redirectUrl.searchParams.set('code', authCode);
+    redirectUrl.searchParams.set('state', state);
     
-    // Redirect user to Google for authentication
-    res.redirect(googleOAuthUrl.toString());
+    res.redirect(redirectUrl.toString());
     
   } catch (error) {
     console.error('❌ [OAuth Authorize] Error:', error);
@@ -102,6 +110,104 @@ const oauthAuthorize = async (req, res) => {
       return res.redirect(errorUrl);
     }
     return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+const oauthToken = async (req, res) => {
+  try {
+    const {
+      grant_type,
+      code,
+      redirect_uri,
+      client_id,
+      client_secret
+    } = req.body;
+    
+    console.log('🎫 [OAuth Token] Request:', {
+      grant_type,
+      code: code?.substring(0, 10) + '...',
+      redirect_uri,
+      client_id: client_id?.substring(0, 20) + '...'
+    });
+    
+    // Validate grant type
+    if (grant_type !== 'authorization_code') {
+      return res.status(400).json({
+        error: 'unsupported_grant_type',
+        error_description: 'Only authorization_code grant type is supported'
+      });
+    }
+    
+    // Validate client credentials
+    const expectedClientId = process.env.GOOGLE_ACTIONS_CLIENT_ID;
+    const expectedClientSecret = process.env.GOOGLE_ACTIONS_CLIENT_SECRET;
+    
+    if (client_id !== expectedClientId || client_secret !== expectedClientSecret) {
+      return res.status(401).json({
+        error: 'invalid_client',
+        error_description: 'Invalid client credentials'
+      });
+    }
+    
+    // Find and validate authorization code
+    const authData = await AuthorizationCode.findOne({ 
+      code: code,
+      clientId: client_id,
+      redirectUri: redirect_uri
+    }).populate('userId');
+    
+    if (!authData) {
+      return res.status(400).json({
+        error: 'invalid_grant',
+        error_description: 'Invalid authorization code'
+      });
+    }
+    
+    // Check if code is expired (MongoDB TTL should handle this, but double-check)
+    if (authData.expiresAt < new Date()) {
+      await AuthorizationCode.deleteOne({ _id: authData._id });
+      return res.status(400).json({
+        error: 'invalid_grant',
+        error_description: 'Expired authorization code'
+      });
+    }
+    
+    // Generate access token and refresh token
+    const accessToken = crypto.randomBytes(32).toString('hex');
+    const refreshToken = crypto.randomBytes(32).toString('hex');
+    
+    // Save access token to database (you'll need an AccessToken model)
+    const tokenDoc = new AccessToken({
+      token: accessToken,
+      userId: authData.userId._id,
+      clientId: client_id,
+      scope: authData.scope,
+      refreshToken: refreshToken,
+      expiresAt: new Date(Date.now() + 3600 * 1000) // 1 hour
+    });
+    
+    await tokenDoc.save();
+    
+    // Delete the used authorization code
+    await AuthorizationCode.deleteOne({ _id: authData._id });
+    
+    console.log('✅ [OAuth Token] Issued access token for user:', authData.userId.email || authData.userId._id);
+    
+    // Return token response
+    res.json({
+      access_token: accessToken,
+      token_type: 'Bearer',
+      expires_in: 3600,
+      refresh_token: refreshToken,
+      scope: authData.scope
+    });
+    
+  } catch (error) {
+    console.error('❌ [OAuth Token] Error:', error);
+    res.status(500).json({
+      error: 'server_error',
+      error_description: 'Internal server error'
+    });
   }
 };
 
@@ -214,188 +320,6 @@ const googleOAuthCallback = async (req, res) => {
   } catch (error) {
     console.error('❌ [Google OAuth Callback] Error:', error);
     return res.status(500).send('Internal server error');
-  }
-};
-
-/**
- * OAuth2 Token Exchange Endpoint - Same as before
- */
-const oauthToken = async (req, res) => {
-  try {
-    const { grant_type, client_id, client_secret, refresh_token, code } = req.body;
-    
-    console.log('🔐 [OAuth Token] Request:', {
-      grant_type,
-      client_id: client_id?.substring(0, 20) + '...',
-      client_secret: client_secret ? 'provided' : 'missing',
-      code: code ? 'provided' : 'missing',
-      refresh_token: refresh_token ? 'provided' : 'missing'
-    });
-    
-    // Validate client credentials
-    const expectedClientId = process.env.GOOGLE_ACTIONS_CLIENT_ID;
-    const expectedClientSecret = process.env.GOOGLE_ACTIONS_CLIENT_SECRET;
-    
-    if (client_id !== expectedClientId || client_secret !== expectedClientSecret) {
-      console.error('❌ [OAuth Token] Invalid client credentials');
-      return res.status(400).json({ 
-        error: 'invalid_client',
-        error_description: 'Invalid client credentials'
-      });
-    }
-
-    // Handle authorization code grant
-    if (grant_type === 'authorization_code') {
-      console.log('🔐 [OAuth Token] Processing authorization code grant');
-      
-      if (!code) {
-        return res.status(400).json({ 
-          error: 'invalid_request',
-          error_description: 'Authorization code is required'
-        });
-      }
-      
-      // Find and validate authorization code
-      const authRecord = await AuthorizationCode.findOne({ code, clientId: client_id });
-      
-      if (!authRecord) {
-        console.error('❌ [OAuth Token] Authorization code not found');
-        return res.status(400).json({ 
-          error: 'invalid_grant',
-          error_description: 'Invalid authorization code'
-        });
-      }
-      
-      if (authRecord.expiresAt < new Date()) {
-        console.error('❌ [OAuth Token] Authorization code expired');
-        await AuthorizationCode.deleteOne({ code });
-        return res.status(400).json({ 
-          error: 'invalid_grant',
-          error_description: 'Authorization code has expired'
-        });
-      }
-      
-      // Get user
-      const user = await User.findById(authRecord.userId);
-      if (!user) {
-        console.error('❌ [OAuth Token] User not found');
-        await AuthorizationCode.deleteOne({ code });
-        return res.status(400).json({ 
-          error: 'invalid_grant',
-          error_description: 'User not found'
-        });
-      }
-      
-      // Generate tokens
-      const accessToken = jwt.sign(
-        { 
-          id: user._id,
-          email: user.email,
-          role: user.role,
-          iss: 'contech-home-automation',
-          aud: client_id,
-          scope: authRecord.scope
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
-      );
-      
-      const refreshTokenPayload = jwt.sign(
-        { 
-          id: user._id,
-          type: 'refresh',
-          iss: 'contech-home-automation',
-          aud: client_id
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: '30d' }
-      );
-      
-      // Clean up used authorization code
-      await AuthorizationCode.deleteOne({ code });
-      
-      console.log('✅ [OAuth Token] Tokens generated for user:', user.email);
-      
-      return res.json({
-        access_token: accessToken,
-        refresh_token: refreshTokenPayload,
-        token_type: 'Bearer',
-        expires_in: 3600,
-        scope: authRecord.scope
-      });
-    }
-
-    // Handle refresh token grant
-    if (grant_type === 'refresh_token') {
-      console.log('🔐 [OAuth Token] Processing refresh token grant');
-      
-      if (!refresh_token) {
-        return res.status(400).json({ 
-          error: 'invalid_request',
-          error_description: 'Refresh token is required'
-        });
-      }
-      
-      let decoded;
-      try {
-        decoded = jwt.verify(refresh_token, process.env.JWT_SECRET);
-      } catch (jwtError) {
-        console.error('❌ [OAuth Token] Invalid refresh token:', jwtError.message);
-        return res.status(400).json({ 
-          error: 'invalid_grant',
-          error_description: 'Invalid refresh token'
-        });
-      }
-      
-      if (decoded.type !== 'refresh') {
-        return res.status(400).json({ 
-          error: 'invalid_grant',
-          error_description: 'Invalid refresh token type'
-        });
-      }
-      
-      const user = await User.findById(decoded.id);
-      if (!user) {
-        return res.status(400).json({ 
-          error: 'invalid_grant',
-          error_description: 'User not found'
-        });
-      }
-
-      const newAccessToken = jwt.sign(
-        { 
-          id: user._id,
-          email: user.email,
-          role: user.role,
-          iss: 'contech-home-automation',
-          aud: client_id
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: '1h' }
-      );
-      
-      console.log('✅ [OAuth Token] Access token refreshed for user:', user.email);
-
-      return res.json({
-        access_token: newAccessToken,
-        token_type: 'Bearer',
-        expires_in: 3600
-      });
-    }
-
-    // Unsupported grant type
-    console.error('❌ [OAuth Token] Unsupported grant type:', grant_type);
-    return res.status(400).json({ 
-      error: 'unsupported_grant_type',
-      error_description: `Grant type "${grant_type}" is not supported`
-    });
-    
-  } catch (error) {
-    console.error('❌ [OAuth Token] Error:', error);
-    return res.status(500).json({ 
-      error: 'server_error',
-      error_description: 'Internal server error'
-    });
   }
 };
 
