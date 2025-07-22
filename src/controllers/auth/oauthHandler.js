@@ -7,7 +7,6 @@
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const axios = require('axios');
-const crypto = require('crypto');
 const User = require('../../models/User');
 const AuthorizationCode = require('../../models/AuthorizationCode');
 const AccessToken = require('../../models/AccessToken');
