@@ -53,52 +53,44 @@ const oauthAuthorize = async (req, res) => {
       });
     }
 
-    // For testing: create a test user or use existing user
-    // In production, you'd check if user is authenticated and get their real ID
-    let userId;
+    // Instead of creating a user directly, redirect to Google OAuth for proper authentication
+    // Store the original OAuth request parameters
+    const sessionId = crypto.randomBytes(16).toString('hex');
     
-    // Option 1: For testing - create/find a test user
-    let testUser = await User.findOne({ email: 'test@googleactions.com' });
-    if (!testUser) {
-      testUser = new User({
-        name: 'Google Actions Test User',
-        email: 'test@googleactions.com',
-        // Add other required fields for your User model
-      });
-      await testUser.save();
-    }
-    userId = testUser._id;
-    
-    // Option 2: If you want to use session-based auth, check if user is logged in:
-    // if (!req.session?.userId) {
-    //   // Redirect to login page with return URL
-    //   const loginUrl = `/login?return_to=${encodeURIComponent(req.originalUrl)}`;
-    //   return res.redirect(loginUrl);
-    // }
-    // userId = req.session.userId;
-    
-    // Generate authorization code
-    const authCode = crypto.randomBytes(32).toString('hex');
-    
-    // Save authorization code to MongoDB
-    const authorizationCode = new AuthorizationCode({
-      code: authCode,
-      userId: userId,
+    // Store OAuth session data in memory (in production, use Redis or database)
+    global.oauthSessions = global.oauthSessions || new Map();
+    global.oauthSessions.set(sessionId, {
       clientId: client_id,
       redirectUri: redirect_uri,
-      scope: scope || 'smart_home'
+      scope: scope || 'smart_home',
+      state: state,
+      timestamp: Date.now()
     });
     
-    await authorizationCode.save();
+    // Clean up old sessions (older than 10 minutes)
+    for (const [key, session] of global.oauthSessions.entries()) {
+      if (Date.now() - session.timestamp > 600000) { // 10 minutes
+        global.oauthSessions.delete(key);
+      }
+    }
     
-    console.log('✅ [OAuth Authorize] Generated auth code, redirecting to Google');
+    console.log('✅ [OAuth Authorize] Session stored, redirecting to Google OAuth');
     
-    // Redirect back to Google with the authorization code
-    const redirectUrl = new URL(redirect_uri);
-    redirectUrl.searchParams.set('code', authCode);
-    redirectUrl.searchParams.set('state', state);
+    // Build Google OAuth URL
+    const googleOAuthParams = new URLSearchParams({
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      redirect_uri: process.env.GOOGLE_OAUTH_REDIRECT_URI,
+      response_type: 'code',
+      scope: 'email profile',
+      state: sessionId, // Use sessionId as state for Google OAuth
+      access_type: 'offline',
+      prompt: 'consent'
+    });
     
-    res.redirect(redirectUrl.toString());
+    const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?${googleOAuthParams.toString()}`;
+    
+    // Redirect user to Google for authentication
+    res.redirect(googleOAuthUrl);
     
   } catch (error) {
     console.error('❌ [OAuth Authorize] Error:', error);
@@ -174,7 +166,7 @@ const oauthToken = async (req, res) => {
     const accessToken = crypto.randomBytes(32).toString('hex');
     const refreshToken = crypto.randomBytes(32).toString('hex');
     
-    // Save access token to database (you'll need an AccessToken model)
+    // Save access token to database
     const tokenDoc = new AccessToken({
       token: accessToken,
       userId: authData.userId._id,
@@ -269,14 +261,16 @@ const googleOAuthCallback = async (req, res) => {
       let user = await User.findOne({ email: googleUser.email });
       
       if (!user) {
-        // Create new user from Google profile
+        // Create new user from Google profile with required fields
         user = new User({
           email: googleUser.email,
           name: googleUser.name,
           googleId: googleUser.id,
           avatar: googleUser.picture,
           isVerified: true, // Google users are already verified
-          role: 'user'
+          role: 'user', // Set required role field
+          password: crypto.randomBytes(32).toString('hex'), // Set a random password for Google users
+          // Add any other required fields from your User model here
         });
         await user.save();
         console.log('✅ [Google OAuth Callback] New user created:', user.email);
