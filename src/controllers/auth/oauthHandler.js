@@ -58,7 +58,6 @@ const oauthAuthorize = async (req, res) => {
     let userId;
     
     // Option 1: For testing - create/find a test user
-    const User = require('../models/User'); // Adjust path as needed
     let testUser = await User.findOne({ email: 'test@googleactions.com' });
     if (!testUser) {
       testUser = new User({
