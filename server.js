@@ -24,9 +24,17 @@ const apartmentRoutes = require('./src/routes/apartmentRoutes');
 const roomRoutes = require('./src/routes/roomRoutes');
 const deviceRoutes = require('./src/routes/deviceRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
-const imageRoutes = require('./src/routes/imageRoutes'); 
 const googleAssistantRoutes = require('./src/routes/googleAssistantRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+
+// Admin Routes
+const apartmentAdminRoutes = require('./src/adminRoutes/apartmentAdminRoutes');
+const userAdminRoutes = require('./src/adminRoutes/userAdminRoutes');
+const deviceAdminRoutes = require('./src/adminRoutes/deviceAdminRoutes');
+const roomAdminRoutes = require('./src/adminRoutes/roomAdminRoutes');
+const taskAdminRoutes = require('./src/adminRoutes/taskAdminRoutes');
+const limitsRoutes = require('./src/adminRoutes/LimitsRoutes');
+const imageRoutes = require('./src/adminRoutes/imageRoutes'); 
 
 // Passport configuration
 const passport = require('./src/config/passport');
