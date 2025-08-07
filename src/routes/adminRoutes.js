@@ -45,33 +45,33 @@ const searchTasks = require('../controllers/admin/task.admin.controllers/searchT
 // =============================================================================
 
 /**
- * @route   GET /api/admin/users/get-all-users-with-comprehensive-analysis
+ * @route   GET /api/admin/users/get-all-users
  * @desc    Get all users with comprehensive analysis and statistics
  * @access  Private/Admin
  */
-router.get('/users/get-all-users-with-comprehensive-analysis', protect, authorizeRoles('admin'), getAllUsers);
+router.get('/users/get-all-users', protect, authorizeRoles('admin'), getAllUsers);
 
 /**
- * @route   GET /api/admin/users/search-and-filter-users-with-advanced-options
+ * @route   GET /api/admin/users/search-users
  * @desc    Search and filter users with advanced filtering and pagination
  * @access  Private/Admin
  * @query   role, active, emailActivated, search, sortBy, sortOrder, page, limit
  */
-router.get('/users/search-and-filter-users-with-advanced-options', protect, authorizeRoles('admin'), getFilteredUsers);
+router.get('/users/search-users', protect, authorizeRoles('admin'), getFilteredUsers);
 
 /**
- * @route   GET /api/admin/users/get-comprehensive-user-statistics-and-analytics
+ * @route   GET /api/admin/users/get-user-statistics
  * @desc    Get comprehensive user statistics and analytics dashboard
  * @access  Private/Admin
  */
-router.get('/users/get-comprehensive-user-statistics-and-analytics', protect, authorizeRoles('admin'), getUserStatistics);
+router.get('/users/get-user-statistics', protect, authorizeRoles('admin'), getUserStatistics);
 
 /**
- * @route   GET /api/admin/users/get-user-by-id-with-full-details/:id
+ * @route   GET /api/admin/users/get-user-by-id/:id
  * @desc    Get specific user by ID with full details and analysis
  * @access  Private/Admin
  */
-router.get('/users/get-user-by-id-with-full-details/:id', protect, authorizeRoles('admin'), getUserById);
+router.get('/users/get-user-by-id/:id', protect, authorizeRoles('admin'), getUserById);
 
 /**
  * @route   PUT /api/admin/users/update-user-role-admin-action/:id
@@ -79,7 +79,7 @@ router.get('/users/get-user-by-id-with-full-details/:id', protect, authorizeRole
  * @access  Private/Admin
  * @body    { role: 'admin' | 'moderator' | 'customer' }
  */
-router.put('/users/update-user-role-admin-action/:id', protect, authorizeRoles('admin'), updateUserRole);
+router.put('/users/update-user-role/:id', protect, authorizeRoles('admin'), updateUserRole);
 
 /**
  * @route   DELETE /api/admin/users/delete-user-account-permanently/:id
