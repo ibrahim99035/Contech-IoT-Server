@@ -19,13 +19,11 @@ const TaskScheduler = require('./src/schedualr');
 
 // Import Routes
 const authRoutes = require('./src/routes/authRoutes');
-const userRoutes = require('./src/routes/userRoutes');
 const apartmentRoutes = require('./src/routes/apartmentRoutes');
 const roomRoutes = require('./src/routes/roomRoutes');
 const deviceRoutes = require('./src/routes/deviceRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const googleAssistantRoutes = require('./src/routes/googleAssistantRoutes');
-const adminRoutes = require('./src/routes/adminRoutes');
 
 // Admin Routes
 const apartmentAdminRoutes = require('./src/adminRoutes/apartmentAdminRoutes');
@@ -81,15 +79,22 @@ async function startServer() {
 
     // Routes
     app.use('/api/auth', authRoutes);
-    // app.use('/api/admin-dashboard', userRoutes); 
     app.use('/api/apartments-handler', apartmentRoutes); 
     app.use('/api/rooms-handler', roomRoutes); 
     app.use('/api/device-handler', deviceRoutes); 
     app.use('/api/task-handler', taskRoutes); 
-    app.use('/api/images', imageRoutes); 
+    app.use('/api/images', imageRoutes); // to be removed later
     app.use('/api/google-assistant', googleAssistantRoutes);
-    app.use('/api/admin-dashboard', adminRoutes);
 
+    // Admin Routes
+    app.use('/admin/dashboard/apartments', apartmentAdminRoutes);
+    app.use('/admin/dashboard/users', userAdminRoutes);
+    app.use('/admin/dashboard/rooms', roomAdminRoutes);
+    app.use('/admin/dashboard/devices', deviceAdminRoutes);
+    app.use('/admin/dashboard/tasks', taskAdminRoutes);
+    app.use('/admin/dashboard/subscription-limits', limitsRoutes);
+    app.use('/admin/dashboard/background-imgs-set', imageRoutes);
+    
     // Health Check
     app.get('/health', (req, res) => {
       res.status(200).json({

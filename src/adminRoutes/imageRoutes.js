@@ -12,7 +12,7 @@ const {
 
 const { upload } = require('../config/cloudinary');
 const { protect } = require('../middleware/authMiddleware');
-
+const { authorizeRoles } = require('../middleware/roleMiddleware');
 // ============================================================================
 // PUBLIC ROUTES (No authentication required)
 // ============================================================================
