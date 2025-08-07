@@ -234,7 +234,7 @@ router.get('/details/:id', getImageById);
  * }
  * 
  */
-router.post('/upload/new', protect, upload.single('image'), uploadImage);
+router.post('/upload/new', protect, authorizeRoles('admin'), upload.single('image'), uploadImage);
 
 /**
  * PUT /api/images/update/:id
@@ -264,7 +264,7 @@ router.post('/upload/new', protect, upload.single('image'), uploadImage);
  * }
  * 
  */
-router.put('/update/:id', protect, upload.single('image'), updateImage);
+router.put('/update/:id', protect, authorizeRoles('admin'), upload.single('image'), updateImage);
 
 /**
  * DELETE /api/images/remove/:id
@@ -297,6 +297,6 @@ router.put('/update/:id', protect, upload.single('image'), updateImage);
  * }
  * 
  */
-router.delete('/remove/:id', protect, deleteImage);
+router.delete('/remove/:id', protect, authorizeRoles('admin'), deleteImage);
 
 module.exports = router;
