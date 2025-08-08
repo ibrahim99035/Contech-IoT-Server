@@ -4,11 +4,15 @@ const User = require('../../../models/User');
 const getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id)
+      .select('-password -__v')
       .populate({
         path: 'apartments',
+        select: '-creator -members',
         populate: {
           path: 'rooms',
+          select: '-roomPassword -users -creator',
           populate: {
+            select: '-componentNumber -users -creator',
             path: 'devices'
           }
         }
