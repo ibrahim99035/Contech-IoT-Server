@@ -10,6 +10,9 @@ let io;
 // ESP-Room mapping storage (in production, use Redis or database)
 const espRoomMappings = new Map();
 
+// ADD THIS NEW MAP:
+const roomEspConnections = new Map();
+
 /**
  * Initialize the MQTT client and connect to the MQTT broker
  * @param {Object} socketIo - Socket.IO instance for broadcasting events
@@ -142,6 +145,12 @@ async function handleMqttMessage(topic, message) {
       const espId = topic.split('/')[2];
       await handleEspAuthMessage(espId, payload);
     }
+    // Handle ESP Status Toggle
+    else if (topic.match(/^home-automation\/esp\/([^\/]+)\/disconnect$/)) {
+      // ESP disconnect notification: home-automation/esp/{espId}/disconnect
+      const espId = topic.split('/')[2];
+      await handleEspDisconnection(espId);
+    }
   } catch (error) {
     console.error('Error handling MQTT message:', error);
   }
@@ -205,6 +214,14 @@ async function handleEspAuthMessage(espId, payload) {
         currentState: d.status
       }))
     });
+
+    if (!roomEspConnections.has(roomId)) {
+      roomEspConnections.set(roomId, new Set());
+    }
+    roomEspConnections.get(roomId).add(espId);
+
+    // Update room's ESP connection status and notify users
+    await updateRoomEspStatus(roomId, true);
     
     // Subscribe ESP to room-specific state updates
     subscribeEspToRoom(espId, roomId);
@@ -762,6 +779,61 @@ function removeEspRoomMapping(espId) {
 }
 
 /**
+ * Update room ESP connection status and notify users
+ */
+async function updateRoomEspStatus(roomId, isConnected) {
+  try {
+    // Update room in database
+    await Room.findByIdAndUpdate(roomId, { 
+      esp_component_connected: isConnected 
+    });
+    
+    // Notify users via WebSocket
+    if (io && io.of('/ws/room-user')) {
+      io.of('/ws/room-user').to(`room:${roomId}`).emit('room-esp-status-updated', {
+        roomId: roomId,
+        espConnected: isConnected,
+        timestamp: new Date()
+      });
+    }
+    
+    console.log(`Room ${roomId} ESP connection status updated: ${isConnected}`);
+  } catch (error) {
+    console.error('Error updating room ESP status:', error);
+  }
+}
+
+/**
+ * Handle ESP disconnection cleanup
+ */
+async function handleEspDisconnection(espId) {
+  try {
+    const espMapping = espRoomMappings.get(espId);
+    if (!espMapping) return;
+    
+    const roomId = espMapping.roomId;
+    
+    // Remove ESP from room connections
+    if (roomEspConnections.has(roomId)) {
+      roomEspConnections.get(roomId).delete(espId);
+      
+      // If no more ESPs connected to this room, update status
+      if (roomEspConnections.get(roomId).size === 0) {
+        roomEspConnections.delete(roomId);
+        await updateRoomEspStatus(roomId, false);
+      }
+    }
+    
+    // Clean up ESP mapping
+    espRoomMappings.delete(espId);
+    
+    console.log(`ESP ${espId} disconnected from room ${roomId}`);
+  } catch (error) {
+    console.error('Error handling ESP disconnection:', error);
+  }
+}
+
+/**
  * Close the MQTT connection
  */
 function close() {
@@ -772,6 +844,7 @@ function close() {
   
   // Clear ESP mappings
   espRoomMappings.clear();
+  roomEspConnections.clear();
 }
 
 module.exports = {
@@ -783,6 +856,8 @@ module.exports = {
   publishEspTaskUpdate,
   getEspRoomMapping,
   removeEspRoomMapping,
+  handleEspDisconnection,
+  updateRoomEspStatus,
   close,
-  client // Export client for direct access if needed
+  client 
 };

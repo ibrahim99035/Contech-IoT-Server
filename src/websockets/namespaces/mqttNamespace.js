@@ -63,6 +63,10 @@ module.exports = (io) => {
   mqttNamespace.on('connection', (socket) => {
     console.log(`ESP (Device Order: ${socket.device.order}) connected to MQTT bridge for room ${socket.room.name}: ${socket.id} (Device: ${socket.device.name})`);
     
+    // Track ESP connection for room status
+    const espId = `ws-${socket.id}`; // Create unique ESP ID for WebSocket connections
+    mqttBroker.updateRoomEspStatus(socket.room._id.toString(), true);
+
     // Let the device know it's connected successfully
     socket.emit('mqtt-bridge-connected', { 
       deviceId: socket.device._id,
@@ -140,6 +144,9 @@ module.exports = (io) => {
         JSON.stringify({ status: 'offline', timestamp: new Date() }),
         { qos: 1, retain: true }
       );
+      // Handle ESP disconnection for room status
+      const espId = `ws-${socket.id}`; // Create unique ESP ID for WebSocket connections
+      mqttBroker.handleEspDisconnection(espId);
     });
     
     // Publish online status to MQTT
