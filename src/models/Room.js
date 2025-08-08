@@ -25,7 +25,8 @@ const roomSchema = new mongoose.Schema({
   apartment: { type: mongoose.Schema.Types.ObjectId, ref: 'Apartment', required: true },
   devices: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Device' }],
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  roomPassword: { type: String }, // Optional password for the room
+  roomPassword: { type: String }, 
+  esp_component_connected: { type: Boolean, default: false },
 }, { timestamps: true });
 
 // Hash the roomPassword before saving if it's provided and modified
