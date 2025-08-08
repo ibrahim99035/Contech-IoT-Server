@@ -11,7 +11,7 @@ function registerHandlers(io, socket) {
         return socket.emit('error', { message: 'Device ID is required' });
       }
       
-      const device = await Device.findById(data.deviceId);
+      const device = await Device.findById(data.deviceId).populate('room');
       
       if (!device) {
         return socket.emit('error', { message: 'Device not found' });
@@ -50,7 +50,8 @@ function registerHandlers(io, socket) {
         state: newState,
         updatedBy: 'user',
         userId: socket.user._id.toString(),
-	roomId: device.room
+	      roomId: device.room,
+        espConnected: device.room.esp_component_connected
       });
       
       console.log(`Device ${device.name} state updated to ${newState} by user ${socket.user.name}`);
@@ -62,6 +63,45 @@ function registerHandlers(io, socket) {
   
   // Register MQTT specific handlers
   mqttHandlers.registerHandlers(io, socket);
+
+  // - Handle device info requests with ESP status:
+  socket.on('get-device-info', async (data) => {
+    try {
+      if (!data || !data.deviceId) {
+        return socket.emit('error', { message: 'Device ID is required' });
+      }
+      
+      const Room = require('../../models/Room');
+      
+      const device = await Device.findById(data.deviceId).populate('room');
+      if (!device) {
+        return socket.emit('error', { message: 'Device not found' });
+      }
+      
+      // Access check
+      if (!device.users.includes(socket.user._id) && !device.creator.equals(socket.user._id)) {
+        return socket.emit('error', { message: 'Access denied to device' });
+      }
+      
+      socket.emit('device-info', {
+        device: {
+          id: device._id,
+          name: device.name,
+          type: device.type,
+          status: device.status,
+          room: {
+            id: device.room._id,
+            name: device.room.name,
+            espConnected: device.room.esp_component_connected
+          }
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error getting device info:', error);
+      socket.emit('error', { message: 'Failed to get device info' });
+    }
+  });
 }
 
 module.exports = {

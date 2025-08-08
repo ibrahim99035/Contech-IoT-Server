@@ -36,6 +36,37 @@ module.exports = (io) => {
     
     // Register event handlers
     roomUserHandlers.registerHandlers(io, socket);
+
+    // Allow users to request current ESP status for their rooms
+    socket.on('get-esp-status', async (data) => {
+      try {
+        if (!data || !data.roomId) {
+          return socket.emit('error', { message: 'Room ID is required' });
+        }
+        
+        const Room = require('../../models/Room');
+        const { checkRoomAccess } = require('../utils/roomUtils');
+        
+        const room = await Room.findById(data.roomId);
+        if (!room) {
+          return socket.emit('error', { message: 'Room not found' });
+        }
+        
+        if (!checkRoomAccess(room, socket.user._id)) {
+          return socket.emit('error', { message: 'Access denied to this room' });
+        }
+        
+        socket.emit('esp-status-response', {
+          roomId: room._id,
+          espConnected: room.esp_component_connected,
+          timestamp: new Date()
+        });
+        
+      } catch (error) {
+        console.error('Error getting ESP status:', error);
+        socket.emit('error', { message: 'Failed to get ESP status' });
+      }
+    });
     
     socket.on('disconnect', () => {
       console.log(`User disconnected from room namespace: ${socket.id} (${socket.user.name})`);

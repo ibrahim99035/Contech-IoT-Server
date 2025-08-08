@@ -138,6 +138,7 @@ exports.getRoomsByApartment = async (req, res) => {
           description: room.description,
           isCreator: room.creator._id.toString() === req.user._id.toString(),
           creator: room.creator,
+          espConnected:room.esp_component_connected,
           createdAt: room.createdAt,
           updatedAt: room.updatedAt,
           users: room.users,

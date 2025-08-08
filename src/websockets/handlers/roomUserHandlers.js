@@ -34,7 +34,8 @@ function registerHandlers(io, socket) {
           id: room._id,
           name: room.name,
           apartment: room.apartment,
-          creator: room.creator
+          creator: room.creator,
+          espConnected: room.esp_component_connected     
         },
         devices: devices.map(device => ({
           id: device._id,
@@ -186,7 +187,8 @@ function registerHandlers(io, socket) {
             id: room._id,
             name: room.name,
             apartment: room.apartment,
-            creator: room.creator
+            creator: room.creator,
+            espConnected: room.esp_component_connected
           },
           devices: devices.map(device => ({
             id: device._id,

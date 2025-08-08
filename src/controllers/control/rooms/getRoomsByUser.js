@@ -100,6 +100,7 @@ exports.getRoomsByUser = async (req, res) => {
         description: room.description || '',
         createdAt: room.createdAt,
         updatedAt: room.updatedAt,
+        espConnected:room.esp_component_connected,
         apartment: room.apartment ? {
           id: room.apartment._id,
           name: room.apartment.name,
