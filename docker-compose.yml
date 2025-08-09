@@ -1,160 +1,69 @@
 version: '3.8'
 
 services:
-  # MongoDB Database
-  mongodb:
-    image: mongo:7.0
+  # Node.js Application
+  api:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: contech-api
     restart: unless-stopped
+    ports:
+      - "5000:5000"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: admin
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: smart_home
+      - NODE_ENV=production
+    env_file:
+      - .env
     volumes:
-      - mongodb_data:/data/db
-      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
-    ports:
-      - "27017:27017"
+      - ./logs:/app/logs
     networks:
-      - smart_home_network
-    command: mongod --auth
+      - contech-network
+    depends_on:
+      - mqtt-broker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Redis Cache
-  redis:
-    image: redis:7.2-alpine
-    container_name: smart_home_redis
-    restart: unless-stopped
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
-    volumes:
-      - redis_data:/data
-    ports:
-      - "6379:6379"
-    networks:
-      - smart_home_network
-
-  # MQTT Broker (Eclipse Mosquitto)
-  mqtt:
-    image: eclipse-mosquitto:2.0
-    container_name: smart_home_mqtt
+  # Mosquitto MQTT Broker
+  mqtt-broker:
+    image: eclipse-mosquitto:2.0.18
+    container_name: contech-mqtt
     restart: unless-stopped
     ports:
-      - "1883:1883"
-      - "9001:9001"
+      - "1883:1883"      # MQTT port
+      - "9001:9001"      # WebSocket port
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
-      - ./mosquitto/log:/mosquitto/log
-      - mosquitto_data:/mosquitto/data
+      - ./mosquitto/logs:/mosquitto/log
     networks:
-      - smart_home_network
+      - contech-network
+    command: mosquitto -c /mosquitto/config/mosquitto.conf
 
-  # Node.js Application - Changed to use GHCR image
-  app:
-    image: ghcr.io/ibrahim99035/contech-iot-server:latest
-    container_name: smart_home_app
-    restart: unless-stopped
-    depends_on:
-      - mongodb
-      - redis
-      - mqtt
-    environment:
-      NODE_ENV: production
-      MONGODB_URI: mongodb://smart_home_user:${MONGO_PASSWORD}@mongodb:27017/smart_home?authSource=smart_home
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
-      REDIS_PASSWORD: ${REDIS_PASSWORD}
-      MQTT_BROKER_URL: mqtts://39a6527dc2544b59bc5a1ac4ba2be2bc.s1.eu.hivemq.cloud:8883
-      MQTT_USERNAME: ${MQTT_USERNAME}
-      MQTT_PASSWORD: ${MQTT_PASSWORD}
-      JWT_SECRET: ${JWT_SECRET}
-      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
-      EMAIL_USER: ${EMAIL_USER}
-      EMAIL_PASS: ${EMAIL_PASS}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
-      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
-      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
-      FRONTEND_URL: ${FRONTEND_URL}
-      FRONTEND_URL_TOKEN: ${FRONTEND_URL_TOKEN}
-      PORT: 5000
-    volumes:
-      - ./uploads:/app/uploads
-      - ./logs:/app/logs
-    networks:
-      - smart_home_network
-    deploy:
-      replicas: 3
-      restart_policy:
-        condition: on-failure
-        delay: 5s
-        max_attempts: 3
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
-        reservations:
-          memory: 256M
-          cpus: '0.25'
-
-  # Nginx Load Balancer
+  # Nginx Reverse Proxy (for domain setup)
   nginx:
-    image: nginx:1.25-alpine
-    container_name: smart_home_nginx
+    image: nginx:alpine
+    container_name: contech-nginx
     restart: unless-stopped
-    depends_on:
-      - app
     ports:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./ssl:/etc/nginx/ssl:ro
-      - ./logs/nginx:/var/log/nginx
-      - nginx_cache:/var/cache/nginx
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/logs:/var/log/nginx
     networks:
-      - smart_home_network
-
-  # Monitoring with Prometheus
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: smart_home_prometheus
-    restart: unless-stopped
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - prometheus_data:/prometheus
-    networks:
-      - smart_home_network
-
-  # Grafana for Monitoring Dashboard
-  grafana:
-    image: grafana/grafana:latest
-    container_name: smart_home_grafana
-    restart: unless-stopped
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
-    ports:
-      - "3000:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./grafana/dashboards:/etc/grafana/provisioning/dashboards
-      - ./grafana/datasources:/etc/grafana/provisioning/datasources
-    networks:
-      - smart_home_network
-
-volumes:
-  mongodb_data:
-  redis_data:
-  mosquitto_data:
-  nginx_cache:
-  prometheus_data:
-  grafana_data:
+      - contech-network
+    depends_on:
+      - api
+      - mqtt-broker
 
 networks:
-  smart_home_network:
+  contech-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
+
+volumes:
+  mosquitto-data:
+  mosquitto-logs:
