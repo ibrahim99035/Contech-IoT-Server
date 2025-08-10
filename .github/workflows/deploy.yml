@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Test SSH Connection
 
 on:
   push:
@@ -6,35 +6,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  test:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Deploy to server
-      uses: appleboy/ssh-action@v1.0.3
+    - name: Test SSH connection
+      uses: appleboy/ssh-action@v0.1.7
       with:
-        host: ${{ secrets.VPS_HOST }}
-        username: ${{ secrets.VPS_USER }}
+        host: 88.222.220.235
+        username: root
         key: ${{ secrets.SSH_PRIVATE_KEY }}
         script: |
-          cd /opt/contech-iot/app
-          
-          echo "🔄 Stopping containers..."
-          docker-compose down
-          
-          echo "📥 Pulling latest code..."
-          git pull origin main || echo "Git pull failed, continuing..."
-          
-          echo "🔨 Building and starting containers..."
-          docker-compose up -d --build
-          
-          echo "⏳ Waiting for services to start..."
-          sleep 10
-          
-          echo "📋 Checking container status..."
-          docker ps
-          
-          echo "🏥 Health check..."
-          curl -f http://localhost:5000/health || echo "Health check failed"
-          
-          echo "✅ Deployment complete!"
+          echo "SSH connection successful!"
+          whoami
+          pwd
+          ls -la
