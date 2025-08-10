@@ -1,4 +1,4 @@
-name: Test SSH Connection
+name: Deploy to VPS
 
 on:
   push:
@@ -6,18 +6,35 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  deploy:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Test SSH connection
-      uses: appleboy/ssh-action@v0.1.7
-      with:
-        host: 88.222.220.235
-        username: root
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          echo "SSH connection successful!"
-          whoami
-          pwd
-          ls -la
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H 88.222.220.235 >> ~/.ssh/known_hosts
+    
+    - name: Deploy to server
+      run: |
+        ssh root@88.222.220.235 << 'EOF'
+          cd /opt/contech-iot/app
+          echo "🔄 Stopping containers..."
+          docker-compose down
+          echo "📥 Pulling latest code..."
+          git pull origin main || echo "Git pull failed, continuing..."
+          echo "🔨 Building and starting containers..."
+          docker-compose up -d --build
+          echo "⏳ Waiting for services to start..."
+          sleep 10
+          echo "📋 Checking container status..."
+          docker ps
+          echo "🏥 Health check..."
+          curl -f http://localhost:5000/health || echo "Health check failed"
+          echo "✅ Deployment complete!"
+        EOF
