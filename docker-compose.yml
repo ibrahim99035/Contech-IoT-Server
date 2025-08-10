@@ -4,7 +4,7 @@ services:
   # Node.js Application
   api:
     build:
-      context: ./app
+      context: ./
       dockerfile: Dockerfile
     container_name: contech-api
     restart: unless-stopped
@@ -32,12 +32,12 @@ services:
     container_name: contech-mqtt
     restart: unless-stopped
     ports:
-      - "1883:1883"      # MQTT port
-      - "9001:9001"      # WebSocket port
+      - "1884:1884"      # MQTT port
+      - "9002:9002"      # WebSocket port
     volumes:
-      - ./mosquitto/config:/mosquitto/config
-      - ./mosquitto/data:/mosquitto/data
-      - ./mosquitto/logs:/mosquitto/log
+      - ../mosquitto/config:/mosquitto/config
+      - ../mosquitto/data:/mosquitto/data
+      - ../mosquitto/logs:/mosquitto/log
     networks:
       - contech-network
     command: mosquitto -c /mosquitto/config/mosquitto.conf
@@ -51,9 +51,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./nginx/ssl:/etc/nginx/ssl
-      - ./nginx/logs:/var/log/nginx
+      - ../nginx/conf.d:/etc/nginx/conf.d
+      - ../nginx/ssl:/etc/nginx/ssl
+      - ../nginx/logs:/var/log/nginx
     networks:
       - contech-network
     depends_on:
