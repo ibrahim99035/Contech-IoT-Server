@@ -27,6 +27,7 @@ const roomSchema = new mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   roomPassword: { type: String }, 
   esp_component_connected: { type: Boolean, default: false },
+  esp_id: {type:String}
 }, { timestamps: true });
 
 // Hash the roomPassword before saving if it's provided and modified

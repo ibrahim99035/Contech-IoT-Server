@@ -17,7 +17,8 @@ const roomSchema = Joi.object({
   apartment: Joi.string().required(),
   devices: Joi.array().items(Joi.string()),
   users: Joi.array().items(Joi.string()),
-  roomPassword: Joi.string().optional(),
+  roomPassword: Joi.string().required(),
+  esp_id: Joi.string().required()
 });
 
 module.exports = { roomSchema, ROOM_TYPES };
