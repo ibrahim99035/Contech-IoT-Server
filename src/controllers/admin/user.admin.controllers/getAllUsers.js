@@ -1,4 +1,5 @@
 const User = require('../../../models/User');
+const Room = require('../../../models/Room');
 
 // GET - Get all users with optimized pagination
 const getAllUsers = async (req, res) => {
@@ -61,14 +62,12 @@ const getAllUsers = async (req, res) => {
 
     // Fetch paginated users
     const users = await User.find({})
-      .select('-password -__v')
+      .select('-password -__v -createdAt -updatedAt')
       .populate('apartments', 'name')
-      .populate('devices', 'name type status')
-      .populate('tasks', 'name status nextExecution')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .lean(); // Use lean() for better performance
+      .lean();
 
     // Calculate recent registrations
     const oneWeekAgo = new Date();
@@ -76,6 +75,61 @@ const getAllUsers = async (req, res) => {
     const recentRegistrations = await User.countDocuments({
       createdAt: { $gt: oneWeekAgo }
     });
+
+    // Get total rooms count
+    const totalRooms = await Room.countDocuments({});
+    
+    // Optional: Get room analytics
+    const roomAnalytics = await Room.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalRooms: { $sum: 1 },
+          connectedRooms: {
+            $sum: { $cond: [{ $eq: ['$esp_component_connected', true] }, 1, 0] }
+          },
+          roomsWithPassword: {
+            $sum: { $cond: [{ $ne: ['$roomPassword', null] }, 1, 0] }
+          },
+          roomsByType: {
+            $push: '$type'
+          }
+        }
+      },
+      {
+        $project: {
+          totalRooms: 1,
+          connectedRooms: 1,
+          roomsWithPassword: 1,
+          roomTypeDistribution: {
+            $arrayToObject: {
+              $map: {
+                input: { $setUnion: ['$roomsByType'] },
+                as: 'type',
+                in: {
+                  k: '$$type',
+                  v: {
+                    $size: {
+                      $filter: {
+                        input: '$roomsByType',
+                        cond: { $eq: ['$$this', '$$type'] }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    ]);
+
+    const roomStats = roomAnalytics[0] || {
+      totalRooms: 0,
+      connectedRooms: 0,
+      roomsWithPassword: 0,
+      roomTypeDistribution: {}
+    };
 
     // Build analysis object
     const analysis = {
@@ -104,7 +158,13 @@ const getAllUsers = async (req, res) => {
         (analysisResult?.totalDevices || 0) / totalUsers : 0,
       averageTasksPerUser: totalUsers > 0 ? 
         (analysisResult?.totalTasks || 0) / totalUsers : 0,
-      recentRegistrations
+      recentRegistrations,
+      // Room analytics
+      totalRooms: roomStats.totalRooms,
+      connectedRooms: roomStats.connectedRooms,
+      roomsWithPassword: roomStats.roomsWithPassword,
+      roomTypeDistribution: roomStats.roomTypeDistribution,
+      averageRoomsPerUser: totalUsers > 0 ? roomStats.totalRooms / totalUsers : 0
     };
 
     // Pagination info
