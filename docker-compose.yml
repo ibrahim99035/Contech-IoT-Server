@@ -51,9 +51,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d  # Updated path
-      - ./nginx/ssl:/etc/nginx/ssl        # Updated path
-      - ./nginx/logs:/var/log/nginx       # Updated path
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/logs:/var/log/nginx
     networks:
       - contech-network
     depends_on:
