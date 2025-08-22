@@ -35,9 +35,9 @@ services:
       - "1884:1884"      # MQTT port
       - "9002:9002"      # WebSocket port
     volumes:
-      - ../mosquitto/config:/mosquitto/config
-      - ../mosquitto/data:/mosquitto/data
-      - ../mosquitto/logs:/mosquitto/log
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/logs:/mosquitto/log
     networks:
       - contech-network
     command: mosquitto -c /mosquitto/config/mosquitto.conf
@@ -51,9 +51,9 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ../nginx/conf.d:/etc/nginx/conf.d
-      - ../nginx/ssl:/etc/nginx/ssl
-      - ../nginx/logs:/var/log/nginx
+      - ./nginx/conf.d:/etc/nginx/conf.d  # Updated path
+      - ./nginx/ssl:/etc/nginx/ssl        # Updated path
+      - ./nginx/logs:/var/log/nginx       # Updated path
     networks:
       - contech-network
     depends_on:

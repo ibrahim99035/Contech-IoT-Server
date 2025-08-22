@@ -2,6 +2,7 @@ const Task = require('../../../models/Task');
 const Device = require('../../../models/Device');
 const taskSchema = require('../../../validation/taskValidator');
 const { checkTaskLimits } = require('../../../middleware/checkSubscriptionLimits');
+const taskScheduler = require('../../../schedualr');
 
 exports.createTask = async (req, res) => {
     try {
@@ -39,6 +40,8 @@ exports.createTask = async (req, res) => {
         });
 
         await task.save();
+
+        await taskScheduler.scheduleNewTask(task);
 
         const formattedNextExecution = task.getFormattedNextExecution();
 

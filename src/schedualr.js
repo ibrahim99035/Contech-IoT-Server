@@ -27,17 +27,24 @@ class TaskScheduler {
   async scheduleUpcomingTasks() {
     try {
       const now = new Date();
-      // Get tasks that are active and have a next execution time
+      // FIXED: Better query to find tasks that need scheduling
       const upcomingTasks = await Task.find({
         status: 'active',
-        nextExecution: { $ne: null, $gt: now }
+        nextExecution: { 
+          $exists: true,
+          $ne: null, 
+          $gt: now 
+        }
       }).populate('device').populate('creator');
       
       console.log(`Found ${upcomingTasks.length} upcoming tasks to schedule`);
       
       // Schedule each task
       for (const task of upcomingTasks) {
-        this.scheduleTask(task);
+        // FIXED: Only schedule if not already scheduled
+        if (!this.activeJobs.has(task._id.toString())) {
+          this.scheduleTask(task);
+        }
       }
     } catch (error) {
       console.error('Error scheduling upcoming tasks:', error);
@@ -46,41 +53,45 @@ class TaskScheduler {
 
   // Schedule a specific task (timezone-aware)
   scheduleTask(task) {
+    const taskId = task._id.toString();
+    
     // If the task is already scheduled, remove it first
-    if (this.activeJobs.has(task._id.toString())) {
-      this.unscheduleTask(task._id.toString());
+    if (this.activeJobs.has(taskId)) {
+      this.unscheduleTask(taskId);
     }
     
     const now = new Date();
-    const executionTime = new Date(task.nextExecution); // This is already in UTC
+    const executionTime = new Date(task.nextExecution);
     
     // Calculate milliseconds until execution
     const timeUntilExecution = executionTime.getTime() - now.getTime();
     
-    // Only schedule if it's in the future
-    if (timeUntilExecution > 0) {
+    // FIXED: Add minimum time check to avoid immediate execution issues
+    if (timeUntilExecution > 1000) { // At least 1 second in the future
       const formattedExecution = task.getFormattedNextExecution();
-      console.log(`Scheduling task "${task.name}" to execute at ${formattedExecution.formatted} (in ${Math.round(timeUntilExecution/60000)} minutes)`);
+      console.log(`Scheduling task "${task.name}" (ID: ${taskId}) to execute at ${formattedExecution?.formatted || 'unknown time'} (in ${Math.round(timeUntilExecution/60000)} minutes)`);
       
       // Schedule the task execution
       const timer = setTimeout(async () => {
-        await this.executeTask(task._id.toString());
+        await this.executeTask(taskId);
       }, timeUntilExecution);
       
       // Store the timer reference
-      this.activeJobs.set(task._id.toString(), timer);
+      this.activeJobs.set(taskId, timer);
       
       // Schedule notifications if enabled
       if (task.notifications && task.notifications.enabled && task.notifications.beforeExecution > 0) {
         const notificationTime = executionTime.getTime() - (task.notifications.beforeExecution * 60 * 1000);
         const timeUntilNotification = notificationTime - now.getTime();
         
-        if (timeUntilNotification > 0) {
+        if (timeUntilNotification > 1000) { // At least 1 second in the future
           setTimeout(async () => {
-            await this.sendNotification(task._id.toString(), 'upcoming');
+            await this.sendNotification(taskId, 'upcoming');
           }, timeUntilNotification);
         }
       }
+    } else {
+      console.log(`Task "${task.name}" (ID: ${taskId}) execution time is too soon or in the past, skipping scheduling`);
     }
   }
 
@@ -95,20 +106,26 @@ class TaskScheduler {
 
   async executeTask(taskId) {
     try {
-      // Remove from active jobs
+      // Remove from active jobs first
       this.activeJobs.delete(taskId);
 
       // Get the task with populated references
       const task = await Task.findById(taskId).populate('device').populate('creator');
 
       if (!task) {
-        console.error(`Task ${taskId} not found`);
+        console.error(`Task ${taskId} not found during execution`);
+        return;
+      }
+
+      // FIXED: Check if task is still active before executing
+      if (task.status !== 'active') {
+        console.log(`Task "${task.name}" is no longer active (status: ${task.status}), skipping execution`);
         return;
       }
 
       const executionTimeInUserTz = task.getFormattedNextExecution();
       console.log(`Executing task: ${task.name} (scheduled for ${executionTimeInUserTz?.formatted || 'unknown time'})`);
-      console.log(`Task action: ${task.action.type} = ${task.action.value}`); // Debug log
+      console.log(`Task action: ${task.action.type} = ${task.action.value}`);
 
       // Check if conditions are met before executing
       if (task.conditions && task.conditions.length > 0) {
@@ -123,7 +140,6 @@ class TaskScheduler {
             message: 'Execution conditions not met'
           });
 
-          // Fixed: Emit with correct parameter structure
           taskEvents.emit('task-failed', {
             taskId: task._id.toString(),
             name: task.name,
@@ -132,12 +148,12 @@ class TaskScheduler {
             message: 'Task skipped: Conditions not met'
           });
 
-          // Update next execution time and save
+          // FIXED: Update next execution and save before scheduling
           task.updateNextExecution();
           await task.save();
 
           // Schedule next execution if it exists
-          if (task.nextExecution) {
+          if (task.nextExecution && task.status === 'active') {
             this.scheduleTask(task);
           }
 
@@ -159,7 +175,6 @@ class TaskScheduler {
           message: `Successfully executed action: ${task.action.type} = ${task.action.value}`
         });
 
-        // Fixed: Emit with correct parameter structure
         taskEvents.emit('task-executed', {
           _id: task._id.toString(),
           name: task.name,
@@ -178,7 +193,6 @@ class TaskScheduler {
           message: `Error: ${error.message}`
         });
 
-        // Fixed: Emit with correct parameter structure
         taskEvents.emit('task-failed', {
           taskId: task._id.toString(),
           name: task.name,
@@ -188,33 +202,60 @@ class TaskScheduler {
         });
       }
 
-      // Update task status and next execution time
+      // FIXED: Always update execution time and status
       task.lastExecuted = new Date();
 
       // If it's a one-time task, mark as completed
       if (task.schedule.recurrence.type === 'once') {
         task.status = 'completed';
         task.nextExecution = null;
+        console.log(`One-time task "${task.name}" marked as completed`);
       } else {
-        // Otherwise, calculate next execution time (timezone-aware)
+        // Calculate next execution time (timezone-aware)
+        console.log(`Calculating next execution for recurring task "${task.name}"`);
         task.updateNextExecution();
 
         // If there's no next execution (e.g., end date reached), mark as completed
         if (!task.nextExecution) {
           task.status = 'completed';
+          console.log(`Recurring task "${task.name}" has no more executions, marked as completed`);
         }
       }
 
       // Save the updated task
       await task.save();
 
-      // Schedule next execution if it exists
-      if (task.nextExecution) {
+      // FIXED: Schedule next execution if it exists and task is still active
+      if (task.nextExecution && task.status === 'active') {
+        console.log(`Scheduling next execution for task "${task.name}"`);
         this.scheduleTask(task);
       }
 
     } catch (error) {
       console.error(`Error processing task execution ${taskId}:`, error);
+    }
+  }
+
+  // FIXED: Add method to handle new task scheduling
+  async scheduleNewTask(task) {
+    try {
+      console.log(`Scheduling new task: ${task.name}`);
+      
+      // Ensure the task has a next execution time
+      if (!task.nextExecution) {
+        console.log(`New task "${task.name}" has no next execution time, updating...`);
+        task.updateNextExecution();
+        await task.save();
+      }
+      
+      // Schedule it if it has an execution time
+      if (task.nextExecution && task.status === 'active') {
+        this.scheduleTask(task);
+      } else {
+        console.log(`New task "${task.name}" cannot be scheduled - nextExecution: ${task.nextExecution}, status: ${task.status}`);
+      }
+    } catch (error) {
+      console.error(`Error scheduling new task:`, error);
     }
   }
 
@@ -229,13 +270,11 @@ class TaskScheduler {
       
       switch (condition.type) {
         case 'sensor_value':
-          // Get the current sensor value from the device
           if (condition.device) {
             const sensorDevice = await Device.findById(condition.device);
             if (sensorDevice) {
               const sensorValue = await this.getDeviceValue(sensorDevice);
               
-              // Check the condition based on the operator
               switch (condition.operator) {
                 case 'equals':
                   conditionMet = sensorValue === condition.value;
@@ -259,13 +298,11 @@ class TaskScheduler {
           break;
           
         case 'time_window':
-          // Use the task's timezone for time window checking
           const currentUserTime = task.getCurrentTimeInUserTimezone();
           const currentHour = currentUserTime.hour();
           const currentMinute = currentUserTime.minute();
           const currentTimeMinutes = currentHour * 60 + currentMinute;
           
-          // Parse time window values (assuming they're stored as "HH:MM" format)
           const [startHour, startMinute] = condition.value.split(':').map(Number);
           const startTimeMinutes = startHour * 60 + startMinute;
           
@@ -273,16 +310,13 @@ class TaskScheduler {
             const [endHour, endMinute] = condition.additionalValue.split(':').map(Number);
             const endTimeMinutes = endHour * 60 + endMinute;
             
-            // Handle time windows that cross midnight
             if (startTimeMinutes <= endTimeMinutes) {
               conditionMet = currentTimeMinutes >= startTimeMinutes && currentTimeMinutes <= endTimeMinutes;
             } else {
-              // Time window spans midnight (e.g., 22:00 to 06:00)
               conditionMet = currentTimeMinutes >= startTimeMinutes || currentTimeMinutes <= endTimeMinutes;
             }
           } else {
-            // For specific time
-            conditionMet = Math.abs(currentTimeMinutes - startTimeMinutes) <= 1; // Allow 1 minute tolerance
+            conditionMet = Math.abs(currentTimeMinutes - startTimeMinutes) <= 1;
           }
           break;
           
@@ -296,18 +330,16 @@ class TaskScheduler {
           break;
           
         case 'user_presence':
-          // This would integrate with your user presence detection system
           conditionMet = true; // Placeholder
           break;
       }
       
-      // If any condition is not met, return false
       if (!conditionMet) {
+        console.log(`Condition not met: ${condition.type} ${condition.operator} ${condition.value}`);
         return false;
       }
     }
     
-    // All conditions were met
     return true;
   }
 
@@ -319,14 +351,11 @@ class TaskScheduler {
     
     switch (action.type) {
       case 'status_change':
-        // Normalize the action value to ensure correct state
         const normalizedState = normalizeState(action.value);
         console.log(`Original action value: ${action.value}, Normalized: ${normalizedState}`);
         
-        // Update device in database
         await Device.findByIdAndUpdate(device._id, { status: normalizedState });
         
-        // Publish to MQTT with the correct state
         const mqttBroker = require('./mqtt/mqtt-broker');
         mqttBroker.publishDeviceState(device._id, normalizedState, {
           updatedBy: 'task',
@@ -337,17 +366,16 @@ class TaskScheduler {
         break;
         
       case 'temperature_set':
-        // For a thermostat device
         const temperature = parseFloat(action.value);
         await Device.findByIdAndUpdate(device._id, { 
           temperature: temperature,
-          status: 'on' // Typically turn on when setting temperature
+          status: 'on'
         });
+        console.log(`Device ${device.name} temperature set to: ${temperature}`);
         break;
         
       default:
         console.log(`Custom action type: ${action.type} with value: ${action.value}`);
-        // Handle custom actions here
         break;
     }
     
@@ -356,7 +384,6 @@ class TaskScheduler {
 
   // Get a value from a device (for condition checking)
   async getDeviceValue(device) {
-    // Placeholder implementation
     return device.status === 'on' ? 1 : 0;
   }
 
@@ -372,7 +399,6 @@ class TaskScheduler {
         return;
       }
       
-      // Determine recipients
       const recipients = task.notifications.recipients.length > 0 
         ? task.notifications.recipients 
         : [task.creator];
@@ -397,7 +423,6 @@ class TaskScheduler {
           break;
       }
       
-      // Send emails to all recipients
       const emails = recipients.map(user => user.email);
       
       console.log(`Sending ${type} notification for task "${task.name}" to:`, emails);
@@ -419,19 +444,13 @@ class TaskScheduler {
       });
 
       for (const task of userTasks) {
-        // Unschedule the current task
         this.unscheduleTask(task._id.toString());
         
-        // Update the timezone
         task.timezone = newTimezone;
-        
-        // Recalculate next execution
         task.updateNextExecution();
         
-        // Save the task
         await task.save();
         
-        // Reschedule if there's a next execution
         if (task.nextExecution) {
           this.scheduleTask(task);
         }

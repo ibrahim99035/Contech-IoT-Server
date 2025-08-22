@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// Simple room types
 const ROOM_TYPES = [
   'living_room',
   'bedroom', 
@@ -27,7 +26,7 @@ const roomSchema = new mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   roomPassword: { type: String }, 
   esp_component_connected: { type: Boolean, default: false },
-  esp_id: {type:String}
+  esp_id: { type: String, unique: true }
 }, { timestamps: true });
 
 // Hash the roomPassword before saving if it's provided and modified
@@ -42,6 +41,16 @@ roomSchema.pre('save', async function (next) {
   } catch (error) {
     next(error);
   }
+});
+
+// Set esp_id after the document is saved
+roomSchema.post('save', async function (doc, next) {
+  if (!doc.esp_id) {
+    await this.constructor.findByIdAndUpdate(doc._id, {
+      esp_id: `esp_${doc._id}`
+    });
+  }
+  next();
 });
 
 // Method to match entered password with hashed roomPassword
