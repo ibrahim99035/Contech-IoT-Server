@@ -1,6 +1,50 @@
 version: '3.8'
 
 services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: contech-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ConTech_MongoDB_2024!Secure
+      MONGO_INITDB_DATABASE: contech
+    volumes:
+      - mongodb-data:/data/db
+      - mongodb-config:/data/configdb
+      - ./mongodb/init:/docker-entrypoint-initdb.d:ro
+      - ./mongodb/backups:/backups
+    networks:
+      - contech-network
+    command: --auth --bind_ip_all
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # MongoDB Express (Web UI for database management)
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: contech-mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ConTech_MongoDB_2024!Secure
+      ME_CONFIG_MONGODB_URL: mongodb://admin:ConTech_MongoDB_2024!Secure@mongodb:27017/?authSource=admin
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: contech_admin
+      ME_CONFIG_BASICAUTH_PASSWORD: WebUI_Access_2024!
+    networks:
+      - contech-network
+    depends_on:
+      - mongodb
+
   # Node.js Application
   api:
     build:
@@ -19,6 +63,7 @@ services:
     networks:
       - contech-network
     depends_on:
+      - mongodb
       - mqtt-broker
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
@@ -65,5 +110,9 @@ networks:
     driver: bridge
 
 volumes:
+  mongodb-data:
+    driver: local
+  mongodb-config:
+    driver: local
   mosquitto-data:
   mosquitto-logs:
