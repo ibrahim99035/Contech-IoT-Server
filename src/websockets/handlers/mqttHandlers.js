@@ -9,46 +9,7 @@ const Room = require('../../models/Room');
  * @param {Object} socket - Socket instance with user property
  */
 function registerHandlers(io, socket) {
-  // Handle device state update request via MQTT
-  socket.on('update-state-mqtt', async (data) => {
-    try {
-      if (!data.deviceId) {
-        return socket.emit('error', { message: 'Device ID is required' });
-      }
-      
-      const device = await Device.findById(data.deviceId);
-      
-      if (!device) {
-        return socket.emit('error', { message: 'Device not found' });
-      }
-      
-      // Access check
-      if (!device.users.includes(socket.user._id) && !device.creator.equals(socket.user._id)) {
-        return socket.emit('error', { message: 'Access denied to the device' });
-      }
-      
-      // Normalize state
-      const newState = normalizeState(data.state);
-      
-      // Publish to MQTT
-      mqttBroker.publishDeviceState(device._id, newState, {
-        updatedBy: 'user',
-        userId: socket.user._id.toString()
-      });
-      
-      // Respond to the client
-      socket.emit('mqtt-state-update-sent', {
-        deviceId: device._id,
-        state: newState
-      });
-      
-      console.log(`MQTT state update request sent for device ${device.name} by user ${socket.user.name}`);
-    } catch (error) {
-      console.error('Error updating device state via MQTT:', error);
-      socket.emit('error', { message: 'Failed to update device state via MQTT', error: error.message });
-    }
-  });
-
+  
   // Handle bulk update of device states in a room via MQTT
   socket.on('update-room-devices-mqtt', async (data) => {
     try {
@@ -68,7 +29,7 @@ function registerHandlers(io, socket) {
         return socket.emit('error', { message: 'Access denied to this room' });
       }
       
-      // Validate updates
+      // Validate updates and update database FIRST
       const validUpdates = [];
       for (const update of data.updates) {
         if (!update.deviceId || update.state === undefined) continue;
@@ -86,9 +47,16 @@ function registerHandlers(io, socket) {
           continue;
         }
         
+        const normalizedState = normalizeState(update.state);
+        
+        // Update device in database
+        device.status = normalizedState;
+        await device.save();
+        
         validUpdates.push({
           deviceId: device._id,
-          state: normalizeState(update.state)
+          state: normalizedState,
+          order: device.order
         });
       }
       
@@ -96,7 +64,24 @@ function registerHandlers(io, socket) {
         return socket.emit('error', { message: 'No valid device updates found' });
       }
       
-      // Publish to MQTT
+      // Notify WebSocket clients immediately
+      validUpdates.forEach(update => {
+        io.of('/ws/user').to(`device:${update.deviceId}`).emit('state-updated', {
+          deviceId: update.deviceId,
+          state: update.state,
+          updatedBy: 'user',
+          userId: socket.user._id.toString()
+        });
+      });
+      
+      io.of('/ws/room-user').to(`room:${room._id}`).emit('room-devices-updated', {
+        roomId: room._id,
+        updates: validUpdates.map(d => ({ deviceId: d.deviceId, state: d.state })),
+        updatedBy: 'user',
+        userId: socket.user._id.toString()
+      });
+      
+      // Publish to MQTT (will echo back and trigger ESP notification)
       mqttBroker.publishRoomState(room._id, validUpdates, {
         updatedBy: 'user',
         userId: socket.user._id.toString()

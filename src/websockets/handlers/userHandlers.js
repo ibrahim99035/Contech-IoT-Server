@@ -25,11 +25,21 @@ function registerHandlers(io, socket) {
       // Normalize state to string format
       const newState = normalizeState(data.state);
       
-      // Update device state
+      // Update device state in database FIRST
       device.status = newState;
       await device.save();
       
-      // Notify the specific device via websocket
+      // Notify WebSocket clients immediately (so user gets instant feedback)
+      io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', { 
+        deviceId: device._id, 
+        state: newState,
+        updatedBy: 'user',
+        userId: socket.user._id.toString(),
+        roomId: device.room,
+        espConnected: device.room.esp_component_connected
+      });
+      
+      // Notify the device namespace
       io.of('/ws/device').to(`device:${device._id}`).emit('state-update', { 
         deviceId: device._id, 
         state: newState,
@@ -37,21 +47,10 @@ function registerHandlers(io, socket) {
         userId: socket.user._id
       });
       
-      // publish to MQTT 
+      // Publish to MQTT (this will echo back and trigger ESP notification in handleDeviceStateMessage)
       mqttBroker.publishDeviceState(device._id, newState, {
         updatedBy: 'user',
         userId: socket.user._id.toString()
-      });
-      
-    
-      // Notify all users with access to this device
-      io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', { 
-        deviceId: device._id, 
-        state: newState,
-        updatedBy: 'user',
-        userId: socket.user._id.toString(),
-	      roomId: device.room,
-        espConnected: device.room.esp_component_connected
       });
       
       console.log(`Device ${device.name} state updated to ${newState} by user ${socket.user.name}`);
@@ -64,7 +63,7 @@ function registerHandlers(io, socket) {
   // Register MQTT specific handlers
   mqttHandlers.registerHandlers(io, socket);
 
-  // - Handle device info requests with ESP status:
+  // Handle device info requests with ESP status
   socket.on('get-device-info', async (data) => {
     try {
       if (!data || !data.deviceId) {
