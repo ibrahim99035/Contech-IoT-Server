@@ -11,16 +11,13 @@ let io;
 const espRoomMappings = new Map();
 const roomEspConnections = new Map();
 
-// NEW: Message deduplication tracker
-const recentMessages = new Map(); // key: messageId, value: timestamp
+// Message deduplication tracker
+const recentMessages = new Map();
 const MESSAGE_DEDUP_WINDOW = 2000; // 2 seconds
 
-/**
- * Generate a unique message ID for deduplication
- */
-function generateMessageId(deviceId, state, source) {
-  return `${deviceId}:${state}:${source}:${Date.now()}`;
-}
+// Auth request cooldown tracker
+const authCooldowns = new Map();
+const AUTH_COOLDOWN = 5000; // 5 seconds
 
 /**
  * Check if a message was recently processed
@@ -36,15 +33,13 @@ function isDuplicateMessage(deviceId, state, source) {
     }
   }
   
-  // Check if this exact message was processed recently
   if (recentMessages.has(messageKey)) {
     const lastTime = recentMessages.get(messageKey);
     if (now - lastTime < MESSAGE_DEDUP_WINDOW) {
-      return true; // Duplicate
+      return true;
     }
   }
   
-  // Mark as processed
   recentMessages.set(messageKey, now);
   return false;
 }
@@ -146,10 +141,21 @@ async function handleMqttMessage(topic, message) {
 }
 
 /**
- * Handle ESP authentication requests
+ * Handle ESP authentication requests with cooldown
  */
 async function handleEspAuthMessage(espId, payload) {
   try {
+    // Check cooldown to prevent duplicate auth requests
+    const now = Date.now();
+    const lastAuth = authCooldowns.get(espId);
+    
+    if (lastAuth && now - lastAuth < AUTH_COOLDOWN) {
+      console.log(`Ignoring duplicate auth request from ${espId} (cooldown active)`);
+      return;
+    }
+    
+    authCooldowns.set(espId, now);
+    
     const { roomId, roomPassword } = payload;
     
     if (!roomId) {
@@ -203,7 +209,6 @@ async function handleEspAuthMessage(espId, payload) {
     roomEspConnections.get(roomId).add(espId);
 
     await updateRoomEspStatus(roomId, true);
-    subscribeEspToRoom(espId, roomId);
     
     publishEspAuthResponse(espId, {
       success: true,
@@ -285,7 +290,7 @@ async function handleEspCompactStateMessage(espId, compactMessage, payload) {
     const newState = stateIndicator === '1' ? 'on' : 'off';
     const normalizedState = normalizeState(newState);
     
-    // FIXED: Check for duplicate before processing
+    // Check for duplicate
     if (isDuplicateMessage(device._id.toString(), normalizedState, 'esp-compact')) {
       console.log(`Duplicate ESP compact message ignored: ${device.name}`);
       return;
@@ -294,11 +299,16 @@ async function handleEspCompactStateMessage(espId, compactMessage, payload) {
     device.status = normalizedState;
     await device.save();
     
-    // Notify WebSocket clients
+    // Get room info with ESP connection status
+    const room = await Room.findById(device.room);
+    
+    // Notify WebSocket clients only (no MQTT republish to prevent loop)
     io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', {
       deviceId: device._id.toString(),
       state: normalizedState,
-      updatedBy: 'esp-compact'
+      updatedBy: 'esp-compact',
+      roomId: device.room.toString(),
+      espConnected: room ? room.esp_component_connected : false
     });
     
     if (device.room) {
@@ -330,7 +340,8 @@ async function handleEspCompactStateMessage(espId, compactMessage, payload) {
 
 /**
  * Handle device state messages
- * FIXED: Only broadcast to WebSockets, don't republish to MQTT/ESP to avoid loops
+ * CRITICAL: This is where MQTT messages arrive that we published
+ * We need to handle them but NOT create loops
  */
 async function handleDeviceStateMessage(deviceId, payload) {
   try {
@@ -343,20 +354,39 @@ async function handleDeviceStateMessage(deviceId, payload) {
     const newState = normalizeState(payload.state);
     const source = payload.updatedBy || 'mqtt';
     
-    // FIXED: Check for duplicate
+    // Check for duplicate
     if (isDuplicateMessage(deviceId, newState, source)) {
       console.log(`Duplicate MQTT message ignored: ${device.name}`);
       return;
     }
     
+    // CRITICAL FIX: If this came from user via WebSocket, 
+    // the database is already updated and WebSocket clients already notified
+    // We ONLY need to notify ESP devices here (not republish to MQTT or re-notify WebSocket)
+    if (source === 'user' && payload.userId) {
+      console.log(`MQTT echo from user action - notifying ESP only for device ${device.name}`);
+      
+      // Only notify ESP devices (they subscribe to ESP-specific topics)
+      if (device.room) {
+        publishEspStateUpdate(device.room.toString(), deviceId, newState, device.order);
+      }
+      return;
+    }
+    
+    // For messages from actual external devices or other sources
     device.status = newState;
     await device.save();
     
-    // Broadcast to WebSocket clients only
+    // Get room info for complete response
+    const room = device.room ? await Room.findById(device.room) : null;
+    
+    // Broadcast to WebSocket clients
     io.of('/ws/user').to(`device:${deviceId}`).emit('state-updated', {
       deviceId: deviceId,
       state: newState,
-      updatedBy: source
+      updatedBy: source,
+      roomId: device.room ? device.room.toString() : null,
+      espConnected: room ? room.esp_component_connected : false
     });
     
     if (device.room) {
@@ -369,7 +399,7 @@ async function handleDeviceStateMessage(deviceId, payload) {
         updatedBy: source
       });
       
-      // FIXED: Only notify ESP if the source was NOT from ESP or device
+      // Notify ESP if source wasn't ESP
       if (source !== 'esp-compact' && source !== 'device' && source !== 'esp-room-report') {
         publishEspStateUpdate(device.room.toString(), deviceId, newState, device.order);
       }
@@ -418,6 +448,32 @@ async function handleRoomStateMessage(roomId, payload) {
     }
     
     const source = payload.updatedBy || 'mqtt';
+    
+    // CRITICAL FIX: If from user, only notify ESP (DB and WebSocket already handled)
+    if (source === 'user' && payload.userId) {
+      console.log(`MQTT echo from user action - notifying ESP only for room ${roomId}`);
+      
+      // Get device details for ESP notification
+      const updatedDevices = [];
+      for (const update of payload.updates) {
+        if (!update.deviceId) continue;
+        const device = await Device.findById(update.deviceId);
+        if (device && device.room.toString() === roomId) {
+          updatedDevices.push({
+            deviceId: device._id,
+            state: update.state,
+            order: device.order
+          });
+        }
+      }
+      
+      if (updatedDevices.length > 0) {
+        publishEspRoomStateUpdate(roomId, updatedDevices);
+      }
+      return;
+    }
+    
+    // For external messages, process normally
     const updatedDevices = [];
     
     for (const update of payload.updates) {
@@ -433,7 +489,6 @@ async function handleRoomStateMessage(roomId, payload) {
         
         const newState = normalizeState(update.state);
         
-        // FIXED: Check for duplicate
         if (isDuplicateMessage(device._id.toString(), newState, source)) {
           console.log(`Duplicate room state message ignored: ${device.name}`);
           continue;
@@ -453,11 +508,16 @@ async function handleRoomStateMessage(roomId, payload) {
     }
     
     if (updatedDevices.length > 0) {
+      // Get room info for complete response
+      const room = await Room.findById(roomId);
+      
       updatedDevices.forEach(device => {
         io.of('/ws/user').to(`device:${device.deviceId}`).emit('state-updated', {
           deviceId: device.deviceId,
           state: device.state,
-          updatedBy: source
+          updatedBy: source,
+          roomId: roomId,
+          espConnected: room ? room.esp_component_connected : false
         });
       });
       
@@ -467,7 +527,7 @@ async function handleRoomStateMessage(roomId, payload) {
         updatedBy: source
       });
       
-      // FIXED: Only notify ESP if source was NOT from ESP
+      // Notify ESP if source wasn't ESP
       if (source !== 'esp-compact' && source !== 'device' && source !== 'esp-room-report') {
         publishEspRoomStateUpdate(roomId, updatedDevices);
       }
@@ -477,17 +537,6 @@ async function handleRoomStateMessage(roomId, payload) {
   } catch (error) {
     console.error('Error handling room state message:', error);
   }
-}
-
-function subscribeEspToRoom(espId, roomId) {
-  if (!client || !client.connected) {
-    return console.error('MQTT client not connected');
-  }
-  
-  console.log(`ESP ${espId} should subscribe to:`);
-  console.log(`- home-automation/esp/room/${roomId}/state-update`);
-  console.log(`- home-automation/esp/room/${roomId}/bulk-update`);
-  console.log(`- home-automation/esp/room/${roomId}/task-update`);
 }
 
 function publishEspAuthResponse(espId, response) {
@@ -634,7 +683,7 @@ function registerTaskEventHandlers() {
 
 /**
  * Publish a device state update to MQTT
- * FIXED: Don't call publishEspStateUpdate here to avoid double publishing
+ * This creates an MQTT message that will echo back to handleDeviceStateMessage
  */
 function publishDeviceState(deviceId, state, options = {}) {
   if (!client || !client.connected) {
@@ -655,14 +704,10 @@ function publishDeviceState(deviceId, state, options = {}) {
   );
   
   console.log(`Published state ${state} to device ${deviceId} via MQTT`);
-  
-  // REMOVED: The duplicate ESP notification from here
-  // ESP will be notified when the MQTT message is processed by handleDeviceStateMessage
 }
 
 /**
  * Publish room devices state update to MQTT
- * FIXED: Don't call publishEspRoomStateUpdate here to avoid double publishing
  */
 function publishRoomState(roomId, updates, options = {}) {
   if (!client || !client.connected) {
@@ -686,9 +731,6 @@ function publishRoomState(roomId, updates, options = {}) {
   );
   
   console.log(`Published state updates for ${updates.length} devices in room ${roomId} via MQTT`);
-  
-  // REMOVED: The duplicate ESP notification from here
-  // ESP will be notified when the MQTT message is processed by handleRoomStateMessage
 }
 
 function getEspRoomMapping(espId) {
@@ -736,6 +778,7 @@ async function handleEspDisconnection(espId) {
     }
     
     espRoomMappings.delete(espId);
+    authCooldowns.delete(espId);
     
     console.log(`ESP ${espId} disconnected from room ${roomId}`);
   } catch (error) {
@@ -751,7 +794,8 @@ function close() {
   
   espRoomMappings.clear();
   roomEspConnections.clear();
-  recentMessages.clear(); // ADDED: Clear dedup tracker
+  recentMessages.clear();
+  authCooldowns.clear();
 }
 
 module.exports = {
