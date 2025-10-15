@@ -17,19 +17,14 @@ function registerHandlers(io, socket) {
         return socket.emit('error', { message: 'Device not found' });
       }
       
-      // Access check
       if (!device.users.includes(socket.user._id) && !device.creator.equals(socket.user._id)) {
         return socket.emit('error', { message: 'Access denied to the device' });
       }
       
-      // Normalize state to string format
       const newState = normalizeState(data.state);
-      
-      // Update device state
       device.status = newState;
       await device.save();
       
-      // Notify the specific device via websocket
       io.of('/ws/device').to(`device:${device._id}`).emit('state-update', { 
         deviceId: device._id, 
         state: newState,
@@ -37,24 +32,26 @@ function registerHandlers(io, socket) {
         userId: socket.user._id
       });
       
-      // publish to MQTT 
       mqttBroker.publishDeviceState(device._id, newState, {
         updatedBy: 'user',
         userId: socket.user._id.toString()
       });
       
-    
-      // Notify all users with access to this device
+      // ✅ FIX: Get real-time ESP status from memory, not database
+      const roomId = device.room._id.toString();
+      const actualEspStatus = mqttBroker.roomEspConnections.has(roomId) && 
+                            mqttBroker.roomEspConnections.get(roomId).size > 0;
+      
       io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', { 
         deviceId: device._id, 
         state: newState,
         updatedBy: 'user',
         userId: socket.user._id.toString(),
-	      roomId: device.room,
-        espConnected: device.room.esp_component_connected
+        roomId: device.room,
+        espConnected: actualEspStatus // ✅ Real-time status
       });
       
-      console.log(`Device ${device.name} state updated to ${newState} by user ${socket.user.name}`);
+      console.log(`Device ${device.name} updated to ${newState}, ESP: ${actualEspStatus}`);
     } catch (error) {
       console.error('Error updating device state:', error);
       socket.emit('error', { message: 'Failed to update device state', error: error.message });
@@ -72,16 +69,19 @@ function registerHandlers(io, socket) {
       }
       
       const Room = require('../../models/Room');
-      
       const device = await Device.findById(data.deviceId).populate('room');
+      
       if (!device) {
         return socket.emit('error', { message: 'Device not found' });
       }
       
-      // Access check
       if (!device.users.includes(socket.user._id) && !device.creator.equals(socket.user._id)) {
         return socket.emit('error', { message: 'Access denied to device' });
       }
+      
+      const roomId = device.room._id.toString();
+      const actualEspStatus = mqttBroker.roomEspConnections.has(roomId) && 
+                            mqttBroker.roomEspConnections.get(roomId).size > 0;
       
       socket.emit('device-info', {
         device: {
@@ -92,7 +92,7 @@ function registerHandlers(io, socket) {
           room: {
             id: device.room._id,
             name: device.room.name,
-            espConnected: device.room.esp_component_connected
+            espConnected: actualEspStatus
           }
         }
       });
