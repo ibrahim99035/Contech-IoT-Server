@@ -70,6 +70,34 @@ taskSchema.methods.convertLocalTimeToUTC = function(localDate, localTime) {
   return fullDateTime.utc().toDate();
 };
 
+// FIXED: Add cron support
+taskSchema.methods.getNextCronOccurrence = function(currentUserTime) {
+  try {
+    const parser = require('cron-parser');
+    const cronExpression = this.schedule.recurrence.cronExpression;
+    
+    if (!cronExpression) {
+      console.error('No cron expression provided for custom task');
+      return null;
+    }
+
+    // Parse cron expression in user's timezone
+    const options = {
+      currentDate: currentUserTime.toDate(),
+      tz: this.timezone
+    };
+
+    const interval = parser.parseExpression(cronExpression, options);
+    const nextOccurrence = interval.next().toDate();
+    
+    // Convert back to moment in user timezone
+    return moment.tz(nextOccurrence, this.timezone);
+  } catch (error) {
+    console.error('Error parsing cron expression:', error);
+    return null;
+  }
+};
+
 // FIXED: Improved next occurrence calculation
 taskSchema.methods.getNextOccurrenceInUserTimezone = function(currentUserTime, isInitialScheduling = false) {
   const [hours, minutes] = this.schedule.startTime.split(':').map(Number);
@@ -85,6 +113,11 @@ taskSchema.methods.getNextOccurrenceInUserTimezone = function(currentUserTime, i
       return taskDate;
     }
     return null;
+  }
+  
+  // FIXED: Handle custom cron expressions
+  if (this.schedule.recurrence.type === 'custom') {
+    return this.getNextCronOccurrence(currentUserTime);
   }
   
   // For recurring tasks, check if today's time has already passed
@@ -113,11 +146,6 @@ taskSchema.methods.getNextOccurrenceInUserTimezone = function(currentUserTime, i
       
     case 'monthly':
       nextOccurrence = this.getNextMonthlyOccurrence(currentUserTime, needsToMoveToNext);
-      break;
-      
-    case 'custom':
-      // Implement cron parsing here
-      nextOccurrence.add(1, 'day'); // Placeholder
       break;
   }
   
@@ -205,6 +233,9 @@ taskSchema.methods.matchesRecurrencePattern = function(dateToCheck) {
       const targetDay = this.schedule.recurrence.dayOfMonth;
       if (!targetDay) return true;
       return dateToCheck.date() === targetDay;
+      
+    case 'custom':
+      return true; // Cron handles its own pattern matching
       
     default:
       return true;

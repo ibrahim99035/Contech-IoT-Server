@@ -323,7 +323,9 @@ async function handleEspCompactStateMessage(espId, compactMessage, payload) {
     io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', {
       deviceId: device._id.toString(),
       state: normalizedState,
-      updatedBy: 'esp-compact'
+      updatedBy: 'esp-compact',
+      roomId: device.room.toString(),
+      espConnected: room.esp_component_connected
     });
     
     if (device.room) {
@@ -859,5 +861,7 @@ module.exports = {
   handleEspDisconnection,
   updateRoomEspStatus,
   close,
-  client 
+  client,
+  roomEspConnections,
+  espRoomMappings 
 };
