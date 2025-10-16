@@ -43,12 +43,12 @@ function registerHandlers(io, socket) {
                             mqttBroker.roomEspConnections.get(roomId).size > 0;
       
       io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', { 
-        deviceId: device._id, 
+        deviceId: device._id.toString(), 
         state: newState,
         updatedBy: 'user',
         userId: socket.user._id.toString(),
-        roomId: device.room,
-        espConnected: actualEspStatus // ✅ Real-time status
+        roomId: roomId,  
+        espConnected: actualEspStatus
       });
       
       console.log(`Device ${device.name} updated to ${newState}, ESP: ${actualEspStatus}`);
