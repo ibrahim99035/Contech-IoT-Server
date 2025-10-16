@@ -319,13 +319,16 @@ async function handleEspCompactStateMessage(espId, compactMessage, payload) {
     device.status = normalizedState;
     await device.save();
     
+    // Fetch the room to get ESP connection status
+    const room = await Room.findById(roomId);
+    
     // Notify WebSocket clients
     io.of('/ws/user').to(`device:${device._id}`).emit('state-updated', {
       deviceId: device._id.toString(),
       state: normalizedState,
       updatedBy: 'esp-compact',
       roomId: device.room.toString(),
-      espConnected: room.esp_component_connected
+      espConnected: room ? room.esp_component_connected : false
     });
     
     if (device.room) {
@@ -355,7 +358,6 @@ async function handleEspCompactStateMessage(espId, compactMessage, payload) {
     });
   }
 }
-
 /**
  * Handle device state messages (including forwarding to ESP)
  */
