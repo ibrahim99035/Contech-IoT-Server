@@ -16,9 +16,10 @@ services:
       - mongodb-config:/data/configdb
       - ./mongodb/init:/docker-entrypoint-initdb.d:ro
       - ./mongodb/backups:/backups
+      - ./mongodb/keyfile:/data/keyfile:ro
     networks:
       - contech-network
-    command: --auth --bind_ip_all --replSet rs0
+    command: --auth --bind_ip_all --replSet rs0 --keyFile /data/keyfile
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
