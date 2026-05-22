@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   # MongoDB Database
   mongodb:
@@ -19,7 +18,12 @@ services:
       - ./mongodb/backups:/backups
     networks:
       - contech-network
-    command: --auth --bind_ip_all
+    command: --auth --bind_ip_all --replSet rs0
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     logging:
       driver: "json-file"
       options:
@@ -63,8 +67,10 @@ services:
     networks:
       - contech-network
     depends_on:
-      - mongodb
-      - mqtt-broker
+      mongodb:
+        condition: service_healthy
+      mqtt-broker:
+        condition: service_started
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
       interval: 30s
@@ -77,8 +83,8 @@ services:
     container_name: contech-mqtt
     restart: unless-stopped
     ports:
-      - "1884:1884"      # MQTT port
-      - "9002:9002"      # WebSocket port
+      - "1884:1884"
+      - "9002:9002"
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
@@ -87,7 +93,7 @@ services:
       - contech-network
     command: mosquitto -c /mosquitto/config/mosquitto.conf
 
-  # Nginx Reverse Proxy (for domain setup)
+  # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
     container_name: contech-nginx
