@@ -246,22 +246,10 @@ taskSchema.methods.matchesRecurrencePattern = function(dateToCheck) {
 taskSchema.methods.updateNextExecution = function() {
   const currentUserTime = this.getCurrentTimeInUserTimezone();
   
-  console.log(`Updating next execution for task: ${this.name}`);
-  console.log(`Current user time: ${currentUserTime.format('YYYY-MM-DD HH:mm:ss z')}`);
-  console.log(`Schedule type: ${this.schedule.recurrence.type}`);
-  console.log(`Schedule time: ${this.schedule.startTime}`);
-  
   // For one-time tasks
   if (this.schedule.recurrence.type === 'once') {
     const taskDateTime = this.convertLocalTimeToUTC(this.schedule.startDate, this.schedule.startTime);
-    console.log(`One-time task datetime (UTC): ${moment.utc(taskDateTime).format('YYYY-MM-DD HH:mm:ss')} UTC`);
-    
     this.nextExecution = taskDateTime > new Date() ? taskDateTime : null;
-    if (this.nextExecution) {
-      console.log(`Next execution set to: ${moment.utc(this.nextExecution).format('YYYY-MM-DD HH:mm:ss')} UTC`);
-    } else {
-      console.log('One-time task is in the past, no next execution');
-    }
     return;
   }
   
@@ -270,18 +258,14 @@ taskSchema.methods.updateNextExecution = function() {
   const nextUserTime = this.getNextOccurrenceInUserTimezone(currentUserTime, isInitialScheduling);
   
   if (!nextUserTime) {
-    console.log('No next occurrence found');
     this.nextExecution = null;
     return;
   }
-  
-  console.log(`Next occurrence in user timezone: ${nextUserTime.format('YYYY-MM-DD HH:mm:ss z')}`);
   
   // Check end date
   if (this.schedule.endDate) {
     const endDate = moment.tz(this.schedule.endDate, this.timezone).endOf('day');
     if (nextUserTime.isAfter(endDate)) {
-      console.log('Next occurrence is after end date, marking as completed');
       this.nextExecution = null;
       this.status = 'completed';
       return;
@@ -290,7 +274,6 @@ taskSchema.methods.updateNextExecution = function() {
   
   // Convert to UTC
   this.nextExecution = nextUserTime.utc().toDate();
-  console.log(`Next execution set to: ${moment.utc(this.nextExecution).format('YYYY-MM-DD HH:mm:ss')} UTC`);
 };
 
 // Method to get next execution time in user's timezone (for display)
@@ -315,10 +298,14 @@ taskSchema.methods.getFormattedNextExecution = function() {
 // Pre-save hook to update nextExecution
 taskSchema.pre('save', function(next) {
   if (this.isNew || this.isModified('schedule') || this.isModified('timezone')) {
-    console.log(`Pre-save hook triggered for task: ${this.name}, isNew: ${this.isNew}`);
     this.updateNextExecution();
   }
   next();
 });
+
+// Indexes for query performance
+taskSchema.index({ status: 1, nextExecution: 1 });
+taskSchema.index({ creator: 1, status: 1 });
+taskSchema.index({ device: 1, status: 1 });
 
 module.exports = mongoose.model('Task', taskSchema);
