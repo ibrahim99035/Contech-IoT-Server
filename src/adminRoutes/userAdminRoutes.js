@@ -11,47 +11,95 @@ const updateUserRole = require('../controllers/admin/user.admin.controllers/upda
 const deleteUser = require('../controllers/admin/user.admin.controllers/deleteUser');
 
 /**
- * @route   GET /api/admin/dashboard/users/get-all-users
- * @desc    Get all users with comprehensive analysis and statistics
- * @access  Private/Admin
+ * @openapi
+ * /admin/dashboard/users/get-all-users:
+ *   get:
+ *     summary: Admin - Get all users
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: List of users }
+ * 
+ * /admin/dashboard/users/search-users:
+ *   get:
+ *     summary: Admin - Search users
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Filtered users list }
+ * 
+ * /admin/dashboard/users/user-statistics:
+ *   get:
+ *     summary: Admin - Get user statistics
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: User statistics analytics }
+ * 
+ * /admin/dashboard/users/get-user-by-id/{id}:
+ *   get:
+ *     summary: Admin - Get user by ID
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: User details }
+ * 
+ * /admin/dashboard/users/update-user-role/{id}:
+ *   put:
+ *     summary: Admin - Update user role
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [role]
+ *             properties:
+ *               role: { type: string, enum: [admin, moderator, customer] }
+ *     responses:
+ *       200: { description: User role updated }
+ * 
+ * /admin/dashboard/users/delete-account/{id}:
+ *   delete:
+ *     summary: Admin - Delete user account permanently
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: User deleted }
  */
+
 router.get('/get-all-users', protect, authorizeRoles('admin'), getAllUsers);
-
-/**
- * @route   GET /api/admin/dashboard/users/search-users
- * @desc    Search and filter users with advanced filtering and pagination
- * @access  Private/Admin
- * @query   role, active, emailActivated, search, sortBy, sortOrder, page, limit
- */
 router.get('/search-users', protect, authorizeRoles('admin'), getFilteredUsers);
-
-/**
- * @route   GET /api/admin/dashboard/users/user-statistics
- * @desc    Get comprehensive user statistics and analytics dashboard
- * @access  Private/Admin
- */
 router.get('/user-statistics', protect, authorizeRoles('admin'), getUserStatistics);
-
-/**
- * @route   GET /api/admin/dashboard/users/get-user-by-id/:id
- * @desc    Get specific user by ID with full details and analysis
- * @access  Private/Admin
- */
 router.get('/get-user-by-id/:id', protect, authorizeRoles('admin'), getUserById);
-
-/**
- * @route   PUT /api/admin/dashboard/users/update-user-role-admin-action/:id
- * @desc    Update user role (admin only action)
- * @access  Private/Admin
- * @body    { role: 'admin' | 'moderator' | 'customer' }
- */
 router.put('/update-user-role/:id', protect, authorizeRoles('admin'), updateUserRole);
-
-/**
- * @route   DELETE /api/admin/dashboard/users/delete-account/:id
- * @desc    Delete user account permanently (admin only action)
- * @access  Private/Admin
- */
 router.delete('/delete-account/:id', protect, authorizeRoles('admin'), deleteUser);
 
 module.exports = router;

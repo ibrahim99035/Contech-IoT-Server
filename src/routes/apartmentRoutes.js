@@ -16,69 +16,142 @@ const { protect } = require('../middleware/authMiddleware');
 const { checkApartmentLimits } = require('../middleware/checkSubscriptionLimits');
 
 /**
- * @route   POST /api/apartments/create-apartment
- * @desc    Create a new apartment. Automatically adds the creator as a member.
- * @access  Protected (Requires authentication)
+ * @openapi
+ * /api/apartments-handler/apartments/create-apartment:
+ *   post:
+ *     summary: Create a new apartment
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name]
+ *             properties:
+ *               name: { type: string, example: "Main Residency" }
+ *               address: { type: string, example: "123 Smart St, Cairo" }
+ *     responses:
+ *       201: { description: Apartment created successfully }
+ *       403: { description: Subscription limit reached }
+ * 
+ * /api/apartments-handler/apartments/member:
+ *   get:
+ *     summary: Get apartments where user is a member or creator
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: List of user apartments }
+ * 
+ * /api/apartments-handler/apartments/assign-members:
+ *   put:
+ *     summary: Assign members to an apartment
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [apartmentId, members]
+ *             properties:
+ *               apartmentId: { type: string }
+ *               members: { type: array, items: { type: string } }
+ *     responses:
+ *       200: { description: Members assigned successfully }
+ * 
+ * /api/apartments-handler/apartments/update-name:
+ *   put:
+ *     summary: Update apartment name
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [apartmentId, name]
+ *             properties:
+ *               apartmentId: { type: string }
+ *               name: { type: string }
+ *     responses:
+ *       200: { description: Apartment name updated }
+ * 
+ * /api/apartments-handler/apartments/delete/{id}:
+ *   delete:
+ *     summary: Delete apartment by ID
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Apartment deleted }
+ * 
+ * /api/apartments-handler/apartments/{id}/members:
+ *   get:
+ *     summary: Get all members of an apartment
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: List of apartment members }
+ * 
+ * /api/apartments-handler/apartments/{apartmentId}/remover-member/{memberId}:
+ *   delete:
+ *     summary: Remove a member from an apartment
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: apartmentId
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: memberId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Member removed }
+ * 
+ * /api/apartments-handler/apartments/{apartmentId}/exit:
+ *   put:
+ *     summary: Exit an apartment
+ *     tags: [Apartments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: apartmentId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Exited apartment successfully }
  */
+
 router.post('/apartments/create-apartment', protect, checkApartmentLimits, createApartment);
-
-/**
- * @route   GET /api/apartments/member
- * @desc    Retrieve a list of apartments the authenticated user is a member of.
- *          Includes details about the apartment creator and associated rooms.
- * @access  Protected (Requires authentication)
- */
 router.get('/apartments/member', protect, getApartmentsByMember);
-
-/**
- * @route   PUT /api/apartments/assign-members
- * @desc    Add members to an existing apartment. Only the creator of the apartment 
- *          is allowed to perform this action.
- * @body    { apartmentId: string, members: array<string> }
- * @access  Protected (Requires authentication)
- */
 router.put('/apartments/assign-members', protect, assignMembers);
-
-/**
- * @route   PUT /api/apartments/update-name
- * @desc    Update the name of an existing apartment. Only the creator of the apartment
- *          is allowed to perform this action.
- * @body    { apartmentId: string, name: string }
- * @access  Protected (Requires authentication)
- */
 router.put('/apartments/update-name', protect, updateApartmentName);
-
-/**
- * @route   DELETE /api/apartments/delete/:id
- * @desc    Delete an apartment and cascade-delete related resources (rooms, devices, etc.).
- *          Only the creator of the apartment is allowed to perform this action.
- * @params  { id: string } - The ID of the apartment to delete.
- * @access  Protected (Requires authentication)
- */
 router.delete('/apartments/delete/:id', protect, deleteApartment);
-
-/**
- * @route   GET /api/apartments/:id/members
- * @desc    Get all members of a specific apartment, including the creator.
- * @params  { id: string } - The ID of the apartment.
- * @access  Protected (Requires authentication)
- */
 router.get('/apartments/:id/members', protect, getApartmentMembers);
-
-/**
- * @route   DELETE /api/apartments/:apartmentId/remover-member/:memberId
- * @desc    Get all members of a specific apartment, including the creator.
- * @params  { id: string } - The ID of the apartment.
- * @access  Protected (Requires authentication)
- */
 router.delete('/apartments/:apartmentId/remover-member/:memberId', protect, removeMember);
-
-/**
- * @route   GET /api/apartments/:apartmentId/exit
- * @desc    Get all members of a specific apartment, including the creator.
- * @params  { id: string } - The ID of the apartment.
- * @access  Protected (Requires authentication)
- */
 router.put('/apartments/:apartmentId/exit', protect, exitApartment);
 
 module.exports = router;
