@@ -28,8 +28,7 @@ const accessTokenSchema = new mongoose.Schema({
   refreshToken: {
     type: String,
     required: true,
-    unique: true,
-    index: true
+    unique: true
   },
   expiresAt: {
     type: Date,
@@ -48,6 +47,5 @@ const accessTokenSchema = new mongoose.Schema({
 // Compound indexes for efficient querying
 accessTokenSchema.index({ token: 1, clientId: 1 });
 accessTokenSchema.index({ userId: 1, clientId: 1 });
-accessTokenSchema.index({ refreshToken: 1 });
 
 module.exports = mongoose.model('AccessToken', accessTokenSchema);

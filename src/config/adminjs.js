@@ -5,7 +5,6 @@
 
 'use strict';
 
-const AdminJS = require('adminjs');
 const bcrypt = require('bcryptjs');
 
 // Load Mongoose Models
@@ -23,6 +22,9 @@ const Image = require('../models/Image');
  * Initialize AdminJS Dashboard Router
  */
 async function setupAdminJS() {
+  const AdminJSModule = await import('adminjs');
+  const AdminJS = AdminJSModule.default || AdminJSModule;
+
   const AdminJSMongooseModule = await import('@adminjs/mongoose');
   const AdminJSMongoose = AdminJSMongooseModule.default || AdminJSMongooseModule;
   AdminJS.registerAdapter(AdminJSMongoose);
