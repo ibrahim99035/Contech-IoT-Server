@@ -81,6 +81,9 @@ exports.updateTaskSchedule = async (req, res) => {
         task.updateNextExecution(); // Recalculate next execution
         await task.save();
 
+        const taskScheduler = require('../../../schedualr');
+        await taskScheduler.scheduleTask(task);
+
         res.status(200).json({ message: 'Task schedule updated', task });
 
     } catch (error) {
@@ -116,6 +119,13 @@ exports.updateTaskStatus = async (req, res) => {
         // Update Status
         task.status = status;
         await task.save();
+
+        const taskScheduler = require('../../../schedualr');
+        if (status === 'active' && task.nextExecution) {
+            await taskScheduler.scheduleTask(task);
+        } else {
+            await taskScheduler.unscheduleTask(taskId);
+        }
 
         res.status(200).json({ message: 'Task status updated', task });
 

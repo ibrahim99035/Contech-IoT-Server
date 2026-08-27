@@ -47,6 +47,9 @@ exports.deleteTask = async (req, res) => {
             return res.status(403).json({ error: 'Unauthorized: You cannot delete this task' });
         }
 
+        const taskScheduler = require('../../../schedualr');
+        await taskScheduler.unscheduleTask(taskId);
+
         // 🚀 Delete task
         await Task.deleteOne({ _id: taskId });
 

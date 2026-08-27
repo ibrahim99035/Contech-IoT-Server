@@ -6,5 +6,9 @@ const apartmentSchema = new mongoose.Schema({
     members: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Other users with access
     rooms: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Room' }], // Rooms in the apartment
 }, { timestamps: true });
-  
-module.exports = mongoose.model('Apartment', apartmentSchema);  
+
+// Indexes for query performance
+apartmentSchema.index({ creator: 1 });
+apartmentSchema.index({ members: 1 });
+
+module.exports = mongoose.model('Apartment', apartmentSchema);

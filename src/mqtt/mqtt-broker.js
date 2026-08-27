@@ -3,6 +3,7 @@ const taskEvents = require('../websockets/taskEventEmitter');
 const { normalizeState } = require('../websockets/utils/stateUtils');
 const Device = require('../models/Device');
 const Room = require('../models/Room');
+const logger = require('../config/logger');
 
 let client;
 let io;
@@ -34,62 +35,62 @@ function initialize(socketIo) {
   
   // Handle connection
   client.on('connect', () => {
-    console.log('Connected to MQTT broker');
+    logger.info('Connected to MQTT broker');
     
     // Subscribe to device state topics
     client.subscribe('home-automation/+/state', (err) => {
       if (err) {
-        console.error('Error subscribing to device state topics:', err);
+        logger.error('Error subscribing to device state topics', { error: err.message });
       } else {
-        console.log('Subscribed to device state topics');
+        logger.info('Subscribed to device state topics');
       }
     });
     
     // Subscribe to device connection status
     client.subscribe('home-automation/+/status', (err) => {
       if (err) {
-        console.error('Error subscribing to device status topics:', err);
+        logger.error('Error subscribing to device status topics', { error: err.message });
       } else {
-        console.log('Subscribed to device status topics');
+        logger.info('Subscribed to device status topics');
       }
     });
     
     // Subscribe to room state topics
     client.subscribe('home-automation/room/+/state', (err) => {
       if (err) {
-        console.error('Error subscribing to room state topics:', err);
+        logger.error('Error subscribing to room state topics', { error: err.message });
       } else {
-        console.log('Subscribed to room state topics');
+        logger.info('Subscribed to room state topics');
       }
     });
 
     // Subscribe to ESP compact state updates
     client.subscribe('home-automation/esp/+/compact-state', (err) => {
       if (err) {
-        console.error('Error subscribing to ESP compact state topics:', err);
+        logger.error('Error subscribing to ESP compact state topics', { error: err.message });
       } else {
-        console.log('Subscribed to ESP compact state topics');
+        logger.info('Subscribed to ESP compact state topics');
       }
     });
 
     // Subscribe to ESP authentication requests
     client.subscribe('home-automation/esp/+/auth', (err) => {
       if (err) {
-        console.error('Error subscribing to ESP auth topics:', err);
+        logger.error('Error subscribing to ESP auth topics', { error: err.message });
       } else {
-        console.log('Subscribed to ESP auth topics');
+        logger.info('Subscribed to ESP auth topics');
       }
     });
   });
   
   // Handle error
   client.on('error', (err) => {
-    console.error('MQTT error:', err);
+    logger.error('MQTT error', { error: err.message });
   });
   
   // Handle reconnect
   client.on('reconnect', () => {
-    console.log('Reconnecting to MQTT broker...');
+    logger.info('Reconnecting to MQTT broker...');
   });
   
   // Handle messages
