@@ -54,10 +54,18 @@ async function getRedisClient() {
 
   try {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    client = redis.createClient({ url: redisUrl });
+    client = redis.createClient({
+      url: redisUrl,
+      socket: {
+        reconnectStrategy: (retries) => {
+          if (retries > 2) return false; // Stop reconnecting after 2 attempts
+          return 1000;
+        }
+      }
+    });
 
     client.on('error', (err) => {
-      logger.error('Redis error', { error: err.message });
+      // Quiet error logging during graceful fallback
     });
 
     client.on('connect', () => {
@@ -69,6 +77,9 @@ async function getRedisClient() {
     return client;
   } catch (error) {
     logger.warn('Failed to connect to Redis, proceeding with in-memory fallbacks', { error: error.message });
+    if (client) {
+      try { await client.disconnect(); } catch (_) {}
+    }
     client = null;
     isConnecting = false;
     return null;
