@@ -13,9 +13,11 @@ const logger = require('./logger');
  * @param {number} delay - Delay between retries in ms
  */
 const connectDB = async (retries = 5, delay = 5000) => {
+  let mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/contech';
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      await mongoose.connect(process.env.MONGODB_URI);
+      await mongoose.connect(mongoUri);
       logger.info('Connected to MongoDB successfully');
 
       // Connection event handlers
@@ -36,6 +38,14 @@ const connectDB = async (retries = 5, delay = 5000) => {
       logger.error(`MongoDB connection attempt ${attempt}/${retries} failed`, {
         error: error.message
       });
+
+      if (error.message.includes('ENOTFOUND') && mongoUri.includes('@mongodb:')) {
+        mongoUri = mongoUri.replace('@mongodb:', '@127.0.0.1:');
+        logger.info(`Host 'mongodb' unresolved. Switching URI to 127.0.0.1...`);
+      } else if ((error.message.includes('Authentication failed') || error.message.includes('auth failed')) && mongoUri.includes('@')) {
+        mongoUri = 'mongodb://127.0.0.1:27017/contech';
+        logger.info(`MongoDB auth failed locally. Falling back to unauthenticated local connection: ${mongoUri}`);
+      }
 
       if (attempt < retries) {
         logger.info(`Retrying in ${delay / 1000}s...`);
