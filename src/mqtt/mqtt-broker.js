@@ -5,8 +5,63 @@ const Device = require('../models/Device');
 const Room = require('../models/Room');
 const logger = require('../config/logger');
 
+const net = require('net');
+
 let client;
 let io;
+let embeddedBrokerServer = null;
+
+/**
+ * Check if a TCP port is open on host
+ */
+function isPortOpen(port, host = '127.0.0.1') {
+  return new Promise((resolve) => {
+    const socket = new net.Socket();
+    socket.setTimeout(1000);
+    socket.on('connect', () => {
+      socket.destroy();
+      resolve(true);
+    });
+    socket.on('timeout', () => {
+      socket.destroy();
+      resolve(false);
+    });
+    socket.on('error', () => {
+      socket.destroy();
+      resolve(false);
+    });
+    socket.connect(port, host);
+  });
+}
+
+/**
+ * Start embedded local Aedes MQTT broker if no broker is active
+ */
+async function startEmbeddedBroker(port = 1883) {
+  if (embeddedBrokerServer) return true;
+  try {
+    const { Aedes } = require('aedes');
+    const aedesInstance = new Aedes({
+      authenticate: (client, username, password, callback) => {
+        // Authenticate all local connections
+        callback(null, true);
+      }
+    });
+    const server = net.createServer(aedesInstance.handle);
+    await new Promise((resolve, reject) => {
+      server.listen(port, () => {
+        logger.info(`Started embedded local MQTT broker (Aedes) on 127.0.0.1:${port}`);
+        resolve();
+      });
+      server.on('error', reject);
+    });
+    embeddedBrokerServer = server;
+    return true;
+  } catch (err) {
+    logger.warn(`Could not start embedded MQTT broker on port ${port}: ${err.message}`);
+    return false;
+  }
+}
 
 // ESP-Room mapping storage (in production, use Redis or database)
 const espRoomMappings = new Map();
@@ -18,11 +73,11 @@ const roomEspConnections = new Map();
  * Initialize the MQTT client and connect to the MQTT broker
  * @param {Object} socketIo - Socket.IO instance for broadcasting events
  */
-function initialize(socketIo) {
+async function initialize(socketIo) {
   io = socketIo;
   
   // Connect to MQTT broker
-  const brokerUrl = process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883';
+  let brokerUrl = process.env.MQTT_BROKER_URL || 'mqtt://localhost:1883';
   const options = {
     clientId: `home-automation-server-${Math.random().toString(16).substring(2, 10)}`,
     username: process.env.MQTT_USERNAME,
@@ -30,7 +85,25 @@ function initialize(socketIo) {
     clean: true,
     reconnectPeriod: 5000
   };
-  
+
+  // Local fallback handling when running outside Docker
+  if (brokerUrl.includes('mqtt-broker')) {
+    const has1884 = await isPortOpen(1884);
+    const has1883 = await isPortOpen(1883);
+
+    if (has1884) {
+      brokerUrl = 'mqtt://127.0.0.1:1884';
+      logger.info(`Host 'mqtt-broker' unresolved locally. Using local Docker Mosquitto at ${brokerUrl}`);
+    } else if (has1883) {
+      brokerUrl = 'mqtt://127.0.0.1:1883';
+      logger.info(`Host 'mqtt-broker' unresolved locally. Using local MQTT broker at ${brokerUrl}`);
+    } else {
+      logger.info(`No external MQTT broker detected on 1883/1884. Starting embedded Aedes MQTT broker on port 1883...`);
+      await startEmbeddedBroker(1883);
+      brokerUrl = 'mqtt://127.0.0.1:1883';
+    }
+  }
+
   client = mqtt.connect(brokerUrl, options);
   
   // Handle connection

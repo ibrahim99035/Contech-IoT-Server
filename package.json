@@ -11,6 +11,7 @@
     "@adminjs/mongoose": "^4.1.0",
     "@tiptap/core": "^2.27.2",
     "adminjs": "^7.8.17",
+    "aedes": "^1.1.1",
     "axios": "^1.10.0",
     "bcryptjs": "^3.0.2",
     "bullmq": "^5.81.4",
