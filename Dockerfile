@@ -12,14 +12,14 @@ COPY package*.json ./
 
 # Development stage
 FROM base AS development
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 COPY . .
 EXPOSE 5000
 CMD ["dumb-init", "npm", "run", "dev"]
 
 # Production dependencies stage
 FROM base AS production-deps
-RUN npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --legacy-peer-deps && npm cache clean --force
 
 # Production stage
 FROM base AS production
