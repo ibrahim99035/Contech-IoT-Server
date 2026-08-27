@@ -46,6 +46,64 @@ const logOAuthRequest = (req, res, next) => {
   next();
 };
 
+/**
+ * @openapi
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email, password]
+ *             properties:
+ *               name: { type: string, example: "John Doe" }
+ *               email: { type: string, example: "john@example.com" }
+ *               password: { type: string, example: "SecretPassword123" }
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Invalid input or user already exists
+ * 
+ * /api/auth/login:
+ *   post:
+ *     summary: User login
+ *     tags: [Authentication]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email: { type: string, example: "john@example.com" }
+ *               password: { type: string, example: "SecretPassword123" }
+ *     responses:
+ *       200:
+ *         description: Login successful, returns JWT token
+ *       401:
+ *         description: Invalid credentials
+ * 
+ * /api/auth/verify:
+ *   get:
+ *     summary: Verify JWT authentication token
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *       401:
+ *         description: Invalid or expired token
+ */
+
 // Standard authentication routes
 router.post('/register', registerUser);
 router.post('/login', loginUser);
