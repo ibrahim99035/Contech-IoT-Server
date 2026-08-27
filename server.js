@@ -51,6 +51,10 @@ const imageRoutes = require('./src/adminRoutes/imageRoutes');
 // Subscription System Seeder
 const seedSubscriptionSystem = require('./src/scripts/seedSubscriptionLimits');
 
+// Swagger Documentation & AdminJS Setup
+const setupSwagger = require('./src/config/swagger');
+const setupAdminJS = require('./src/config/adminjs');
+
 // ─── Server Bootstrap ──────────────────────────────────────────────────────
 
 async function startServer() {
@@ -63,6 +67,15 @@ async function startServer() {
 
     // Initialize Express app
     const app = express();
+
+    // Setup AdminJS Dashboard
+    try {
+      const { adminJs, router: adminRouter } = await setupAdminJS();
+      app.use(adminJs.options.rootPath, adminRouter);
+      logger.info(`AdminJS Dashboard mounted at ${adminJs.options.rootPath}`);
+    } catch (adminErr) {
+      logger.error('Failed to mount AdminJS Dashboard', { error: adminErr.message });
+    }
 
     // Create HTTP server
     const server = http.createServer(app);
@@ -103,7 +116,7 @@ async function startServer() {
 
     // Security headers
     app.use(helmet({
-      contentSecurityPolicy: false // Disable CSP for API-only server
+      contentSecurityPolicy: false // Disable CSP for API-only server & AdminJS
     }));
 
     // Request ID for tracing
@@ -122,6 +135,10 @@ async function startServer() {
     // HTTP request logging — Morgan piped through Winston
     const morganFormat = process.env.NODE_ENV === 'production' ? 'combined' : 'dev';
     app.use(morgan(morganFormat, { stream: logger.stream }));
+
+    // ─── Swagger API Documentation ──────────────────────────────────────
+    setupSwagger(app);
+    logger.info('Swagger API Documentation mounted at /api-docs');
 
     // ─── API Routes ─────────────────────────────────────────────────────
     app.use('/api/auth', authRoutes);
