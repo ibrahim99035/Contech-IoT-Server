@@ -86,21 +86,30 @@ async function initialize(socketIo) {
     reconnectPeriod: 5000
   };
 
-  // Local fallback handling when running outside Docker
+  // Local fallback handling when running outside Docker (connecting to production broker)
   if (brokerUrl.includes('mqtt-broker')) {
-    const has1884 = await isPortOpen(1884);
-    const has1883 = await isPortOpen(1883);
+    const prodHost = process.env.MQTT_PRODUCTION_BROKER_HOST || '88.222.220.235';
+    const prodPort = parseInt(process.env.MQTT_PRODUCTION_BROKER_PORT || '1884', 10);
+    const isProdReachable = await isPortOpen(prodPort, prodHost);
 
-    if (has1884) {
-      brokerUrl = 'mqtt://127.0.0.1:1884';
-      logger.info(`Host 'mqtt-broker' unresolved locally. Using local Docker Mosquitto at ${brokerUrl}`);
-    } else if (has1883) {
-      brokerUrl = 'mqtt://127.0.0.1:1883';
-      logger.info(`Host 'mqtt-broker' unresolved locally. Using local MQTT broker at ${brokerUrl}`);
+    if (isProdReachable) {
+      brokerUrl = `mqtt://${prodHost}:${prodPort}`;
+      logger.info(`Host 'mqtt-broker' unresolved locally. Connecting local app to production MQTT broker at ${brokerUrl}`);
     } else {
-      logger.info(`No external MQTT broker detected on 1883/1884. Starting embedded Aedes MQTT broker on port 1883...`);
-      await startEmbeddedBroker(1883);
-      brokerUrl = 'mqtt://127.0.0.1:1883';
+      const has1884 = await isPortOpen(1884);
+      const has1883 = await isPortOpen(1883);
+
+      if (has1884) {
+        brokerUrl = 'mqtt://127.0.0.1:1884';
+        logger.info(`Using local Docker Mosquitto at ${brokerUrl}`);
+      } else if (has1883) {
+        brokerUrl = 'mqtt://127.0.0.1:1883';
+        logger.info(`Using local MQTT broker at ${brokerUrl}`);
+      } else {
+        logger.info(`No external MQTT broker detected. Starting embedded Aedes MQTT broker on port 1883...`);
+        await startEmbeddedBroker(1883);
+        brokerUrl = 'mqtt://127.0.0.1:1883';
+      }
     }
   }
 
