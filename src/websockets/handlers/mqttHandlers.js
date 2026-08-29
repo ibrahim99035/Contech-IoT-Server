@@ -2,6 +2,7 @@ const mqttBroker = require('../../mqtt/mqtt-broker');
 const { normalizeState } = require('../utils/stateUtils');
 const Device = require('../../models/Device');
 const Room = require('../../models/Room');
+const logger = require('../../config/logger');
 
 /**
  * Register handlers for MQTT-related actions
@@ -42,9 +43,9 @@ function registerHandlers(io, socket) {
         state: newState
       });
       
-      console.log(`MQTT state update request sent for device ${device.name} by user ${socket.user.name}`);
+      logger.info(`MQTT state update request sent for device ${device.name} by user ${socket.user.name}`);
     } catch (error) {
-      console.error('Error updating device state via MQTT:', error);
+      logger.error('Error updating device state via MQTT:', error);
       socket.emit('error', { message: 'Failed to update device state via MQTT', error: error.message });
     }
   });
@@ -108,9 +109,9 @@ function registerHandlers(io, socket) {
         updatesCount: validUpdates.length
       });
       
-      console.log(`MQTT room state update request sent for room ${room.name} with ${validUpdates.length} devices by user ${socket.user.name}`);
+      logger.info(`MQTT room state update request sent for room ${room.name} with ${validUpdates.length} devices by user ${socket.user.name}`);
     } catch (error) {
-      console.error('Error updating room devices via MQTT:', error);
+      logger.error('Error updating room devices via MQTT:', error);
       socket.emit('error', { message: 'Failed to update room devices via MQTT', error: error.message });
     }
   });

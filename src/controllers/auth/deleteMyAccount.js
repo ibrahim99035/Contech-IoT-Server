@@ -1,3 +1,4 @@
+const logger = require('../../config/logger');
 /**
  * User Deletion Controller - handles deletion of user accounts
  * @module controllers/UserDeletionController
@@ -142,7 +143,7 @@ exports.deleteMyAccount = async (req, res) => {
     await session.abortTransaction();
     session.endSession();
 
-    console.error('Error deleting user account:', error);
+    logger.error('Error deleting user account:', error);
     res.status(500).json({
       success: false,
       message: 'Error deleting user account',

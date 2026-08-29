@@ -13,6 +13,9 @@ const subscriptionLimitsSchema = new mongoose.Schema({
       owned: { type: Number, required: true, min: 0 },
       memberships: { type: Number, required: true, min: 0 }
     },
+    members: {
+      perApartment: { type: Number, required: true, min: 0 }
+    },
     rooms: {
       perApartment: { type: Number, required: true, min: 0 }
     },

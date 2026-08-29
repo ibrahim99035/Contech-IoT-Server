@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Apartment = require('../../../models/Apartment');
 const Room = require('../../../models/Room');
 const Device = require('../../../models/Device');
@@ -156,7 +157,7 @@ const getApartmentStatistics = async (req, res) => {
       data: statistics
     });
   } catch (error) {
-    console.error('❌ [getApartmentStatistics] Error:', error);
+    logger.error('❌ [getApartmentStatistics] Error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching apartment statistics',

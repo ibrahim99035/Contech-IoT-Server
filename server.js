@@ -16,7 +16,6 @@ validateEnv();
 // ─── Core dependencies ─────────────────────────────────────────────────────
 const express = require('express');
 const crypto = require('crypto');
-const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const http = require('http');
@@ -28,6 +27,7 @@ const connectDB = require('./src/config/db');
 
 const { errorHandler } = require('./src/middleware/errorHandler');
 const { notFound } = require('./src/middleware/notFound');
+const requestLogger = require('./src/middleware/requestLogger');
 
 const TaskScheduler = require('./src/schedualr');
 
@@ -38,6 +38,7 @@ const roomRoutes = require('./src/routes/roomRoutes');
 const deviceRoutes = require('./src/routes/deviceRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const googleAssistantRoutes = require('./src/routes/googleAssistantRoutes');
+const subscriptionRoutes = require('./src/routes/subscriptionRoutes');
 
 // Admin Routes
 const apartmentAdminRoutes = require('./src/adminRoutes/apartmentAdminRoutes');
@@ -132,9 +133,8 @@ async function startServer() {
     // CORS
     app.use(cors(corsOptions));
 
-    // HTTP request logging — Morgan piped through Winston
-    const morganFormat = process.env.NODE_ENV === 'production' ? 'combined' : 'dev';
-    app.use(morgan(morganFormat, { stream: logger.stream }));
+    // Request logging (structured, request-id aware)
+    app.use(requestLogger);
 
     // ─── Swagger API Documentation ──────────────────────────────────────
     setupSwagger(app);
@@ -148,6 +148,7 @@ async function startServer() {
     app.use('/api/task-handler', taskRoutes);
     app.use('/api/images', imageRoutes); // to be removed later
     app.use('/api/google-assistant', googleAssistantRoutes);
+    app.use('/api/subscription', subscriptionRoutes);
 
     // ─── Admin Routes ───────────────────────────────────────────────────
     app.use('/admin/dashboard/apartments', apartmentAdminRoutes);

@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
 const Device = require('../../models/Device');
 const crypto = require('crypto');
+const logger = require('../../config/logger');
 
 module.exports = (io) => {
   // Middleware for User namespace
@@ -27,7 +28,7 @@ module.exports = (io) => {
 
   // For User Connections
   io.of('/ws/user').on('connection', (socket) => {
-    console.log(`User connected: ${socket.id} (${socket.user.name})`);
+    logger.info(`User connected: ${socket.id} (${socket.user.name})`);
     
     // Join rooms for each device the user has access to
     joinUserDeviceRooms(socket);
@@ -71,15 +72,15 @@ module.exports = (io) => {
           state: newState 
         });
         
-        console.log(`Device ${device.name} state updated to ${newState} by user ${socket.user.name}`);
+        logger.info(`Device ${device.name} state updated to ${newState} by user ${socket.user.name}`);
       } catch (error) {
-        console.error('Error updating device state:', error);
+        logger.error('Error updating device state:', error);
         socket.emit('error', { message: 'Failed to update device state', error: error.message });
       }
     });
     
     socket.on('disconnect', () => {
-      console.log(`User disconnected: ${socket.id} (${socket.user.name})`);
+      logger.info(`User disconnected: ${socket.id} (${socket.user.name})`);
     });
   });
 
@@ -104,7 +105,7 @@ module.exports = (io) => {
         socket.device = device;
         next();
       } catch (error) {
-        console.error('Device authentication error:', error);
+        logger.error('Device authentication error:', error);
         next(new Error('Authentication failed: Database error'));
       }
     } else {
@@ -114,7 +115,7 @@ module.exports = (io) => {
 
   // For IoT Device Connections
   io.of('/ws/device').on('connection', (socket) => {
-    console.log(`IoT Device connected: ${socket.id} (${socket.device.name})`);
+    logger.info(`IoT Device connected: ${socket.id} (${socket.device.name})`);
     
     // Join device-specific room
     socket.join(`device:${socket.device._id}`);
@@ -142,15 +143,15 @@ module.exports = (io) => {
         
         socket.emit('state-reported', { state: newState });
         
-        console.log(`Device ${socket.device.name} reported state: ${newState}`);
+        logger.info(`Device ${socket.device.name} reported state: ${newState}`);
       } catch (error) {
-        console.error('Error reporting device state:', error);
+        logger.error('Error reporting device state:', error);
         socket.emit('error', { message: 'Failed to report device state', error: error.message });
       }
     });
     
     socket.on('disconnect', () => {
-      console.log(`IoT Device disconnected: ${socket.id} (${socket.device.name})`);
+      logger.info(`IoT Device disconnected: ${socket.id} (${socket.device.name})`);
     });
   });
 
@@ -165,9 +166,9 @@ module.exports = (io) => {
         socket.join(`device:${device._id}`);
       });
       
-      console.log(`User ${socket.user.name} joined ${devices.length} device rooms`);
+      logger.info(`User ${socket.user.name} joined ${devices.length} device rooms`);
     } catch (error) {
-      console.error('Error joining device rooms:', error);
+      logger.error('Error joining device rooms:', error);
     }
   }
 };

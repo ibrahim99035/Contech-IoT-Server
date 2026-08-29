@@ -2,6 +2,7 @@ const Device = require('../../models/Device');
 const { normalizeState } = require('../utils/stateUtils');
 const mqttBroker = require('../../mqtt/mqtt-broker');
 const mqttHandlers = require('./mqttHandlers');
+const logger = require('../../config/logger');
 
 function registerHandlers(io, socket) {
   // Handle state updates from the user
@@ -51,9 +52,9 @@ function registerHandlers(io, socket) {
         espConnected: actualEspStatus
       });
       
-      console.log(`Device ${device.name} updated to ${newState}, ESP: ${actualEspStatus}`);
+      logger.info(`Device ${device.name} updated to ${newState}, ESP: ${actualEspStatus}`);
     } catch (error) {
-      console.error('Error updating device state:', error);
+      logger.error('Error updating device state:', error);
       socket.emit('error', { message: 'Failed to update device state', error: error.message });
     }
   });
@@ -98,7 +99,7 @@ function registerHandlers(io, socket) {
       });
       
     } catch (error) {
-      console.error('Error getting device info:', error);
+      logger.error('Error getting device info:', error);
       socket.emit('error', { message: 'Failed to get device info' });
     }
   });

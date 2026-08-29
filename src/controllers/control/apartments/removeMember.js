@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Apartment = require('../../../models/Apartment');
 const Room = require('../../../models/Room');
 const Device = require('../../../models/Device');
@@ -67,7 +68,7 @@ exports.removeMember = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error removing member:', error);
+    logger.error('Error removing member:', error);
     res.status(500).json({ 
       message: 'Error removing member from apartment', 
       error: error.message 

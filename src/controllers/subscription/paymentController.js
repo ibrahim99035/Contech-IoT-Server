@@ -1,35 +1,50 @@
-const { Payment } = require('../../models/subscriptionSystemModels');
+const asyncHandler = require('express-async-handler');
+const { Payment, Subscription, SubscriptionPlan, Coupon, Invoice } = require('../../models/subscriptionSystemModels');
+const { success } = require('../../utils/response');
+const { AppError } = require('../../middleware/errorHandler');
+const logger = require('../../config/logger');
 
-// Log payment
-exports.createPayment = async (req, res) => {
+// Record a payment (gateway-agnostic: captures intent/result, no fake processor)
+exports.createPayment = asyncHandler(async (req, res) => {
+  const payment = await Payment.create({ ...req.body, paymentStatus: 'pending' });
+
+  // Attempt to mark the payment completed and update the subscription/invoice
   try {
-    const { userId, subscriptionPlanId, amount, currency, paymentMethod, paymentGatewayId } = req.body;
-
-    const payment = new Payment({ 
-      user: userId, 
-      subscriptionPlan: subscriptionPlanId, 
-      amount, 
-      currency, 
-      paymentMethod, 
-      paymentStatus: 'completed', 
-      paymentGatewayId 
-    });
+    payment.paymentStatus = 'completed';
     await payment.save();
 
-    res.status(201).json({ success: true, data: payment });
+    await Subscription.findOneAndUpdate(
+      { user: req.body.userId },
+      {
+        subscriptionPlan: req.body.subscriptionPlanId,
+        status: 'active',
+        startDate: new Date(),
+        renewalDate: new Date(new Date().setMonth(new Date().getMonth() + 1))
+      },
+      { upsert: true, new: true }
+    );
+
+    await Invoice.create({
+      user: req.body.userId,
+      payment: payment._id,
+      amount: payment.amount,
+      currency: payment.currency,
+      details: 'Subscription payment',
+      status: 'paid'
+    });
+
+    success(res, payment, 'Payment recorded successfully', 201);
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+    // If downstream bookkeeping fails, keep the payment record but surface the error
+    payment.paymentStatus = 'failed';
+    await payment.save().catch(() => {});
+    logger.error('Payment bookkeeping failed', { error: error.message });
+    throw new AppError('Payment recorded but subscription activation failed', 500, 'PAYMENT_BOOKKEEPING_FAILED');
   }
-};
+});
 
 // Get all payments for a user
-exports.getUserPayments = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const payments = await Payment.find({ user: userId }).populate('subscriptionPlan');
-
-    res.status(200).json({ success: true, data: payments });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
-  }
-};
+exports.getUserPayments = asyncHandler(async (req, res) => {
+  const payments = await Payment.find({ user: req.params.userId }).populate('subscriptionPlan');
+  success(res, payments, 'Payments retrieved successfully');
+});

@@ -9,6 +9,7 @@ const { OAuth2Client } = require('google-auth-library');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
 const { SubscriptionPlan, Subscription } = require('../../models/subscriptionSystemModels');
+const logger = require('../../config/logger');
 
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -20,11 +21,11 @@ const modernGoogleLogin = async (req, res) => {
   try {
     const { id_token } = req.body;
     
-    console.log(`🔐 [Modern Google] Starting authentication process`);
-    console.log(`🔐 [Modern Google] ID token length: ${id_token?.length || 'undefined'}`);
+    logger.info(`🔐 [Modern Google] Starting authentication process`);
+    logger.info(`🔐 [Modern Google] ID token length: ${id_token?.length || 'undefined'}`);
     
     if (!id_token) {
-      console.log(`❌ [Modern Google] No ID token provided`);
+      logger.info(`❌ [Modern Google] No ID token provided`);
       return res.status(400).json({
         success: false,
         message: 'ID token is required'
@@ -32,7 +33,7 @@ const modernGoogleLogin = async (req, res) => {
     }
 
     // Verify the ID token with Google
-    console.log(`🔍 [Modern Google] Verifying ID token with Google...`);
+    logger.info(`🔍 [Modern Google] Verifying ID token with Google...`);
     let ticket;
     try {
       ticket = await client.verifyIdToken({
@@ -40,7 +41,7 @@ const modernGoogleLogin = async (req, res) => {
         audience: process.env.GOOGLE_CLIENT_ID,
       });
     } catch (verifyError) {
-      console.error(`❌ [Modern Google] Token verification failed:`, verifyError.message);
+      logger.error(`❌ [Modern Google] Token verification failed:`, verifyError.message);
       return res.status(401).json({
         success: false,
         message: 'Invalid Google ID token',
@@ -54,43 +55,43 @@ const modernGoogleLogin = async (req, res) => {
     const name = payload['name'];
     const emailVerified = payload['email_verified'];
 
-    console.log(`✅ [Modern Google] Token verified successfully`);
-    console.log(`👤 [Modern Google] Google ID: ${googleId}`);
-    console.log(`👤 [Modern Google] Email: ${email}`);
-    console.log(`👤 [Modern Google] Name: ${name}`);
-    console.log(`👤 [Modern Google] Email Verified: ${emailVerified}`);
+    logger.info(`✅ [Modern Google] Token verified successfully`);
+    logger.info(`👤 [Modern Google] Google ID: ${googleId}`);
+    logger.info(`👤 [Modern Google] Email: ${email}`);
+    logger.info(`👤 [Modern Google] Name: ${name}`);
+    logger.info(`👤 [Modern Google] Email Verified: ${emailVerified}`);
 
     // Check if user exists with this email
-    console.log(`🔍 [Database] Searching for user with email: ${email}`);
+    logger.info(`🔍 [Database] Searching for user with email: ${email}`);
     let user = await User.findOne({ email: email });
     
     if (user) {
-      console.log(`✅ [Database] Existing user found: ${user._id}`);
+      logger.info(`✅ [Database] Existing user found: ${user._id}`);
       
       // FIXED: Update existing user with Google ID and activate email
       let userUpdated = false;
       
       if (!user.googleId) {
-        console.log(`🔄 [Database] Adding Google ID to existing user`);
+        logger.info(`🔄 [Database] Adding Google ID to existing user`);
         user.googleId = googleId;
         userUpdated = true;
       }
       
       // FIXED: Always activate email for Google users
       if (!user.emailActivated) {
-        console.log(`🔄 [Database] Activating email for Google user`);
+        logger.info(`🔄 [Database] Activating email for Google user`);
         user.emailActivated = true;
         userUpdated = true;
       }
       
       if (userUpdated) {
         await user.save();
-        console.log(`✅ [Database] User updated successfully`);
+        logger.info(`✅ [Database] User updated successfully`);
       }
       
     } else {
       // Create new user
-      console.log(`🆕 [Database] Creating new user for Google authentication`);
+      logger.info(`🆕 [Database] Creating new user for Google authentication`);
       const randomPassword = Math.random().toString(36).slice(-12) + Math.random().toString(36).slice(-12);
       
       user = new User({
@@ -104,10 +105,10 @@ const modernGoogleLogin = async (req, res) => {
       });
       
       await user.save();
-      console.log(`✅ [Database] New user created: ${user._id}`);
+      logger.info(`✅ [Database] New user created: ${user._id}`);
       
       // Create free subscription for new user
-      console.log(`🔍 [Subscription] Setting up free subscription`);
+      logger.info(`🔍 [Subscription] Setting up free subscription`);
       let subscriptionPlan = await SubscriptionPlan.findOne({ name: 'free' });
       
       if (!subscriptionPlan) {
@@ -128,7 +129,7 @@ const modernGoogleLogin = async (req, res) => {
       });
 
       await subscription.save();
-      console.log(`✅ [Subscription] Free subscription created`);
+      logger.info(`✅ [Subscription] Free subscription created`);
     }
 
     // FIXED: Generate JWT token with 'id' field for compatibility
@@ -143,8 +144,8 @@ const modernGoogleLogin = async (req, res) => {
       { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
     );
 
-    console.log(`🎉 [Modern Google] Authentication successful`);
-    console.log(`🎫 [Modern Google] JWT token generated for user: ${user._id}`);
+    logger.info(`🎉 [Modern Google] Authentication successful`);
+    logger.info(`🎫 [Modern Google] JWT token generated for user: ${user._id}`);
 
     // Send successful response
     res.status(200).json({
@@ -164,7 +165,7 @@ const modernGoogleLogin = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(`❌ [Modern Google] Authentication error:`, error);
+    logger.error(`❌ [Modern Google] Authentication error:`, error);
     
     res.status(500).json({
       success: false,
@@ -181,7 +182,7 @@ const checkGoogleLink = async (req, res) => {
   try {
     const user = req.user;
     
-    console.log(`🔍 [Google Status] Checking Google link status for user: ${user.email}`);
+    logger.info(`🔍 [Google Status] Checking Google link status for user: ${user.email}`);
     
     const hasGoogleId = !!user.googleId;
     
@@ -203,7 +204,7 @@ const checkGoogleLink = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(`❌ [Google Status] Error:`, error);
+    logger.error(`❌ [Google Status] Error:`, error);
     
     res.status(500).json({
       success: false,
@@ -220,7 +221,7 @@ const unlinkGoogle = async (req, res) => {
   try {
     const user = req.user;
     
-    console.log(`🔗 [Google Unlink] Unlinking Google account for user: ${user.email}`);
+    logger.info(`🔗 [Google Unlink] Unlinking Google account for user: ${user.email}`);
     
     if (!user.googleId) {
       return res.status(400).json({
@@ -242,7 +243,7 @@ const unlinkGoogle = async (req, res) => {
       });
     }
     
-    console.log(`✅ [Google Unlink] Google account successfully unlinked`);
+    logger.info(`✅ [Google Unlink] Google account successfully unlinked`);
     
     res.status(200).json({
       success: true,
@@ -260,7 +261,7 @@ const unlinkGoogle = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(`❌ [Google Unlink] Error:`, error);
+    logger.error(`❌ [Google Unlink] Error:`, error);
     
     res.status(500).json({
       success: false,
