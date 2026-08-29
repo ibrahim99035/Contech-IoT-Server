@@ -1,3 +1,4 @@
+const logger = require('../config/logger');
 const mongoose = require('mongoose');
 const moment = require('moment-timezone');
 
@@ -77,7 +78,7 @@ taskSchema.methods.getNextCronOccurrence = function(currentUserTime) {
     const cronExpression = this.schedule.recurrence.cronExpression;
     
     if (!cronExpression) {
-      console.error('No cron expression provided for custom task');
+      logger.error('No cron expression provided for custom task');
       return null;
     }
 
@@ -93,7 +94,7 @@ taskSchema.methods.getNextCronOccurrence = function(currentUserTime) {
     // Convert back to moment in user timezone
     return moment.tz(nextOccurrence, this.timezone);
   } catch (error) {
-    console.error('Error parsing cron expression:', error);
+    logger.error('Error parsing cron expression:', error);
     return null;
   }
 };

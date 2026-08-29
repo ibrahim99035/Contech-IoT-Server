@@ -3,6 +3,7 @@ const Device = require('../../models/Device');
 const Room = require('../../models/Room');
 const mqttBroker = require('../../mqtt/mqtt-broker');
 const { normalizeState } = require('../utils/stateUtils');
+const logger = require('../../config/logger');
 
 module.exports = (io) => {
   const mqttNamespace = io.of('/ws/mqtt-bridge');
@@ -39,7 +40,7 @@ module.exports = (io) => {
       socket.device = device;
       next();
     } catch (error) {
-      console.error('MQTT bridge authentication error:', error);
+      logger.error('MQTT bridge authentication error:', error);
       next(new Error('Authentication failed: Server error during authentication.'));
     }
   });
@@ -49,14 +50,14 @@ module.exports = (io) => {
     const espId = `ws-${socket.id}`;
     const roomId = socket.room._id.toString();
     
-    console.log(`ESP connected: ${espId} for room ${socket.room.name} (roomId: ${roomId})`);
+    logger.info(`ESP connected: ${espId} for room ${socket.room.name} (roomId: ${roomId})`);
     
     // Add to roomEspConnections
     if (!mqttBroker.roomEspConnections.has(roomId)) {
       mqttBroker.roomEspConnections.set(roomId, new Set());
     }
     mqttBroker.roomEspConnections.get(roomId).add(espId);
-    console.log(`✅ ESP ${espId} added to room ${roomId}. Total ESPs: ${mqttBroker.roomEspConnections.get(roomId).size}`);
+    logger.info(`✅ ESP ${espId} added to room ${roomId}. Total ESPs: ${mqttBroker.roomEspConnections.get(roomId).size}`);
     
     // Add to espRoomMappings (so disconnect can find it)
     mqttBroker.espRoomMappings.set(espId, {
@@ -93,7 +94,7 @@ module.exports = (io) => {
         });
         socket.emit('state-reported', { success: true });
       } catch (error) {
-        console.error('Error reporting device state:', error);
+        logger.error('Error reporting device state:', error);
         socket.emit('error', { message: 'Failed to report state', error: error.message });
       }
     });
@@ -112,49 +113,49 @@ module.exports = (io) => {
         });
         socket.emit('room-state-reported', { success: true });
       } catch (error) {
-        console.error('Error reporting room state:', error);
+        logger.error('Error reporting room state:', error);
         socket.emit('error', { message: 'Failed to report room state', error: error.message });
       }
     });
     
     // ✅ CRITICAL FIX: Proper disconnect handler that retrieves roomId from mapping
     socket.on('disconnect', async () => {
-      console.log(`🔌 ESP disconnecting: ${espId}`);
+      logger.info(`🔌 ESP disconnecting: ${espId}`);
       
       try {
         // Get roomId from espRoomMappings (more reliable than closure)
         const espMapping = mqttBroker.espRoomMappings.get(espId);
         
         if (!espMapping) {
-          console.warn(`⚠️ No mapping found for ESP ${espId} during disconnect`);
+          logger.warn(`⚠️ No mapping found for ESP ${espId} during disconnect`);
           return;
         }
         
         const mappedRoomId = espMapping.roomId;
-        console.log(`📍 Found room mapping: ${mappedRoomId} for ESP ${espId}`);
+        logger.info(`📍 Found room mapping: ${mappedRoomId} for ESP ${espId}`);
         
         // Remove from roomEspConnections
         if (mqttBroker.roomEspConnections.has(mappedRoomId)) {
           mqttBroker.roomEspConnections.get(mappedRoomId).delete(espId);
           const remainingCount = mqttBroker.roomEspConnections.get(mappedRoomId).size;
-          console.log(`📊 Remaining ESPs in room ${mappedRoomId}: ${remainingCount}`);
+          logger.info(`📊 Remaining ESPs in room ${mappedRoomId}: ${remainingCount}`);
           
           // If no more ESPs, set status to false
           if (remainingCount === 0) {
             mqttBroker.roomEspConnections.delete(mappedRoomId);
             await mqttBroker.updateRoomEspStatus(mappedRoomId, false);
-            console.log(`❌ Room ${mappedRoomId} ESP status set to FALSE (no more ESPs connected)`);
+            logger.info(`❌ Room ${mappedRoomId} ESP status set to FALSE (no more ESPs connected)`);
           }
         } else {
-          console.warn(`⚠️ Room ${mappedRoomId} not found in roomEspConnections during disconnect`);
+          logger.warn(`⚠️ Room ${mappedRoomId} not found in roomEspConnections during disconnect`);
         }
         
         // Remove from espRoomMappings
         mqttBroker.espRoomMappings.delete(espId);
-        console.log(`🗑️ ESP ${espId} removed from mappings`);
+        logger.info(`🗑️ ESP ${espId} removed from mappings`);
         
       } catch (error) {
-        console.error(`❌ Error handling disconnect for ${espId}:`, error);
+        logger.error(`❌ Error handling disconnect for ${espId}:`, error);
       }
     });
     

@@ -4,6 +4,7 @@ const Room = require('../../models/Room');
 const { normalizeState } = require('../utils/stateUtils');
 const { checkRoomAccess } = require('../utils/roomUtils');
 const mqttBroker = require('../../mqtt/mqtt-broker');
+const logger = require('../../config/logger');
 
 function registerHandlers(io, socket) {
   // Handle fetch room details with devices
@@ -46,9 +47,9 @@ function registerHandlers(io, socket) {
         }))
       });
       
-      console.log(`User ${socket.user.name} fetched room ${room.name} with ${devices.length} devices`);
+      logger.info(`User ${socket.user.name} fetched room ${room.name} with ${devices.length} devices`);
     } catch (error) {
-      console.error('Error fetching room details:', error);
+      logger.error('Error fetching room details:', error);
       socket.emit('error', { message: 'Failed to fetch room details', error: error.message });
     }
   });
@@ -160,9 +161,9 @@ function registerHandlers(io, socket) {
       // Respond with results
       socket.emit('room-update-results', { results });
       
-      console.log(`User ${socket.user.name} updated ${updatedDevices.length} devices in room ${room.name}`);
+      logger.info(`User ${socket.user.name} updated ${updatedDevices.length} devices in room ${room.name}`);
     } catch (error) {
-      console.error('Error updating room devices:', error);
+      logger.error('Error updating room devices:', error);
       socket.emit('error', { message: 'Failed to update room devices', error: error.message });
     }
   });
@@ -202,9 +203,9 @@ function registerHandlers(io, socket) {
       
       socket.emit('user-rooms', { rooms: roomsWithDevices });
       
-      console.log(`User ${socket.user.name} fetched ${rooms.length} rooms`);
+      logger.info(`User ${socket.user.name} fetched ${rooms.length} rooms`);
     } catch (error) {
-      console.error('Error fetching user rooms:', error);
+      logger.error('Error fetching user rooms:', error);
       socket.emit('error', { message: 'Failed to fetch user rooms', error: error.message });
     }
   });

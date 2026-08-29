@@ -78,7 +78,7 @@ async function getRedisClient() {
   } catch (error) {
     logger.warn('Failed to connect to Redis, proceeding with in-memory fallbacks', { error: error.message });
     if (client) {
-      try { await client.disconnect(); } catch (_) {}
+      try { await client.disconnect(); } catch { /* ignore disconnect errors */ }
     }
     client = null;
     isConnecting = false;

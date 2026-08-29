@@ -17,6 +17,15 @@ const SubscriptionLimits = require('../models/SubscriptionLimits');
 const AccessToken = require('../models/AccessToken');
 const AuthorizationCode = require('../models/AuthorizationCode');
 const Image = require('../models/Image');
+const {
+  SubscriptionPlan,
+  Subscription,
+  Payment,
+  Invoice,
+  Coupon,
+  Feature,
+  AdminActivityLog
+} = require('../models/subscriptionSystemModels');
 
 /**
  * Initialize AdminJS Dashboard Router
@@ -96,7 +105,49 @@ async function setupAdminJS() {
       {
         resource: SubscriptionLimits,
         options: {
-          navigation: { name: 'System Management', icon: 'Layers' }
+          navigation: { name: 'Subscriptions', icon: 'Layers' }
+        }
+      },
+      {
+        resource: SubscriptionPlan,
+        options: {
+          navigation: { name: 'Subscriptions', icon: 'Tag' }
+        }
+      },
+      {
+        resource: Subscription,
+        options: {
+          navigation: { name: 'Subscriptions', icon: 'CalendarCheck' }
+        }
+      },
+      {
+        resource: Payment,
+        options: {
+          navigation: { name: 'Subscriptions', icon: 'CurrencyDollar' }
+        }
+      },
+      {
+        resource: Invoice,
+        options: {
+          navigation: { name: 'Subscriptions', icon: 'Receipt' }
+        }
+      },
+      {
+        resource: Coupon,
+        options: {
+          navigation: { name: 'Subscriptions', icon: 'Ticket' }
+        }
+      },
+      {
+        resource: Feature,
+        options: {
+          navigation: { name: 'Subscriptions', icon: 'List' }
+        }
+      },
+      {
+        resource: AdminActivityLog,
+        options: {
+          navigation: { name: 'Subscriptions', icon: 'ClipboardList' }
         }
       },
       {

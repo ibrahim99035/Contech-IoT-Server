@@ -5,6 +5,8 @@
  * @module config/env
  */
 
+const logger = require('./logger');
+
 const REQUIRED_VARS = [
   'MONGODB_URI',
   'JWT_SECRET',
@@ -56,16 +58,13 @@ function validateEnv() {
 
   // Output warnings
   if (warnings.length > 0) {
-    console.warn('\n⚠️  Environment warnings:');
-    warnings.forEach(w => console.warn(`   - ${w}`));
-    console.warn('');
+    logger.warn('Environment warnings:\n' + warnings.map(w => `  - ${w}`).join('\n'));
   }
 
   // Fail on errors
   if (errors.length > 0) {
-    console.error('\n❌ FATAL: Environment validation failed:');
-    errors.forEach(e => console.error(`   - ${e}`));
-    console.error('\nServer cannot start without these variables.\n');
+    logger.error('FATAL: Environment validation failed:\n' + errors.map(e => `  - ${e}`).join('\n'));
+    logger.error('Server cannot start without these variables.');
     process.exit(1);
   }
 }

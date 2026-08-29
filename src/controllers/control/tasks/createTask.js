@@ -4,6 +4,7 @@ const taskSchema = require('../../../validation/taskValidator');
 const { checkTaskLimits } = require('../../../middleware/checkSubscriptionLimits');
 const taskScheduler = require('../../../schedualr');
 const moment = require('moment-timezone');
+const logger = require('../../../config/logger');
 
 exports.createTask = async (req, res) => {
     try {
@@ -84,12 +85,12 @@ exports.createTask = async (req, res) => {
         // FIXED: Better error handling for scheduling
         try {
             await taskScheduler.scheduleNewTask(task);
-            console.log(`Task "${task.name}" scheduled successfully`);
+            logger.info(`Task "${task.name}" scheduled successfully`);
         } catch (schedulingError) {
-            console.error('Error scheduling task:', schedulingError);
+            logger.error('Error scheduling task:', schedulingError);
             // Task is created but not scheduled - log warning but don't fail the request
             // The scheduler will pick it up in the next periodic check
-            console.warn(`Task "${task.name}" created but not immediately scheduled. It will be picked up in the next scheduler cycle.`);
+            logger.warn(`Task "${task.name}" created but not immediately scheduled. It will be picked up in the next scheduler cycle.`);
         }
 
         // FIXED: Get formatted execution time
@@ -97,7 +98,7 @@ exports.createTask = async (req, res) => {
 
         // FIXED: Check if task has valid next execution
         if (!task.nextExecution) {
-            console.warn(`Task "${task.name}" created but has no next execution time. Check schedule configuration.`);
+            logger.warn(`Task "${task.name}" created but has no next execution time. Check schedule configuration.`);
         }
 
         res.status(201).json({ 
@@ -135,7 +136,7 @@ exports.createTask = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error creating task:', error);
+        logger.error('Error creating task:', error);
         
         // FIXED: Better error response
         if (error.name === 'ValidationError') {

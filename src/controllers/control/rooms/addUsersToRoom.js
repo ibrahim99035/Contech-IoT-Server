@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Room = require('../../../models/Room');
 const Apartment = require('../../../models/Apartment');
 const User = require('../../../models/User');
@@ -200,7 +201,7 @@ exports.addUsersToRoom = async (req, res) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
-    console.error('Error adding users to room:', error);
+    logger.error('Error adding users to room:', error);
     return res.status(500).json({
       success: false,
       message: 'Server error while adding users to room',

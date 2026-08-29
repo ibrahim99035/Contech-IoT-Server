@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 /**
  * Room Controller - Update Room Password
  *
@@ -74,7 +75,7 @@ exports.updateRoomPassword = async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Error updating room password:', err);
+    logger.error('Error updating room password:', err);
     return res.status(500).json({
       success: false,
       message: 'An error occurred while updating the room password.',

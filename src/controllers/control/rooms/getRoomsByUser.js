@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 /**
  * Room Controller - Get Rooms By User
  * 
@@ -142,7 +143,7 @@ exports.getRoomsByUser = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error in getRoomsByUser:', error);
+    logger.error('Error in getRoomsByUser:', error);
     
     return res.status(500).json({
       success: false,

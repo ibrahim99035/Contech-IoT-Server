@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Apartment = require('../../../models/Apartment');
 
 // GET - Get apartments with filters and search (Optimized)
@@ -56,7 +57,7 @@ const getFilteredApartments = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ [getFilteredApartments] Error:', error);
+    logger.error('❌ [getFilteredApartments] Error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching filtered apartments',

@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 // controllers/api/device/getDeviceUsers.js
 const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
@@ -77,7 +78,7 @@ exports.getDeviceUsers = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error getting device users:', error);
+    logger.error('Error getting device users:', error);
     return res.status(500).json({
       success: false,
       message: 'Server error while getting device users',

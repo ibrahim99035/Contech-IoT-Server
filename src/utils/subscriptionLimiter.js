@@ -175,6 +175,32 @@ class SubscriptionLimiter {
   }
 
   /**
+   * Check if the creator can assign more members to an apartment
+   */
+  async canAssignMember(userId, apartmentId, newMembersCount) {
+    const limits = await this.getUserLimits(userId);
+
+    const apartment = await Apartment.findById(apartmentId);
+    if (!apartment) {
+      throw new Error('Apartment not found');
+    }
+
+    const currentMembers = apartment.members.length;
+    const maxMembers = limits.members.perApartment;
+    const projected = currentMembers + (newMembersCount || 0);
+
+    return {
+      canAssign: projected <= maxMembers,
+      current: currentMembers,
+      limit: maxMembers,
+      projected,
+      message: projected <= maxMembers
+        ? 'Can assign members'
+        : `Member limit reached (${maxMembers} per apartment)`
+    };
+  }
+
+  /**
    * Get user's current usage across all resources
    */
   async getUserUsage(userId) {

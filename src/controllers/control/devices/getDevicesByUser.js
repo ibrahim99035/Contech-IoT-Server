@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 /**
  * Device Controller - handles retrieval of devices by user
  * @module controllers/DeviceController
@@ -71,7 +72,7 @@ exports.getDevicesByUser = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error in getDevicesByUser:', error);
+    logger.error('Error in getDevicesByUser:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching user devices',

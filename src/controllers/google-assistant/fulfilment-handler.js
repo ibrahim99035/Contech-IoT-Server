@@ -6,6 +6,7 @@
 const Device = require('../../models/Device');
 const { normalizeState } = require('../../websockets/utils/stateUtils');
 const mqttBroker = require('../../mqtt/mqtt-broker');
+const logger = require('../../config/logger');
 
 /**
  * Validate Google Smart Home request
@@ -195,7 +196,7 @@ async function executeDeviceCommand(device, execution, user, io) {
       ...updateData
     });
     
-    console.log(`📱 Socket.io notifications sent for device ${device.name} updated by Google Assistant`);
+    logger.info(`📱 Socket.io notifications sent for device ${device.name} updated by Google Assistant`);
   }
 
   return responseStates;
@@ -206,7 +207,7 @@ async function executeDeviceCommand(device, execution, user, io) {
  */
 exports.googleAssistantFulfillment = async (req, res) => {
   try {
-    console.log('🎯 Google Assistant Request:', JSON.stringify(req.body, null, 2));
+    logger.info('🎯 Google Assistant Request:', JSON.stringify(req.body, null, 2));
     
     // User is already authenticated by protect middleware
     const user = req.user;
@@ -215,7 +216,7 @@ exports.googleAssistantFulfillment = async (req, res) => {
     // Get Socket.io instance from app
     const io = req.app.get('io');
     
-    console.log(`👤 User: ${user.email}, Intent: ${intent}`);
+    logger.info(`👤 User: ${user.email}, Intent: ${intent}`);
 
     // SYNC: List user's devices
     if (intent === 'action.devices.SYNC') {
@@ -237,7 +238,7 @@ exports.googleAssistantFulfillment = async (req, res) => {
         }
       };
 
-      console.log('🔄 SYNC Response:', JSON.stringify(response, null, 2));
+      logger.info('🔄 SYNC Response:', JSON.stringify(response, null, 2));
       return res.json(response);
     }
 
@@ -264,7 +265,7 @@ exports.googleAssistantFulfillment = async (req, res) => {
         }
       };
 
-      console.log('🔍 QUERY Response:', JSON.stringify(response, null, 2));
+      logger.info('🔍 QUERY Response:', JSON.stringify(response, null, 2));
       return res.json(response);
     }
 
@@ -313,7 +314,7 @@ exports.googleAssistantFulfillment = async (req, res) => {
             });
 
           } catch (error) {
-            console.error(`❌ Execute error for device ${deviceId}:`, error);
+            logger.error(`❌ Execute error for device ${deviceId}:`, error);
             results.push({
               ids: [deviceId],
               status: 'ERROR',
@@ -330,26 +331,26 @@ exports.googleAssistantFulfillment = async (req, res) => {
         }
       };
 
-      console.log('⚡ EXECUTE Response:', JSON.stringify(response, null, 2));
+      logger.info('⚡ EXECUTE Response:', JSON.stringify(response, null, 2));
       return res.json(response);
     }
 
     // DISCONNECT: Unlink account
     if (intent === 'action.devices.DISCONNECT') {
-      console.log(`🔌 Disconnecting user: ${user.email}`);
+      logger.info(`🔌 Disconnecting user: ${user.email}`);
       // Optional: Clean up user sessions, revoke tokens, etc.
       return res.status(200).json({});
     }
 
     // Unknown intent
-    console.log(`❓ Unknown intent: ${intent}`);
+    logger.info(`❓ Unknown intent: ${intent}`);
     res.status(400).json({ 
       error: 'Unsupported intent',
       intent: intent 
     });
 
   } catch (error) {
-    console.error('❌ Google Assistant Fulfillment Error:', error);
+    logger.error('❌ Google Assistant Fulfillment Error:', error);
     
     // Return proper error response
     const errorResponse = {
