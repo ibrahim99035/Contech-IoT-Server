@@ -1,0 +1,20 @@
+meta {
+  name: Update Details
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/task-handler/tasks/update/{{taskId}}/details
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"name": "Manual Updated Task"}
+}

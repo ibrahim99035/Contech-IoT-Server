@@ -1,7 +1,11 @@
+<<<<<<< Updated upstream
 /**
  * User Deletion Controller - handles deletion of user accounts
  * @module controllers/UserDeletionController
  */
+=======
+const logger = require('../../config/logger');
+>>>>>>> Stashed changes
 
 const User = require('../../models/User');
 const Device = require('../../models/Device');
@@ -9,122 +13,66 @@ const Task = require('../../models/Task');
 const Apartment = require('../../models/Apartment');
 const Room = require('../../models/Room');
 const mongoose = require('mongoose');
+const { runInTxn } = require('../../utils/transaction')(mongoose);
 
-/**
- * Delete user account and cleanup related data
- * 
- * @async
- * @function deleteMyAccount
- * @param {Object} req - Express request object
- * @param {Object} req.user - Authenticated user information
- * @param {Object} res - Express response object
- * @returns {Object} JSON response with success message or error
- */
 exports.deleteMyAccount = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-
   try {
-    // Check authentication
     if (!req.user?._id) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required',
-        code: 'UNAUTHORIZED'
-      });
+      return res.status(401).json({ success: false, message: 'Authentication required', code: 'UNAUTHORIZED' });
     }
 
     const userId = req.user._id;
-    
-    // Find the user to ensure they exist
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found',
-        code: 'USER_NOT_FOUND'
-      });
-    }
 
-    // Clean up device references
-    // 1. Remove user from the users array in devices
-    await Device.updateMany(
-      { users: userId },
-      { $pull: { users: userId } },
-      { session }
-    );
+    await runInTxn(async (session) => {
+      const opts = session ? { session } : {};
 
-    // 2. Handle devices created by this user
-    // Get all devices created by the user
-    const userCreatedDevices = await Device.find({ creator: userId });
-    
-    // For each device:
-    for (const device of userCreatedDevices) {
-      // If there are other users assigned to this device, transfer ownership to the first user
-      if (device.users && device.users.length > 0) {
-        // Find first user who is not the creator
-        const newOwnerId = device.users.find(id => !id.equals(userId));
-        if (newOwnerId) {
-          device.creator = newOwnerId;
-          await device.save({ session });
-        } else {
-          // If no other users, delete the device
-          await Device.findByIdAndDelete(device._id, { session });
-        }
-      } else {
-        // No other users, delete the device
-        await Device.findByIdAndDelete(device._id, { session });
+      const user = await User.findById(userId);
+      if (!user) {
+        throw { status: 404, code: 'USER_NOT_FOUND', message: 'User not found' };
       }
-    }
 
-    // Clean up tasks
-    // 1. Remove user from assigned tasks
-    await Task.updateMany(
-      { assignedTo: userId },
-      { $pull: { assignedTo: userId } },
-      { session }
-    );
-    
-    // 2. Handle tasks created by this user - mark them as 'system' created or delete
-    await Task.updateMany(
-      { creator: userId },
-      { $set: { creator: null, createdBy: 'Deleted User' } },
-      { session }
-    );
+      await Device.updateMany({ users: userId }, { $pull: { users: userId } }, opts);
 
-    // Clean up apartments
-    // For apartments the user has access to
-    if (user.apartments && user.apartments.length > 0) {
-      for (const apartmentId of user.apartments) {
-        const apartment = await Apartment.findById(apartmentId);
-        
-        if (apartment) {
-          // If user is the owner of the apartment
+      const userCreatedDevices = await Device.find({ creator: userId }).lean();
+      for (const device of userCreatedDevices) {
+        if (device.users && device.users.length > 0) {
+          const newOwnerId = device.users.find(id => !id.equals(userId));
+          if (newOwnerId) {
+            await Device.findByIdAndUpdate(device._id, { creator: newOwnerId }, opts);
+          } else {
+            await Device.findByIdAndDelete(device._id, opts);
+          }
+        } else {
+          await Device.findByIdAndDelete(device._id, opts);
+        }
+      }
+
+      await Task.updateMany({ assignedTo: userId }, { $pull: { assignedTo: userId } }, opts);
+      await Task.updateMany({ creator: userId }, { $set: { creator: null, createdBy: 'Deleted User' } }, opts);
+
+      if (user.apartments && user.apartments.length > 0) {
+        for (const apartmentId of user.apartments) {
+          const apartment = await Apartment.findById(apartmentId, null, opts);
+          if (!apartment) continue;
+
           if (apartment.owner && apartment.owner.toString() === userId.toString()) {
-            // Check if there are other users with access
-            const occupants = await User.find({ apartments: apartmentId, _id: { $ne: userId } });
-            
+            const occupants = await User.find({ apartments: apartmentId, _id: { $ne: userId } }).lean();
             if (occupants.length > 0) {
-              // Transfer ownership to the first occupant
-              apartment.owner = occupants[0]._id;
-              await apartment.save({ session });
+              await Apartment.findByIdAndUpdate(apartmentId, { owner: occupants[0]._id }, opts);
             } else {
-              // Delete the apartment and associated rooms if no other users
-              await Room.deleteMany({ apartment: apartmentId }, { session });
-              await Apartment.findByIdAndDelete(apartmentId, { session });
+              await Room.deleteMany({ apartment: apartmentId }, opts);
+              await Apartment.findByIdAndDelete(apartmentId, opts);
             }
           } else {
-            // User is not the owner, just remove the reference
-            // Check if apartment.users exists before using filter
             if (apartment.users && Array.isArray(apartment.users)) {
               apartment.users = apartment.users.filter(id => !id.equals(userId));
-              await apartment.save({ session });
+              await Apartment.findByIdAndUpdate(apartmentId, { $set: { users: apartment.users } }, opts);
             }
           }
         }
       }
-    }
 
+<<<<<<< Updated upstream
     // Finally, delete the user account
     await User.findByIdAndDelete(userId, { session });
 
@@ -149,5 +97,19 @@ exports.deleteMyAccount = async (req, res) => {
       error: error.message,
       code: 'SERVER_ERROR'
     });
+=======
+      await User.findByIdAndDelete(userId, opts);
+    }).then(
+      () => res.status(200).json({ success: true, message: 'Your account has been successfully deleted' }),
+      (err) => {
+        if (err.status) return res.status(err.status).json({ success: false, message: err.message, code: err.code });
+        logger.error('Error deleting user account:', err);
+        return res.status(500).json({ success: false, message: 'Error deleting user account', error: err.message, code: 'SERVER_ERROR' });
+      }
+    );
+  } catch (err) {
+    logger.error('Error deleting user account:', err);
+    return res.status(500).json({ success: false, message: 'Error deleting user account', error: err.message, code: 'SERVER_ERROR' });
+>>>>>>> Stashed changes
   }
 };

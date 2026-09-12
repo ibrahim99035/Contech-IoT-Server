@@ -1,0 +1,16 @@
+meta {
+  name: All Users
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/dashboard/users/get-all-users
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

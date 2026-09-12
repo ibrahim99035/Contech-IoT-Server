@@ -1,0 +1,16 @@
+meta {
+  name: Exit
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/rooms-handler/rooms/exit-room/{{roomId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

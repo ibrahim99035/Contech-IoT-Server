@@ -1,0 +1,16 @@
+meta {
+  name: Validate Coupon
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/subscription/coupons/validate/TESTCODE
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

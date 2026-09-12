@@ -1,0 +1,20 @@
+meta {
+  name: Update Name
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/rooms-handler/rooms/{{roomId}}/update-name
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"name": "Manual Updated Room"}
+}

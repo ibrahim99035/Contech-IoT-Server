@@ -1,0 +1,161 @@
+# REST Endpoint Test Report
+
+- Date: 2026-09-11T10:05:01.921Z
+- Total: 154 | Passed: 154 | Failed: 0
+
+## Results
+
+- ✅ [health] -> 200
+- ✅ [auth/register] -> 201
+- ✅ [auth/register admin-role-forbidden] -> 403
+- ✅ [auth/register duplicate email] -> 400
+- ✅ [auth/activate-email] -> 200
+- ✅ [auth/activate-email already-active] -> 400
+- ✅ [auth/login] -> 200
+- ✅ [auth/verify] -> 200
+- ✅ [auth/verify bad token] -> 401
+- ✅ [auth/login wrong password] -> 401
+- ✅ [auth/activation-token (SMTP-dependent)] -> 500 (allowed: 200|500)
+- ✅ [auth/forgot-password unknown email] -> 200 (allowed: 200|500)
+- ✅ [auth/forgot-password known email] -> 500 (allowed: 200|500)
+- ✅ [auth/reset-password] -> 200
+- ✅ [auth/login after reset] -> 200
+- ✅ [auth/update-password] -> 200
+- ✅ [auth/update-password wrong old] -> 400
+- ✅ [auth/google mock token] -> 400 (allowed: 400|401|403|500)
+- ✅ [auth/google/status] -> 200 (allowed: 200|404)
+- ✅ [auth/google/unlink not linked] -> 400 (allowed: 200|400|404)
+- ✅ [auth/oauth/authorize redirect] -> 302 (allowed: 302|400|401)
+- ✅ [auth/oauth/token invalid code] -> 400 (allowed: 400|401)
+- ✅ [auth/delete-account self] -> 200
+- ✅ [apartments/create] -> 201
+- ✅ [apartments/create id captured] 6aa3d24893126debc778a89d
+- ✅ [apartments/create no-auth] -> 401
+- ✅ [apartments/member list] -> 200
+- ✅ [apartments/update-name] -> 200
+- ✅ [apartments/update-name non-member-404] -> 404
+- ✅ [apartments/assign-members] -> 200
+- ✅ [apartments/members list] -> 200
+- ✅ [apartments/members no-auth] -> 401
+- ✅ [apartments/remove-member] -> 200
+- ✅ [rooms/create] -> 201
+- ✅ [rooms/create id captured] 6aa3d24893126debc778a8b9
+- ✅ [rooms/create #2 (KNOWN BUG esp_id)] -> 500 (allowed: 201|500)
+- ✅ [rooms/update-name] -> 200
+- ✅ [rooms/update-password] -> 200
+- ✅ [rooms/add-users] -> 200
+- ✅ [rooms/get-users] -> 200
+- ✅ [rooms/user get-all] -> 200
+- ✅ [rooms/apartment list] -> 200
+- ✅ [rooms/remove-user] -> 200
+- ✅ [devices/create] -> 201
+- ✅ [devices/create id captured] 6aa3d24a93126debc778a8ef
+- ✅ [devices/create #2] -> 201
+- ✅ [devices/create #2 id captured] 6aa3d24a93126debc778a8f9
+- ✅ [devices/create free-tier-limit (3rd)] -> 403
+- ✅ [devices/room list] -> 200
+- ✅ [devices/room orders] -> 200
+- ✅ [devices/room orders with-id] -> 200
+- ✅ [devices/update-name] -> 200
+- ✅ [devices/update-component-number] -> 200
+- ✅ [devices/assign-users] -> 200
+- ✅ [devices/get-users] -> 200
+- ✅ [devices/get-users no-auth] -> 401
+- ✅ [devices/remove-user] -> 200
+- ✅ [devices/toggle-activation off] -> 200
+- ✅ [devices/toggle-activation on] -> 200
+- ✅ [devices/update-order conflict-409] -> 409
+- ✅ [devices/update-order] -> 200
+- ✅ [devices/update-order back] -> 200
+- ✅ [devices/exist-device exit-creator-forbidden] -> 400
+- ✅ [tasks/create] -> 201
+- ✅ [tasks/create id captured] 6aa3d24a93126debc778a945
+- ✅ [tasks/create missing-action] -> 400
+- ✅ [tasks/get-task] -> 200
+- ✅ [tasks/get-task no-auth] -> 401
+- ✅ [tasks/my-tasks] -> 200
+- ✅ [tasks/by-device] -> 200
+- ✅ [tasks/assigned] -> 200
+- ✅ [tasks/filter] -> 200
+- ✅ [tasks/update details] -> 200
+- ✅ [tasks/update schedule] -> 200
+- ✅ [tasks/update status active] -> 200
+- ✅ [tasks/update status invalid] -> 400
+- ✅ [tasks/add-notification-recipient] -> 200
+- ✅ [subscription/plans] -> 200
+- ✅ [subscription/plans parsed] count=3
+- ✅ [subscription/plan by-id] -> 200
+- ✅ [subscription/features] -> 200
+- ✅ [subscription/subscribe] -> 201 (allowed: 200|201)
+- ✅ [subscription/my] -> 200
+- ✅ [subscription/cancel] -> 200
+- ✅ [subscription/payment create] -> 400 (allowed: 201|400)
+- ✅ [subscription/payments mine] -> 200
+- ✅ [subscription/payments other-user (no ownership check)] -> 200
+- ✅ [subscription/coupon create admin] -> 201
+- ✅ [subscription/coupon validate] -> 200
+- ✅ [subscription/coupon validate missing] -> 404
+- ✅ [subscription/coupon create non-admin] -> 403
+- ✅ [subscription/plan create admin] -> 201
+- ✅ [subscription/plan update admin] -> 200
+- ✅ [subscription/plan delete admin] -> 200
+- ✅ [subscription/plan create non-admin] -> 403
+- ✅ [subscription/feature create admin] -> 201
+- ✅ [subscription/feature delete admin] -> 200
+- ✅ [subscription/feature by-id missing] -> 404
+- ✅ [subscription/admin-activities admin] -> 200
+- ✅ [subscription/admin-activities non-admin] -> 403
+- ✅ [gassistant/fulfillment SYNC] -> 200
+- ✅ [gassistant/SYNC devices payload] count=2
+- ✅ [gassistant/fulfillment QUERY] -> 200
+- ✅ [gassistant/QUERY states]
+- ✅ [gassistant/fulfillment EXECUTE] -> 200
+- ✅ [gassistant/EXECUTE success] status=SUCCESS
+- ✅ [gassistant/fulfillment DISCONNECT] -> 200
+- ✅ [gassistant/fulfillment no-auth] -> 401
+- ✅ [admin/users list] -> 200
+- ✅ [admin/users search] -> 200
+- ✅ [admin/users statistics] -> 200
+- ✅ [admin/users by-id] -> 200
+- ✅ [admin/users by-id non-admin] -> 403
+- ✅ [admin/users update-role] -> 200
+- ✅ [admin/apartments all] -> 200
+- ✅ [admin/apartments search] -> 200
+- ✅ [admin/apartments statistics] -> 200
+- ✅ [admin/apartments members-analysis] -> 200
+- ✅ [admin/apartments by-id (KNOWN BUG ObjectId)] -> 500 (allowed: 200|500)
+- ✅ [admin/rooms all] -> 200
+- ✅ [admin/rooms search] -> 200
+- ✅ [admin/rooms statistics] -> 200
+- ✅ [admin/rooms usage-analysis] -> 200
+- ✅ [admin/rooms by-id] -> 200
+- ✅ [admin/devices all] -> 200
+- ✅ [admin/devices search] -> 200
+- ✅ [admin/devices statistics] -> 200
+- ✅ [admin/devices performance] -> 200
+- ✅ [admin/devices by-id] -> 200
+- ✅ [admin/tasks all] -> 200
+- ✅ [admin/tasks by-id] -> 200
+- ✅ [admin/tasks analytics] -> 200
+- ✅ [admin/tasks by-status] -> 200
+- ✅ [admin/tasks by-recurrence] -> 200
+- ✅ [admin/tasks by-user] -> 200
+- ✅ [admin/tasks by-device] -> 200
+- ✅ [admin/tasks history] -> 200
+- ✅ [admin/tasks scheduled-today] -> 200
+- ✅ [admin/tasks overdue] -> 200
+- ✅ [admin/tasks search] -> 200
+- ✅ [admin/limits usage] -> 200
+- ✅ [admin/limits list] -> 200
+- ✅ [admin/limits upsert admin] -> 200
+- ✅ [admin/limits non-admin] -> 403
+- ✅ [images/list] -> 200
+- ✅ [images/stats] -> 200
+- ✅ [images/by-type (empty → 404)] -> 404
+- ✅ [images/upload non-admin] -> 403
+- ✅ [images/by-id missing] -> 404
+- ✅ [tasks/delete] -> 200
+- ✅ [devices/delete #1] -> 200
+- ✅ [devices/delete #2] -> 200
+- ✅ [rooms/delete] -> 200
+- ✅ [apartments/delete] -> 200

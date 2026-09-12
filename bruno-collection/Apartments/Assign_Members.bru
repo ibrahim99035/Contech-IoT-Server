@@ -1,0 +1,20 @@
+meta {
+  name: Assign Members
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/apartments-handler/apartments/assign-members
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"apartmentId": "{{apartmentId}}", "members": ["{{userId}}"]}
+}

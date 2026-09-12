@@ -1,0 +1,15 @@
+meta {
+  name: Plans
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/subscription/plans
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}

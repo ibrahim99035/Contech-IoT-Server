@@ -1,0 +1,20 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/rooms-handler/rooms/create
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"name": "Manual Test Room", "apartment": "{{apartmentId}}", "password": "Room123"}
+}
