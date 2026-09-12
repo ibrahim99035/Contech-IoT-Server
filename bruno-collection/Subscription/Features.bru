@@ -1,0 +1,15 @@
+meta {
+  name: Features
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/subscription/features
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+}

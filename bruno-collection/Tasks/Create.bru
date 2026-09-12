@@ -1,0 +1,20 @@
+meta {
+  name: Create
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/task-handler/tasks/create-task
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"name": "Manual Test Task", "device": "{{deviceId}}", "scheduledTime": "2027-01-01T10:00:00.000Z", "type": "control"}
+}

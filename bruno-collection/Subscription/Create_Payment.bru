@@ -1,0 +1,20 @@
+meta {
+  name: Create Payment
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/subscription/payments
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"amount": 999, "planId": "{{planId}}", "status": "test", "method": "test"}
+}

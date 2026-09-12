@@ -1,0 +1,20 @@
+meta {
+  name: Subscribe
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/subscription
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"planId": "{{planId}}"}
+}

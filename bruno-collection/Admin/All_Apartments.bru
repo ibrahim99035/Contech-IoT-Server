@@ -1,0 +1,16 @@
+meta {
+  name: All Apartments
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/dashboard/apartments/all-apartments
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

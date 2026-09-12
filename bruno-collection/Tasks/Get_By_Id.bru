@@ -1,0 +1,16 @@
+meta {
+  name: Get By Id
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/task-handler/tasks/get-task/{{taskId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

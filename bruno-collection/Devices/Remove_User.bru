@@ -1,0 +1,16 @@
+meta {
+  name: Remove User
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/device-handler/devices/remove-user/device/{{deviceId}}/user/{{userId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

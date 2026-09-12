@@ -1,0 +1,16 @@
+meta {
+  name: My
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/subscription/my
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

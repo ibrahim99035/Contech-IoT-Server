@@ -1,0 +1,20 @@
+meta {
+  name: Update Status
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/task-handler/tasks/{{taskId}}/status
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"status": "completed"}
+}

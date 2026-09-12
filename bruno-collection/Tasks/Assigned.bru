@@ -1,0 +1,16 @@
+meta {
+  name: Assigned
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/task-handler/tasks/user/assigned
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

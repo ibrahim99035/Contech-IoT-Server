@@ -1,0 +1,16 @@
+meta {
+  name: Orders
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/device-handler/devices/room/{{roomId}}/orders
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

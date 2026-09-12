@@ -1,0 +1,16 @@
+meta {
+  name: Members
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/apartments-handler/apartments/{{apartmentId}}/members
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}

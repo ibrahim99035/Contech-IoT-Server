@@ -3,10 +3,14 @@ const User = require('../../../models/User');
 const Room = require('../../../models/Room');
 const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
+const { runInTxn } = require('../../../utils/transaction')(mongoose);
 
 exports.deleteApartment = async (req, res) => {
+<<<<<<< Updated upstream
   const session = await mongoose.startSession();
 
+=======
+>>>>>>> Stashed changes
   try {
     session.startTransaction();
     const apartmentId = req.params.id;
@@ -18,6 +22,7 @@ exports.deleteApartment = async (req, res) => {
       return res.status(400).json({ message: 'Invalid apartment ID' });
     }
 
+<<<<<<< Updated upstream
     // Find Apartment
     const apartment = await Apartment.findById(apartmentId).session(session);
     if (!apartment) {
@@ -61,5 +66,36 @@ exports.deleteApartment = async (req, res) => {
     session.endSession();
 
     res.status(500).json({ message: 'Error deleting apartment', error: error.message });
+=======
+    let apartment;
+    await runInTxn(async (session) => {
+      const opts = session ? { session } : {};
+
+      apartment = await Apartment.findById(apartmentId, null, opts);
+      if (!apartment) {
+        throw { status: 404, message: 'Apartment not found' };
+      }
+
+      if (!apartment.creator.equals(req.user._id)) {
+        throw { status: 403, message: 'Only the creator can delete the apartment' };
+      }
+
+      const rooms = await Room.find({ apartment: apartmentId }).select('_id').lean();
+      const roomIds = rooms.map(r => r._id);
+
+      await Device.deleteMany({ room: { $in: roomIds } }, opts);
+      await Room.deleteMany({ apartment: apartmentId }, opts);
+      await User.updateMany({ apartments: apartmentId }, { $pull: { apartments: apartmentId } }, opts);
+      await Apartment.deleteOne({ _id: apartmentId }, opts);
+    }).then(
+      () => res.json({ message: 'Apartment deleted successfully' }),
+      (err) => {
+        if (err.status) return res.status(err.status).json({ message: err.message });
+        return res.status(500).json({ message: 'Error deleting apartment', error: err.message });
+      }
+    );
+  } catch (err) {
+    return res.status(500).json({ message: 'Error deleting apartment', error: err.message });
+>>>>>>> Stashed changes
   }
 };

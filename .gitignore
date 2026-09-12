@@ -1,3 +1,30 @@
 node_modules/
 
+# Environment variables
 .env
+.env.*
+!.env.example
+
+# IDE / Editor
+.code-graph/
+.vscode/
+.idea/
+
+# Logs
+logs/
+*.log
+
+# AdminJS runtime-generated bundles
+.adminjs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker volumes (local)
+mongodb/
+mosquitto/data/
+mosquitto/logs/
+.code-graph/
+logs/
+.adminjs/

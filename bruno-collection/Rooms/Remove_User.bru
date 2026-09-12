@@ -1,0 +1,20 @@
+meta {
+  name: Remove User
+  type: http
+  seq: 1
+}
+
+put {
+  url: {{baseUrl}}/api/rooms-handler/rooms/remove-user/{{roomId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
+
+body:json {
+  {"users": ["{{userId}}"]}
+}

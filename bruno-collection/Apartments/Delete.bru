@@ -1,0 +1,16 @@
+meta {
+  name: Delete
+  type: http
+  seq: 1
+}
+
+delete {
+  url: {{baseUrl}}/api/apartments-handler/apartments/delete/{{apartmentId}}
+  body: json
+  auth: inherit
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+}
