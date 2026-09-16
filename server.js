@@ -24,6 +24,7 @@ const roomRoutes = require('./src/routes/roomRoutes');
 const deviceRoutes = require('./src/routes/deviceRoutes');
 const taskRoutes = require('./src/routes/taskRoutes');
 const googleAssistantRoutes = require('./src/routes/googleAssistantRoutes');
+const subscriptionRoutes = require('./src/routes/subscriptionRoutes');
 
 // Admin Routes
 const apartmentAdminRoutes = require('./src/adminRoutes/apartmentAdminRoutes');
@@ -85,6 +86,7 @@ async function startServer() {
     app.use('/api/task-handler', taskRoutes); 
     app.use('/api/images', imageRoutes); // to be removed later
     app.use('/api/google-assistant', googleAssistantRoutes);
+    app.use('/api/subscription', subscriptionRoutes);
 
     // Admin Routes
     app.use('/admin/dashboard/apartments', apartmentAdminRoutes);

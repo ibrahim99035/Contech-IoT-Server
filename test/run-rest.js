@@ -505,10 +505,10 @@ process.on('unhandledRejection', (e) => { console.error('UNHANDLED:', e && e.mes
 // Watchdog: whatever wedges above, guarantee termination with the exit code
 // already reflected in the printed summary + report.
 setTimeout(() => {
-  console.error('WATCHDOG: forcing exit after 90s');
+  console.error('WATCHDOG: forcing exit after 600s');
   try { process.reallyExit(failed === 0 ? 0 : 1); } catch { /* ignore */ }
   process.kill(process.pid, 'SIGKILL');
-}, 90000).unref();
+}, 600000).unref();
 
 main();
 

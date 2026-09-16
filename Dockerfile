@@ -1,5 +1,5 @@
 # Multi-stage Dockerfile for Node.js App
-FROM node:18-alpine AS base
+FROM node:22-alpine AS base
 
 # Install dumb-init for proper signal handling
 RUN apk add --no-cache dumb-init
@@ -12,14 +12,14 @@ COPY package*.json ./
 
 # Development stage
 FROM base AS development
-RUN npm ci --only=development
+RUN npm ci --include=dev
 COPY . .
 EXPOSE 5000
 CMD ["dumb-init", "npm", "run", "dev"]
 
 # Production dependencies stage
 FROM base AS production-deps
-RUN npm ci --only=production && npm cache clean --force
+RUN npm ci --omit=dev && npm cache clean --force
 
 # Production stage
 FROM base AS production

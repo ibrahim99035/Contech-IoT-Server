@@ -24,6 +24,18 @@ exports.getPlans = async (req, res) => {
   }
 };
 
+// Get a single subscription plan by ID
+exports.getPlanById = async (req, res) => {
+  try {
+    const plan = await SubscriptionPlan.findById(req.params.id);
+    if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
+
+    res.status(200).json({ success: true, data: plan });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
 // Update a subscription plan
 exports.updatePlan = async (req, res) => {
   try {

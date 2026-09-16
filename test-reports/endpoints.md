@@ -1,6 +1,6 @@
 # REST Endpoint Test Report
 
-- Date: 2026-09-11T10:05:01.921Z
+- Date: 2026-09-16T09:03:05.842Z
 - Total: 154 | Passed: 154 | Failed: 0
 
 ## Results
@@ -26,10 +26,10 @@
 - ✅ [auth/google/status] -> 200 (allowed: 200|404)
 - ✅ [auth/google/unlink not linked] -> 400 (allowed: 200|400|404)
 - ✅ [auth/oauth/authorize redirect] -> 302 (allowed: 302|400|401)
-- ✅ [auth/oauth/token invalid code] -> 400 (allowed: 400|401)
+- ✅ [auth/oauth/token invalid code] -> 401 (allowed: 400|401)
 - ✅ [auth/delete-account self] -> 200
 - ✅ [apartments/create] -> 201
-- ✅ [apartments/create id captured] 6aa3d24893126debc778a89d
+- ✅ [apartments/create id captured] 6aaa5b454a8fbe4f7f9da992
 - ✅ [apartments/create no-auth] -> 401
 - ✅ [apartments/member list] -> 200
 - ✅ [apartments/update-name] -> 200
@@ -39,7 +39,7 @@
 - ✅ [apartments/members no-auth] -> 401
 - ✅ [apartments/remove-member] -> 200
 - ✅ [rooms/create] -> 201
-- ✅ [rooms/create id captured] 6aa3d24893126debc778a8b9
+- ✅ [rooms/create id captured] 6aaa5b464a8fbe4f7f9da9ae
 - ✅ [rooms/create #2 (KNOWN BUG esp_id)] -> 500 (allowed: 201|500)
 - ✅ [rooms/update-name] -> 200
 - ✅ [rooms/update-password] -> 200
@@ -49,9 +49,9 @@
 - ✅ [rooms/apartment list] -> 200
 - ✅ [rooms/remove-user] -> 200
 - ✅ [devices/create] -> 201
-- ✅ [devices/create id captured] 6aa3d24a93126debc778a8ef
+- ✅ [devices/create id captured] 6aaa5b474a8fbe4f7f9da9e2
 - ✅ [devices/create #2] -> 201
-- ✅ [devices/create #2 id captured] 6aa3d24a93126debc778a8f9
+- ✅ [devices/create #2 id captured] 6aaa5b474a8fbe4f7f9da9ec
 - ✅ [devices/create free-tier-limit (3rd)] -> 403
 - ✅ [devices/room list] -> 200
 - ✅ [devices/room orders] -> 200
@@ -69,7 +69,7 @@
 - ✅ [devices/update-order back] -> 200
 - ✅ [devices/exist-device exit-creator-forbidden] -> 400
 - ✅ [tasks/create] -> 201
-- ✅ [tasks/create id captured] 6aa3d24a93126debc778a945
+- ✅ [tasks/create id captured] 6aaa5b474a8fbe4f7f9daa38
 - ✅ [tasks/create missing-action] -> 400
 - ✅ [tasks/get-task] -> 200
 - ✅ [tasks/get-task no-auth] -> 401
@@ -89,7 +89,7 @@
 - ✅ [subscription/subscribe] -> 201 (allowed: 200|201)
 - ✅ [subscription/my] -> 200
 - ✅ [subscription/cancel] -> 200
-- ✅ [subscription/payment create] -> 400 (allowed: 201|400)
+- ✅ [subscription/payment create] -> 201 (allowed: 201|400)
 - ✅ [subscription/payments mine] -> 200
 - ✅ [subscription/payments other-user (no ownership check)] -> 200
 - ✅ [subscription/coupon create admin] -> 201
@@ -123,7 +123,7 @@
 - ✅ [admin/apartments search] -> 200
 - ✅ [admin/apartments statistics] -> 200
 - ✅ [admin/apartments members-analysis] -> 200
-- ✅ [admin/apartments by-id (KNOWN BUG ObjectId)] -> 500 (allowed: 200|500)
+- ✅ [admin/apartments by-id (KNOWN BUG ObjectId)] -> 200 (allowed: 200|500)
 - ✅ [admin/rooms all] -> 200
 - ✅ [admin/rooms search] -> 200
 - ✅ [admin/rooms statistics] -> 200
