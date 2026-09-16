@@ -63,4 +63,4 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run integration test suite
-        run: npm run test:integration
+        run: npm test
