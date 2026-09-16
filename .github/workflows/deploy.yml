@@ -41,17 +41,24 @@ jobs:
           git reset --hard origin/main
           COMPOSE="docker-compose"
           docker compose version >/dev/null 2>&1 && COMPOSE="docker compose"
-          echo "Pulling published image and starting containers..."
-          $COMPOSE pull api || echo "Pull failed — will build locally"
-          $COMPOSE up -d --force-recreate --no-deps --build api
-          echo "Waiting for the api to become healthy..."
+          echo "[1/5] Tearing down stale stack (volumes preserved)..."
+          $COMPOSE down -t 5 || echo "no compose project to tear down"
+          echo "[2/5] Pulling published GHCR image..."
+          if $COMPOSE pull api 2>&1; then
+            echo "[3/5] Published image pulled - starting full stack..."
+            $COMPOSE up -d
+          else
+            echo "[3/5] Pull failed - building api locally..."
+            $COMPOSE up -d --build
+          fi
+          echo "[4/5] Waiting for the api to become healthy..."
           for i in $(seq 1 30); do
             STATE=$(docker inspect contech-api --format '{{.State.Health.Status}}' 2>/dev/null || echo starting)
             [ "$STATE" = "healthy" ] && break
             sleep 10
           done
           docker ps --filter name=contech-api --format '{{.Names}} {{.Status}}'
-          echo "Health check (host)..."
+          echo "[5/5] Health check (host)..."
           curl -f http://localhost:5000/health
           echo "Gateway check (subscription plans)..."
           curl -sf https://api-bridge.contech-iot.com/api/subscription/plans -o /dev/null || echo "subscription plans check failed"
