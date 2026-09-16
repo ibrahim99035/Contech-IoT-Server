@@ -18,6 +18,9 @@ logs/
 .DS_Store
 Thumbs.db
 
+# AdminJS runtime-generated bundles
+.adminjs/
+
 # Docker volumes (local)
 mongodb/
 mosquitto/data/
