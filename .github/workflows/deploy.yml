@@ -1,7 +1,14 @@
-name: Deploy to VPS
+name: Deploy to VPS (main -> production)
+
+# Deploys the published GHCR image to the production VPS.
+# Triggers AFTER a successful Publish, only from the main branch,
+# plus manual dispatch. The VPS checkout is /opt/contech-smart-home-app.
 
 on:
-  push:
+  workflow_run:
+    workflows: [ 'Publish Docker Image' ]
+    types:
+      - completed
     branches: [ main ]
   workflow_dispatch:
 
@@ -9,6 +16,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: VPS_Secrets
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     
     steps:
     - name: Checkout code
@@ -17,28 +25,33 @@ jobs:
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.VPS_SSH_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+        echo "${{ secrets.VPS_SSH_KEY }}" | tr -d '\r' | sed '/^[[:space:]]*$/d' > ~/.ssh/deploy_key
+        chmod 600 ~/.ssh/deploy_key
         ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
-        
-        # Test the key format
-        ssh-keygen -l -f ~/.ssh/id_rsa || echo "Key format issue detected"
+        ssh-keygen -l -f ~/.ssh/deploy_key || { echo "VPS_SSH_KEY is not a valid private key"; exit 1; }
+        echo "SSH_KEY=$HOME/.ssh/deploy_key" >> "$GITHUB_ENV"
     
     - name: Deploy to server
       run: |
-        ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
-          cd /opt/contech-iot/app
-          echo "🔄 Stopping containers..."
-          docker-compose down
-          echo "📥 Pulling latest code..."
-          git pull origin main || echo "Git pull failed, continuing..."
-          echo "🔨 Building and starting containers..."
-          docker-compose up -d --build
-          echo "⏳ Waiting for services to start..."
-          sleep 10
-          echo "📋 Checking container status..."
-          docker ps
-          echo "🏥 Health check..."
-          curl -f http://localhost:5000/health || echo "Health check failed"
+        ssh -i "$SSH_KEY" ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          set -e
+          cd /opt/contech-smart-home-app
+          git fetch origin --quiet
+          git checkout main
+          git reset --hard origin/main
+          echo "🔨 Pulling published image and starting containers..."
+          docker compose pull api || echo "Pull failed — will build locally"
+          docker compose up -d --no-deps --build api
+          echo "⏳ Waiting for the api to become healthy..."
+          for i in $(seq 1 30); do
+            STATE=$(docker inspect contech-api --format '{{.State.Health.Status}}' 2>/dev/null || echo starting)
+            [ "$STATE" = "healthy" ] && break
+            sleep 10
+          done
+          docker ps --filter name=contech-api --format '{{.Names}} {{.Status}}'
+          echo "🏥 Health check (host)..."
+          curl -f http://localhost:5000/health
+          echo "🏥 Subscription API check (gateway)..."
+          curl -sf https://api-bridge.contech-iot.com/api/subscription/plans -o /dev/null || echo "subscription plans check failed"
           echo "✅ Deployment complete!"
         EOF

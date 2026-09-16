@@ -52,6 +52,7 @@ services:
 
   # Node.js Application
   api:
+    image: ${CONTECH_IMAGE:-ghcr.io/ibrahim99035/contech-iot-server:latest}
     build:
       context: ./
       dockerfile: Dockerfile
@@ -94,6 +95,24 @@ services:
       - contech-network
     command: mosquitto -c /mosquitto/config/mosquitto.conf
 
+  # Redis Cache (task scheduler queue + caching)
+  redis:
+    image: redis:7-alpine
+    container_name: contech-redis
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - contech-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
@@ -123,3 +142,4 @@ volumes:
     driver: local
   mosquitto-data:
   mosquitto-logs:
+  redis-data:
