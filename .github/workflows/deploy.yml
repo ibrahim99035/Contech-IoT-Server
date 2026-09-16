@@ -17,41 +17,43 @@ jobs:
     runs-on: ubuntu-latest
     environment: VPS_Secrets
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Setup SSH
       run: |
         mkdir -p ~/.ssh
-        echo "${{ secrets.VPS_SSH_KEY }}" | tr -d '\r' | sed '/^[[:space:]]*$/d' > ~/.ssh/deploy_key
+        printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" | tr -d '\r' | sed '/^[[:space:]]*$/d' > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
         ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
         ssh-keygen -l -f ~/.ssh/deploy_key || { echo "VPS_SSH_KEY is not a valid private key"; exit 1; }
         echo "SSH_KEY=$HOME/.ssh/deploy_key" >> "$GITHUB_ENV"
-    
+
     - name: Deploy to server
       run: |
         ssh -i "$SSH_KEY" ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
           set -e
           cd /opt/contech-smart-home-app
-                    git fetch origin --quiet
+          git fetch origin --quiet
           git checkout -f main
           git reset --hard origin/main
-          echo "🔨 Pulling published image and starting containers..."
-          docker compose pull api || echo "Pull failed — will build locally"
-          docker compose up -d --no-deps --build api
-          echo "⏳ Waiting for the api to become healthy..."
+          COMPOSE="docker-compose"
+          docker compose version >/dev/null 2>&1 && COMPOSE="docker compose"
+          echo "Pulling published image and starting containers..."
+          $COMPOSE pull api || echo "Pull failed — will build locally"
+          $COMPOSE up -d --force-recreate --no-deps --build api
+          echo "Waiting for the api to become healthy..."
           for i in $(seq 1 30); do
             STATE=$(docker inspect contech-api --format '{{.State.Health.Status}}' 2>/dev/null || echo starting)
             [ "$STATE" = "healthy" ] && break
             sleep 10
           done
           docker ps --filter name=contech-api --format '{{.Names}} {{.Status}}'
-          echo "🏥 Health check (host)..."
+          echo "Health check (host)..."
           curl -f http://localhost:5000/health
-          echo "🏥 Subscription API check (gateway)..."
+          echo "Gateway check (subscription plans)..."
           curl -sf https://api-bridge.contech-iot.com/api/subscription/plans -o /dev/null || echo "subscription plans check failed"
-          echo "✅ Deployment complete!"
+          echo "Deployment complete!"
         EOF
