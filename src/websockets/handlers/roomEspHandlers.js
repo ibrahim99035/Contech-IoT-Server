@@ -1,6 +1,7 @@
 // websockets/handlers/roomEspHandlers.js
 const Device = require('../../models/Device');
 const { normalizeState } = require('../utils/stateUtils');
+const logger = require('../../config/logger');
 
 function registerHandlers(io, socket) {
   // Handle fetch all devices in room
@@ -20,9 +21,9 @@ function registerHandlers(io, socket) {
         }))
       });
       
-      console.log(`ESP ${socket.device.name} fetched all devices in room ${socket.room.name}`);
+      logger.info(`ESP ${socket.device.name} fetched all devices in room ${socket.room.name}`);
     } catch (error) {
-      console.error('Error fetching room devices:', error);
+      logger.error('Error fetching room devices:', error);
       socket.emit('error', { message: 'Failed to fetch room devices', error: error.message });
     }
   });
@@ -100,9 +101,9 @@ function registerHandlers(io, socket) {
       // Respond with results
       socket.emit('room-update-results', { results });
       
-      console.log(`ESP ${socket.device.name} updated ${updatedDevices.length} devices in room ${socket.room.name}`);
+      logger.info(`ESP ${socket.device.name} updated ${updatedDevices.length} devices in room ${socket.room.name}`);
     } catch (error) {
-      console.error('Error updating room devices:', error);
+      logger.error('Error updating room devices:', error);
       socket.emit('error', { message: 'Failed to update room devices', error: error.message });
     }
   });

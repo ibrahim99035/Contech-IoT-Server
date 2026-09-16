@@ -1,4 +1,5 @@
 const Room = require('../../models/Room');
+const logger = require('../../config/logger');
 
 /**
  * Joins a user socket to rooms for all rooms they have access to
@@ -20,9 +21,9 @@ async function joinUserRooms(io, socket) {
       socket.join(`room:${room._id}`);
     });
     
-    console.log(`User ${socket.user.name} joined ${rooms.length} room channels`);
+    logger.info(`User ${socket.user.name} joined ${rooms.length} room channels`);
   } catch (error) {
-    console.error('Error joining room channels:', error);
+    logger.error('Error joining room channels:', error);
   }
 }
 

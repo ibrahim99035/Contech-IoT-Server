@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Apartment = require('../../../models/Apartment');
 
 // GET - Get all apartments with comprehensive analysis (Optimized)
@@ -154,8 +155,8 @@ const getAllApartments = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('❌ [getAllApartments] Error:', error);
-    console.error('❌ [getAllApartments] Stack:', error.stack);
+    logger.error('❌ [getAllApartments] Error:', error);
+    logger.error('❌ [getAllApartments] Stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Error fetching apartments',

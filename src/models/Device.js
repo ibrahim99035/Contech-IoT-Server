@@ -42,4 +42,9 @@ deviceSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for query performance
+deviceSchema.index({ room: 1, order: 1 });
+deviceSchema.index({ creator: 1 });
+deviceSchema.index({ users: 1 });
+
 module.exports = mongoose.model('Device', deviceSchema);

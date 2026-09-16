@@ -65,7 +65,6 @@ const imageSchema = new mongoose.Schema({
 });
 
 // Index for better query performance
-imageSchema.index({ type: 1 });
 imageSchema.index({ isActive: 1 });
 imageSchema.index({ createdAt: -1 });
 

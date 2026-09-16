@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Apartment = require('../../../models/Apartment');
 
 // GET - Get apartment members analysis (Optimized)
@@ -177,7 +178,7 @@ const getApartmentMembersAnalysis = async (req, res) => {
       overallAnalysis
     });
   } catch (error) {
-    console.error('❌ [getApartmentMembersAnalysis] Error:', error);
+    logger.error('❌ [getApartmentMembersAnalysis] Error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching apartment members analysis',

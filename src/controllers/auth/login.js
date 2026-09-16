@@ -1,61 +1,76 @@
+/**
+ * User Login Controller
+ * @module controllers/auth/login
+ */
+
 const User = require('../../models/User');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-
 const generateToken = require('../../utils/generateToken');
-
-// Environment variables
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
-
-if (!JWT_SECRET || !JWT_EXPIRES_IN) {
-    console.error('Environment variables JWT_SECRET or JWT_EXPIRES_IN are not set.');
-}
+const logger = require('../../config/logger');
 
 // User Login
 exports.loginUser = async (req, res) => {
     const { email, password } = req.body;
 
-    console.log('Received login request:', { email, passwordHidden: !!password });
-
     if (!email || !password) {
-        return res.status(400).json({ message: 'Email and password are required' });
+        return res.status(400).json({
+            success: false,
+            message: 'Email and password are required',
+            code: 'MISSING_CREDENTIALS'
+        });
     }
 
     try {
         // Check if the user exists
         const user = await User.findOne({ email });
         if (!user) {
-            console.warn(`No user found with email: ${email}`);
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password',
+                code: 'INVALID_CREDENTIALS'
+            });
         }
 
-        console.log('User found:', { id: user._id, email: user.email });
+        // Check if user account is active
+        if (!user.active) {
+            return res.status(403).json({
+                success: false,
+                message: 'Account is deactivated',
+                code: 'ACCOUNT_DEACTIVATED'
+            });
+        }
 
         // Validate the password
         const isPasswordCorrect = await user.matchPassword(password);
         if (!isPasswordCorrect) {
-            console.warn('Password mismatch for email:', email);
-            return res.status(401).json({ message: 'Invalid email or password' });
+            return res.status(401).json({
+                success: false,
+                message: 'Invalid email or password',
+                code: 'INVALID_CREDENTIALS'
+            });
         }
 
         // Generate and send token
         const token = generateToken(user._id);
-        console.log('Token generated successfully for user:', user._id);
+
+        logger.info('User logged in successfully', { userId: user._id });
 
         res.json({
-            _id: user._id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            token,
+            success: true,
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                emailActivated: user.emailActivated,
+                token,
+            }
         });
     } catch (err) {
-        console.error('An error occurred during login:', {
-            message: err.message,
-            stack: err.stack,
+        logger.error('Login error', { error: err.message });
+        res.status(500).json({
+            success: false,
+            message: 'Server error. Please try again later.',
+            code: 'SERVER_ERROR'
         });
-        res.status(500).json({ message: 'Server error. Please try again later.' });
     }
 };

@@ -21,117 +21,217 @@ const { protect } = require('../middleware/authMiddleware');
 const { checkDeviceLimits } = require('../middleware/checkSubscriptionLimits');
 
 /**
- * @route   POST /api/devices/create
- * @desc    Create a new device within a specific room. Only the room creator can perform this action.
- * @body    { name: string, room: string }
- * @access  Protected (Requires authentication)
+ * @openapi
+ * /api/device-handler/devices/create:
+ *   post:
+ *     summary: Create a new device in a room
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, room]
+ *             properties:
+ *               name: { type: string, example: "Ceiling Light" }
+ *               room: { type: string }
+ *               type: { type: string, example: "light" }
+ *     responses:
+ *       201: { description: Device created }
+ *       403: { description: Limit reached }
+ * 
+ * /api/device-handler/devices/{id}/update-name:
+ *   put:
+ *     summary: Update device name
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name]
+ *             properties:
+ *               name: { type: string }
+ *     responses:
+ *       200: { description: Device name updated }
+ * 
+ * /api/device-handler/devices/{id}/update-component-number:
+ *   put:
+ *     summary: Update device component number
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Component number updated }
+ * 
+ * /api/device-handler/devices/room/{roomId}:
+ *   get:
+ *     summary: Get all devices in a room
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Devices list }
+ * 
+ * /api/device-handler/devices/delete/{id}:
+ *   delete:
+ *     summary: Delete a device
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Device deleted }
+ * 
+ * /api/device-handler/devices/get-users/device/{deviceId}:
+ *   get:
+ *     summary: Get users assigned to a device
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Users list }
+ * 
+ * /api/device-handler/devices/remove-user/device/{deviceId}/user/{userId}:
+ *   put:
+ *     summary: Remove a user from a device
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: User removed }
+ * 
+ * /api/device-handler/devices/exist-device/{deviceId}:
+ *   put:
+ *     summary: Exit device user list
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Exited device }
+ * 
+ * /api/device-handler/devices/{deviceId}/assign-users:
+ *   put:
+ *     summary: Assign users to device
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Users assigned }
+ * 
+ * /api/device-handler/devices/{deviceId}/toggle-activation:
+ *   put:
+ *     summary: Toggle device activation status
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Device status toggled }
+ * 
+ * /api/device-handler/devices/room/{roomId}/orders:
+ *   get:
+ *     summary: Get available hardware order numbers (1-6) for room devices
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Orders list }
+ * 
+ * /api/device-handler/devices/{deviceId}/update-order:
+ *   put:
+ *     summary: Update hardware order number of a device
+ *     tags: [Devices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [order]
+ *             properties:
+ *               order: { type: integer, example: 1 }
+ *     responses:
+ *       200: { description: Device order updated }
  */
+
 router.post('/devices/create', protect, checkDeviceLimits, createDevice);
-
-/**
- * @route   PUT /api/devices/:id/update-name
- * @desc    Update the name of a device. Only the device creator can perform this action.
- * @params  { id: string } - The ID of the device.
- * @body    { name: string }
- * @access  Protected
- */
 router.put('/devices/:id/update-name', protect, updateDeviceName);
-
-/**
- * @route   PUT /api/devices/:id/update-component-number
- * @desc    Update the component number of a device. The component number is stored as a hashed value.
- * @params  { id: string } - The ID of the device.
- * @access  Protected
- */
 router.put('/devices/:id/update-component-number', protect, updateComponentNumber);
-
-/**
- * @route   GET /api/devices/room/:roomId
- * @desc    Retrieve all devices within a specific room. Accessible to the room's creator and users.
- * @params  { roomId: string }
- * @access  Protected
- */
 router.get('/devices/room/:roomId', protect, getDevicesByRoom);
-
-/**
- * @route   DELETE /api/devices/delete/:id
- * @desc    Delete a device. Only the device creator can perform this action.
- * @params  { id: string }
- * @access  Protected
- */
 router.delete('/devices/delete/:id', protect, deleteDevice);
-
-/**
- * @route   GET /api/devices/get-users/device/:deviceId
- * @desc    Retrieve all users assigned to a specific device.
- * @params  { deviceId: string }
- * @access  Protected
- */
 router.get('/devices/get-users/device/:deviceId', protect, getDeviceUsers);
-
-/**
- * @route   PUT /api/devices/remove-user/device/:deviceId/user/:userId
- * @desc    Remove a specific user from a device's user list. Only the device creator can perform this action.
- * @params  { deviceId: string, userId: string }
- * @access  Protected
- */
 router.put('/devices/remove-user/device/:deviceId/user/:userId', protect, removeUserFromDevice);
-
-/**
- * @route   PUT /api/devices/exit-device/:deviceId
- * @desc    Remove the current user from a device they are part of.
- * @params  { deviceId: string }
- * @access  Protected
- */
 router.put('/devices/exist-device/:deviceId', protect, exitDevice);
-
-/**
- * @route   PUT /api/devices/:deviceId/assign-users
- * @desc    Assign users to a device. Only the device creator can perform this action.
- * @params  { deviceId: string }
- * @body    { userIds: string[] }
- * @access  Protected
- */
 router.put('/devices/:deviceId/assign-users', protect, assignUsersToDevice);
-
-/**
- * @route   GET /api/devices/my-devices
- * @desc    Retrieve all devices the authenticated user has access to.
- * @access  Protected
- */
-// router.get('/devices/get-devices/user', protect, getDevicesByUser);
-
-/**
- * @route   PUT /api/devices/:deviceId/toggle-activation
- * @desc    Toggle the activation status of a device. Only the device creator can perform this action.
- * @params  { deviceId: string }
- * @access  Protected
- */
 router.put('/devices/:deviceId/toggle-activation', protect, toggleActivation);
-
-/**
- * @route   GET /api/devices/room/:roomId/orders
- * @desc    Get available orders (1-6) for devices in a specific room. Only room creator can access.
- * @params  { roomId: string }
- * @access  Protected
- */
 router.get('/devices/room/:roomId/orders', protect, getAvailableOrders);
-
-/**
- * @route   GET /api/devices/room/:roomId/orders/:deviceId
- * @desc    Get available orders for a room and current order of a specific device. Only room creator can access.
- * @params  { roomId: string, deviceId: string }
- * @access  Protected
- */
 router.get('/devices/room/:roomId/orders/:deviceId', protect, getAvailableOrders);
-
-/**
- * @route   PUT /api/devices/:deviceId/order
- * @desc    Update the order of a specific device (1-6). Only device creator or room creator can perform this action.
- * @params  { deviceId: string }
- * @body    { order: number }
- * @access  Protected
- */
 router.put('/devices/:deviceId/update-order', protect, updateDeviceOrder);
 
 module.exports = router;

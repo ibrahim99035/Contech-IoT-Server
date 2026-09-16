@@ -1,5 +1,6 @@
 // websockets/handlers/deviceHandlers.js
 const { normalizeState } = require('../utils/stateUtils');
+const logger = require('../../config/logger');
 
 function registerHandlers(io, socket) {
   // Handle state updates from the IoT device
@@ -25,9 +26,9 @@ function registerHandlers(io, socket) {
       
       socket.emit('state-reported', { state: newState });
       
-      console.log(`Device ${socket.device.name} reported state: ${newState}`);
+      logger.info(`Device ${socket.device.name} reported state: ${newState}`);
     } catch (error) {
-      console.error('Error reporting device state:', error);
+      logger.error('Error reporting device state:', error);
       socket.emit('error', { message: 'Failed to report device state', error: error.message });
     }
   });

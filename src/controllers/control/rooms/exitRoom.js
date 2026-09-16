@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Room = require('../../../models/Room');
 const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
@@ -75,7 +76,7 @@ exports.exitRoom = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error exiting room:', error);
+    logger.error('Error exiting room:', error);
     return res.status(500).json({
       success: false,
       message: 'Server error while exiting room',

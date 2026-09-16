@@ -2,6 +2,7 @@ const Task = require('../../../models/Task');
 const Device = require('../../../models/Device');
 const Joi = require('joi');
 const { ObjectId } = require('mongoose').Types;
+const logger = require('../../../config/logger');
 
 exports.updateTaskDetails = async (req, res) => {
     try {
@@ -37,7 +38,7 @@ exports.updateTaskDetails = async (req, res) => {
         res.status(200).json({ message: 'Task updated successfully', task: updatedTask });
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
@@ -81,10 +82,13 @@ exports.updateTaskSchedule = async (req, res) => {
         task.updateNextExecution(); // Recalculate next execution
         await task.save();
 
+        const taskScheduler = require('../../../schedualr');
+        await taskScheduler.scheduleTask(task);
+
         res.status(200).json({ message: 'Task schedule updated', task });
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
@@ -117,10 +121,17 @@ exports.updateTaskStatus = async (req, res) => {
         task.status = status;
         await task.save();
 
+        const taskScheduler = require('../../../schedualr');
+        if (status === 'active' && task.nextExecution) {
+            await taskScheduler.scheduleTask(task);
+        } else {
+            await taskScheduler.unscheduleTask(taskId);
+        }
+
         res.status(200).json({ message: 'Task status updated', task });
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };
@@ -151,7 +162,7 @@ exports.addNotificationRecipient = async (req, res) => {
         res.status(200).json({ message: 'Recipient added', task });
 
     } catch (error) {
-        console.error(error);
+        logger.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 };

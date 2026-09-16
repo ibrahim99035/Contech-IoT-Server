@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const User = require('../../../models/User');
 const Room = require('../../../models/Room');
 
@@ -190,7 +191,7 @@ const getAllUsers = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error in getAllUsers:', error);
+    logger.error('Error in getAllUsers:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching users',

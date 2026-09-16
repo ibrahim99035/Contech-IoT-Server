@@ -1,10 +1,11 @@
 const taskEvents = require('../taskEventEmitter');
 const mqttBroker = require('../../mqtt/mqtt-broker');
+const logger = require('../../config/logger');
 
 function registerTaskHandlers(io) {
   taskEvents.on('task-executed', async (taskData) => {
     try {
-      console.log(`Task executed: ${taskData.name}`);
+      logger.info(`Task executed: ${taskData.name}`);
 
       // Broadcast update to the device
       io.of('/ws/device').to(`device:${taskData.device._id}`).emit('task-update', {
@@ -42,20 +43,20 @@ function registerTaskHandlers(io) {
             }),
             { qos: 1 }
           );
-          console.log(`Task execution published to MQTT for device ${taskData.device._id}`);
+          logger.info(`Task execution published to MQTT for device ${taskData.device._id}`);
         }
       } catch (mqttError) {
-        console.error('Error publishing task execution to MQTT:', mqttError);
+        logger.error('Error publishing task execution to MQTT:', mqttError);
       }
 
     } catch (error) {
-      console.error('Error broadcasting task execution:', error);
+      logger.error('Error broadcasting task execution:', error);
     }
   });
 
   taskEvents.on('task-failed', async (taskData) => {
     try {
-      console.log(`Task failed: ${taskData.name} - ${taskData.message}`);
+      logger.info(`Task failed: ${taskData.name} - ${taskData.message}`);
 
       // Broadcast failure to the device
       io.of('/ws/device').to(`device:${taskData.device._id}`).emit('task-update', {
@@ -90,14 +91,14 @@ function registerTaskHandlers(io) {
             }),
             { qos: 1 }
           );
-          console.log(`Task failure published to MQTT for device ${taskData.device._id}`);
+          logger.info(`Task failure published to MQTT for device ${taskData.device._id}`);
         }
       } catch (mqttError) {
-        console.error('Error publishing task failure to MQTT:', mqttError);
+        logger.error('Error publishing task failure to MQTT:', mqttError);
       }
 
     } catch (error) {
-      console.error('Error broadcasting task failure:', error);
+      logger.error('Error broadcasting task failure:', error);
     }
   });
 }

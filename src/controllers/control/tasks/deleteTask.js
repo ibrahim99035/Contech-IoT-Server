@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Task = require('../../../models/Task');
 const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
@@ -47,6 +48,9 @@ exports.deleteTask = async (req, res) => {
             return res.status(403).json({ error: 'Unauthorized: You cannot delete this task' });
         }
 
+        const taskScheduler = require('../../../schedualr');
+        await taskScheduler.unscheduleTask(taskId);
+
         // 🚀 Delete task
         await Task.deleteOne({ _id: taskId });
 
@@ -55,7 +59,7 @@ exports.deleteTask = async (req, res) => {
 
         res.status(200).json({ message: 'Task deleted successfully' });
     } catch (error) {
-        console.error('Error deleting task:', error);
+        logger.error('Error deleting task:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
 };

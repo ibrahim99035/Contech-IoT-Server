@@ -5,15 +5,13 @@ const { deviceSchema } = require('../../../validation/deviceValidation');
 const { checkDeviceLimits } = require('../../../middleware/checkSubscriptionLimits');
 
 exports.createDevice = async (req, res) => {
-  const session = await Device.startSession();
-  session.startTransaction();
+  let session = null;
+  let useTransaction = false;
   
   try {
     // Validate request body
     const { error } = deviceSchema.validate(req.body);
     if (error) {
-      await session.abortTransaction();
-      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'Validation error',
@@ -21,11 +19,22 @@ exports.createDevice = async (req, res) => {
       });
     }
 
+    try {
+      session = await Device.startSession();
+      session.startTransaction();
+      useTransaction = true;
+    } catch (e) {
+      session = null;
+      useTransaction = false;
+    }
+
     // Fetch and validate room
-    const room = await Room.findById(req.body.room).session(session);
+    const room = await Room.findById(req.body.room);
     if (!room) {
-      await session.abortTransaction();
-      session.endSession();
+      if (useTransaction && session) {
+        await session.abortTransaction();
+        session.endSession();
+      }
       return res.status(404).json({
         success: false,
         message: 'Room not found'
@@ -34,8 +43,10 @@ exports.createDevice = async (req, res) => {
 
     // Verify permissions
     if (room.creator.toString() !== req.user._id.toString()) {
-      await session.abortTransaction();
-      session.endSession();
+      if (useTransaction && session) {
+        await session.abortTransaction();
+        session.endSession();
+      }
       return res.status(403).json({
         success: false,
         message: 'Permission denied: only the room creator can add devices'
@@ -43,21 +54,18 @@ exports.createDevice = async (req, res) => {
     }
 
     // Check order position
-    const existingDeviceWithOrder = await Device.findOne({ 
-      room: req.body.room, 
-      order: req.body.order 
-    }).session(session);
-    
+    const existingDeviceWithOrder = await Device.findOne({ room: req.body.room, order: req.body.order });
     if (existingDeviceWithOrder) {
-      await session.abortTransaction();
-      session.endSession();
+      if (useTransaction && session) {
+        await session.abortTransaction();
+        session.endSession();
+      }
       return res.status(400).json({
         success: false,
         message: `Order position ${req.body.order} is already taken in this room`
       });
     }
 
-    // The limit check is now handled by middleware
     const deviceData = { 
       ...req.body, 
       creator: req.user._id,
@@ -70,23 +78,31 @@ exports.createDevice = async (req, res) => {
       deviceData.lockState = req.body.lockState || 'locked';
     }
 
-    const device = new Device(deviceData);
-    await device.save({ session });
-
-    await Room.findByIdAndUpdate(
-      req.body.room, 
-      { $push: { devices: device._id } }, 
-      { session }
-    );
-
-    await User.findByIdAndUpdate(
-      req.user._id,
-      { $push: { devices: device._id } },
-      { session }
-    );
-
-    await session.commitTransaction();
-    session.endSession();
+    let device;
+    if (useTransaction && session) {
+      try {
+        device = new Device(deviceData);
+        await device.save({ session });
+        await Room.findByIdAndUpdate(req.body.room, { $push: { devices: device._id } }, { session });
+        await User.findByIdAndUpdate(req.user._id, { $push: { devices: device._id } }, { session });
+        await session.commitTransaction();
+        session.endSession();
+      } catch (txError) {
+        if (session.inTransaction()) {
+          await session.abortTransaction();
+        }
+        session.endSession();
+        device = new Device(deviceData);
+        await device.save();
+        await Room.findByIdAndUpdate(req.body.room, { $push: { devices: device._id } });
+        await User.findByIdAndUpdate(req.user._id, { $push: { devices: device._id } });
+      }
+    } else {
+      device = new Device(deviceData);
+      await device.save();
+      await Room.findByIdAndUpdate(req.body.room, { $push: { devices: device._id } });
+      await User.findByIdAndUpdate(req.user._id, { $push: { devices: device._id } });
+    }
 
     res.status(201).json({
       success: true,
@@ -109,8 +125,10 @@ exports.createDevice = async (req, res) => {
     });
     
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    if (session && session.inTransaction()) {
+      await session.abortTransaction();
+      session.endSession();
+    }
     
     res.status(500).json({
       success: false,
