@@ -1,4 +1,5 @@
 const Device = require('../../models/Device');
+const logger = require('../../config/logger');
 
 async function joinUserDeviceRooms(io, socket) {
   try {
@@ -10,9 +11,9 @@ async function joinUserDeviceRooms(io, socket) {
       socket.join(`device:${device._id}`);
     });
     
-    console.log(`User ${socket.user.name} joined ${devices.length} device rooms`);
+    logger.info(`User ${socket.user.name} joined ${devices.length} device rooms`);
   } catch (error) {
-    console.error('Error joining device rooms:', error);
+    logger.error('Error joining device rooms:', error);
   }
 }
 

@@ -20,91 +20,185 @@ const { checkRoomLimits } = require('../middleware/checkSubscriptionLimits');
 // Routes Definitions
 
 /**
- * @route   POST /api/rooms-handler/rooms/create
- * @desc    Create a new room in an apartment. Only the apartment creator can perform this action. 
- *          The number of rooms is limited based on the user's subscription plan:
- *          - Free Plan: 3 rooms
- *          - Gold Plan: 8 rooms
- *          - Default: 10 rooms
- * @body    { name: string, apartment: string }
- * @access  Protected (Requires authentication)
+ * @openapi
+ * /api/rooms-handler/rooms/create:
+ *   post:
+ *     summary: Create a new room in an apartment
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, apartment]
+ *             properties:
+ *               name: { type: string, example: "Living Room" }
+ *               apartment: { type: string }
+ *     responses:
+ *       201: { description: Room created successfully }
+ *       403: { description: Subscription limit reached }
+ * 
+ * /api/rooms-handler/rooms/{id}/update-name:
+ *   put:
+ *     summary: Update room name
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name]
+ *             properties:
+ *               name: { type: string }
+ *     responses:
+ *       200: { description: Room name updated }
+ * 
+ * /api/rooms-handler/rooms/{id}/add-users:
+ *   put:
+ *     summary: Add users to room
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [userIds]
+ *             properties:
+ *               userIds: { type: array, items: { type: string } }
+ *     responses:
+ *       200: { description: Users added to room }
+ * 
+ * /api/rooms-handler/rooms/user/get-all:
+ *   get:
+ *     summary: Get all rooms accessible to the authenticated user
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: List of rooms }
+ * 
+ * /api/rooms-handler/rooms/apartment/{apartmentId}:
+ *   get:
+ *     summary: Get all rooms in a specific apartment
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: apartmentId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Rooms in apartment }
+ * 
+ * /api/rooms-handler/rooms/delete/{id}:
+ *   delete:
+ *     summary: Delete a room by ID
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Room deleted }
+ * 
+ * /api/rooms-handler/rooms/get-users/{roomId}:
+ *   get:
+ *     summary: Get all users in a room
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Room users list }
+ * 
+ * /api/rooms-handler/rooms/remove-user/{roomId}:
+ *   put:
+ *     summary: Remove users from room
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: User removed from room }
+ * 
+ * /api/rooms-handler/rooms/exit-room/{roomId}:
+ *   put:
+ *     summary: Exit a room
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Exited room }
+ * 
+ * /api/rooms-handler/rooms/{roomId}/update-password:
+ *   put:
+ *     summary: Update room password for hardware authentication
+ *     tags: [Rooms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: roomId
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [newPassword]
+ *             properties:
+ *               newPassword: { type: string }
+ *     responses:
+ *       200: { description: Room password updated }
  */
+
 router.post('/rooms/create', protect, checkRoomLimits, createRoom);
-
-/**
- * @route   PUT /api/rooms-handler/rooms/:id/update-name
- * @desc    Update the name of a room. Only the room creator can perform this action.
- * @params  { id: string } - The ID of the room to update.
- * @body    { name: string }
- * @access  Protected (Requires authentication)
- */
 router.put('/rooms/:id/update-name', protect, updateRoomName);
-
-/**
- * @route   PUT /api/rooms-handler/rooms/:id/add-users
- * @desc    Add users to a room. Only the room creator can perform this action. 
- *          Invalid or duplicate user IDs are automatically filtered out.
- * @params  { id: string } - The ID of the room.
- * @body    { userIds: array } - Array of user IDs to add.
- * @access  Protected (Requires authentication)
- */
 router.put('/rooms/:id/add-users', protect, addUsersToRoom);
-
-/**
- * @route   GET /api/rooms-handler/rooms/user/get-all
- * @desc    Retrieve all rooms the authenticated user is a part of.
- * @access  Protected (Requires authentication)
- */
 router.get('/rooms/user/get-all', protect, getRoomsByUser);
-
-/**
- * @route   GET /api/rooms-handler/rooms/apartment/:apartmentId
- * @desc    Retrieve all rooms in a specific apartment that the user has access to.
- *          The user must be a member of the apartment to view its rooms.
- * @params  { apartmentId: string } - The ID of the apartment.
- * @access  Protected (Requires authentication)
- */
 router.get('/rooms/apartment/:apartmentId', protect, getRoomsByApartment);
-
-/**
- * @route   DELETE /api/rooms-handler/rooms/delete/:id
- * @desc    Delete a room. Only the room creator can perform this action.
- * @params  { id: string } - The ID of the room to delete.
- * @access  Protected (Requires authentication)
- */
 router.delete('/rooms/delete/:id', protect, deleteRoom);
-
-/**
- * @route   GET /api/rooms-handler/rooms/get-users/:roomId 
- * @desc    Delete a room. Only the room creator can perform this action.
- * @params  { roomId: string } - The ID of the room to delete.
- * @access  Protected (Requires authentication)
- */
 router.get('/rooms/get-users/:roomId', protect, getUsersByRoom);
-
-/**
- * @route   PUT /api/rooms-handler/rooms/remove-user/:id
- * @desc    Delete a room. Only the room creator can perform this action.
- * @params  { roomId: string } - The ID of the room 
- * @access  Protected (Requires authentication)
- */
 router.put('/rooms/remove-user/:roomId', protect, removeUsersFromRoom);
-
-/**
- * @route   PUT /api/rooms-handler/rooms/exit-room/:roomId
- * @desc    Delete a room. Only the room creator can perform this action.
- * @params  { roomId: string } - The ID of the room 
- * @access  Protected (Requires authentication)
- */
 router.put('/rooms/exit-room/:roomId', protect, exitRoom);
-
-/**
- * @route   PUT /api/rooms-handler/rooms/:roomId/update-password
- * @desc    Update the password of a room. Only the room creator can perform this action.
- * @params  { roomId: string } - The ID of the room.
- * @body    { newPassword: string } - The new password for the room.
- * @access  Protected (Requires authentication)
- */
 router.put('/rooms/:roomId/update-password', protect, updateRoomPassword);
 
 module.exports = router;

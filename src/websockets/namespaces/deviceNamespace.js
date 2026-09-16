@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const Device = require('../../models/Device');
 const deviceHandlers = require('../handlers/deviceHandlers');
 const taskHandlers = require('../handlers/taskHandlers');
+const logger = require('../../config/logger');
 
 module.exports = (io) => {
   const deviceNamespace = io.of('/ws/device');
@@ -27,7 +28,7 @@ module.exports = (io) => {
         socket.device = device;
         next();
       } catch (error) {
-        console.error('Device authentication error:', error);
+        logger.error('Device authentication error:', error);
         next(new Error('Authentication failed: Database error'));
       }
     } else {
@@ -37,7 +38,7 @@ module.exports = (io) => {
 
   // Connection handler
   deviceNamespace.on('connection', (socket) => {
-    console.log(`IoT Device connected: ${socket.id} (${socket.device.name})`);
+    logger.info(`IoT Device connected: ${socket.id} (${socket.device.name})`);
     
     // Join device-specific room
     socket.join(`device:${socket.device._id}`);
@@ -50,7 +51,7 @@ module.exports = (io) => {
     
     // Disconnect handler
     socket.on('disconnect', () => {
-      console.log(`IoT Device disconnected: ${socket.id} (${socket.device.name})`);
+      logger.info(`IoT Device disconnected: ${socket.id} (${socket.device.name})`);
     });
   });
 };

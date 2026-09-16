@@ -1,6 +1,7 @@
 const Room = require('../../../models/Room');
 const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
+const logger = require('../../../config/logger');
 
 /**
  * Remove users from a room (creator only)
@@ -13,13 +14,6 @@ exports.removeUsersFromRoom = async (req, res) => {
     const roomId = req.params.roomId;
     let { userIds } = req.body;
     
-    console.log('Debug - removeUsersFromRoom request:', {
-      roomId: roomId,
-      userIds: userIds,
-      paramsReceived: req.params,
-      requestPath: req.path,
-      requestMethod: req.method
-    });
     
     // Check if roomId exists
     if (!roomId) {
@@ -32,11 +26,6 @@ exports.removeUsersFromRoom = async (req, res) => {
     
     // Validate room ID format
     if (!mongoose.Types.ObjectId.isValid(roomId)) {
-      console.log('Debug - Invalid room ID format:', {
-        receivedId: roomId,
-        idType: typeof roomId,
-        idLength: roomId ? roomId.length : 0
-      });
       
       return res.status(400).json({
         success: false,
@@ -75,17 +64,12 @@ exports.removeUsersFromRoom = async (req, res) => {
       userIds.filter(id => {
         const isValid = mongoose.Types.ObjectId.isValid(id);
         if (!isValid) {
-          console.log('Debug - Invalid user ID:', { invalidId: id });
+          logger.warn("Invalid user ID while removing from room", { invalidId: id });
         }
         return isValid;
       })
     )];
     
-    console.log('Debug - Processed user IDs:', {
-      originalCount: userIds.length,
-      validCount: validUserIds.length,
-      validIds: validUserIds
-    });
     
     // Check if any valid userIds remain after filtering
     if (validUserIds.length === 0) {
@@ -106,12 +90,6 @@ exports.removeUsersFromRoom = async (req, res) => {
       });
     }
     
-    console.log('Debug - Room found:', {
-      roomId: room._id.toString(),
-      creatorId: room.creator.toString(),
-      requestingUserId: req.user ? req.user._id.toString() : 'No user in request',
-      usersCount: room.users.length
-    });
     
     // Check if user object exists in request
     if (!req.user || !req.user._id) {
@@ -124,10 +102,6 @@ exports.removeUsersFromRoom = async (req, res) => {
     
     // Check permission - only creator can remove users
     if (room.creator.toString() !== req.user._id.toString()) {
-      console.log('Debug - Permission denied:', {
-        roomCreator: room.creator.toString(),
-        requestingUser: req.user._id.toString()
-      });
       
       return res.status(403).json({
         success: false,
@@ -151,10 +125,6 @@ exports.removeUsersFromRoom = async (req, res) => {
     // Find users that are actually in the room
     const usersToRemove = validUserIds.filter(id => existingUsers.includes(id));
     
-    console.log('Debug - Users to remove:', {
-      usersInRoom: existingUsers.length,
-      usersToRemove: usersToRemove.length
-    });
     
     // Check if there are any users to remove
     if (usersToRemove.length === 0) {
@@ -182,18 +152,10 @@ exports.removeUsersFromRoom = async (req, res) => {
       await device.save();
     }
     
-    console.log('Debug - Updated room devices:', {
-      devicesCount: devices.length
-    });
     
     // Save updated room
     const updatedRoom = await room.save();
     
-    console.log('Debug - Room update successful:', {
-      roomId: updatedRoom._id.toString(),
-      removedCount: usersToRemove.length,
-      remainingUsers: updatedRoom.users.length
-    });
     
     // Return success response with removed users info
     return res.status(200).json({
@@ -208,7 +170,7 @@ exports.removeUsersFromRoom = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error removing users from room:', error);
+    logger.error("Error removing users from room", { error: error.message });
     return res.status(500).json({
       success: false,
       message: 'Server error while removing users from room',

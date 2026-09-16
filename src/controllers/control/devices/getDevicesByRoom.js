@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 /**
  * Device Controller - handles retrieval of devices by room
  * @module controllers/DeviceController
@@ -119,7 +120,7 @@ exports.getDevicesByRoom = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('Error in getDevicesByRoom:', error);
+    logger.error('Error in getDevicesByRoom:', error);
     // Return error response
     res.status(500).json({
       success: false,

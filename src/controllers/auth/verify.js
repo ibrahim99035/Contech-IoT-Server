@@ -1,8 +1,9 @@
+const logger = require('../../config/logger');
 const verifyToken = async (req, res) => {
   // The protect middleware has already verified the token and set req.user
   // Just return the user data that the frontend needs
   
-  console.log('✅ [Verify] User verified:', req.user.email, 'Role:', req.user.role);
+  logger.info('✅ [Verify] User verified:', req.user.email, 'Role:', req.user.role);
 
   res.status(200).json({
     success: true,

@@ -10,55 +10,66 @@ const getApartmentStatistics = require('../controllers/admin/apartment.admin.con
 const getApartmentMembersAnalysis = require('../controllers/admin/apartment.admin.controllers/getApartmentMembersAnalysis');
 
 /**
- * @route   GET /api/admin/dashboard/apartments/get-all-apartments
- * @desc    Get all apartments with comprehensive analysis and statistics
- * @access  Admin only
- * @returns {Object} apartments - Array of apartments with full details
- * @returns {Object} analysis - Comprehensive apartment analytics
- * @returns {Object} pagination - Pagination information
+ * @openapi
+ * /admin/dashboard/apartments/all-apartments:
+ *   get:
+ *     summary: Admin - Get all apartments with comprehensive analysis
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: List of apartments with analytics }
+ * 
+ * /admin/dashboard/apartments/search-apartments:
+ *   get:
+ *     summary: Admin - Search and filter apartments
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Filtered apartments list }
+ * 
+ * /admin/dashboard/apartments/apartment-statistics:
+ *   get:
+ *     summary: Admin - Get apartment statistics dashboard
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: Apartment analytics }
+ * 
+ * /admin/dashboard/apartments/apartment-members-analysis:
+ *   get:
+ *     summary: Admin - Get apartment members distribution analysis
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: Member analysis }
+ * 
+ * /admin/dashboard/apartments/get-apartment-by-id/{id}:
+ *   get:
+ *     summary: Admin - Get specific apartment by ID
+ *     tags: [Admin Dashboard]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Apartment details }
  */
+
 router.get('/all-apartments', protect, authorizeRoles('admin'), getAllApartments);
-
-/**
- * @route   GET /api/admin/dashboard/apartments/search-apartments
- * @desc    Search and filter apartments with advanced filtering options
- * @access  Admin only
- * @query   {String} search - Search term for apartment names
- * @query   {String} creatorId - Filter by creator ID
- * @query   {String} sortBy - Sort field (default: createdAt)
- * @query   {String} sortOrder - Sort order (asc/desc, default: desc)
- * @query   {Number} page - Page number (default: 1)
- * @query   {Number} limit - Items per page (default: 10)
- * @returns {Object} apartments - Filtered apartments array
- * @returns {Object} pagination - Pagination details with navigation info
- */
 router.get('/search-apartments', protect, authorizeRoles('admin'), getFilteredApartments);
-
-/**
- * @route   GET /api/admin/dashboard/apartments/apartment-statistics
- * @desc    Get comprehensive apartment statistics and analytics dashboard
- * @access  Admin only
- * @returns {Object} statistics - Detailed apartment analytics including growth, distribution, and occupancy
- */
 router.get('/apartment-statistics', protect, authorizeRoles('admin'), getApartmentStatistics);
-
-/**
- * @route   GET /api/admin/dashboard/apartments/apartment-members-analysis
- * @desc    Get detailed analysis of apartment members and user distribution
- * @access  Admin only
- * @returns {Object} membersAnalysis - Per-apartment member analysis
- * @returns {Object} overallAnalysis - Overall membership statistics
- */
 router.get('/apartment-members-analysis', protect, authorizeRoles('admin'), getApartmentMembersAnalysis);
-
-/**
- * @route   GET /api/admin/dashboard/apartments/get-apartment-by-id/:id
- * @desc    Get specific apartment by ID with full details and analysis
- * @access  Admin only
- * @param   {String} id - Apartment ID
- * @returns {Object} apartment - Complete apartment details with nested data
- * @returns {Object} analysis - Apartment-specific analytics
- */
 router.get('/get-apartment-by-id/:id', protect, authorizeRoles('admin'), getApartmentById);
 
 module.exports = router;

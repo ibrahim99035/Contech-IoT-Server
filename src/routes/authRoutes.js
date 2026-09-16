@@ -20,31 +20,80 @@ const {
 const { protect } = require('../middleware/authMiddleware');
 const { authorizeRoles } = require('../middleware/roleMiddleware');
 const requireVerifiedEmail = require('../middleware/emailVerification');
+const logger = require('../config/logger');
 
 const router = express.Router();
 
-// Logging middleware for OAuth routes
+// Logging middleware for OAuth routes — never logs tokens or their content
 const logOAuthRequest = (req, res, next) => {
-  console.log(`🔐 [OAuth Request] ${req.method} ${req.originalUrl}`);
-  console.log(`🔐 [OAuth Headers] User-Agent: ${req.get('User-Agent')}`);
-  console.log(`🔐 [OAuth IP] ${req.ip}`);
-  console.log(`🔐 [OAuth Content-Type] ${req.get('Content-Type')}`);
-  if (req.body && Object.keys(req.body).length > 0) {
-    const safeBody = { ...req.body };
-    if (safeBody.access_token) {
-      console.log(`🔑 [OAuth] Access token length: ${safeBody.access_token.length}`);
-      console.log(`🔑 [OAuth] Access token starts with: ${safeBody.access_token.substring(0, 20)}...`);
-      safeBody.access_token = '***REDACTED***';
-    }
-    if (safeBody.id_token) {
-      console.log(`🆔 [OAuth] ID token length: ${safeBody.id_token.length}`);
-      console.log(`🆔 [OAuth] ID token starts with: ${safeBody.id_token.substring(0, 20)}...`);
-      safeBody.id_token = '***REDACTED***';
-    }
-    console.log(`🔐 [OAuth Body]`, safeBody);
-  }
+  const hasToken = Boolean(req.body && (req.body.access_token || req.body.id_token));
+  logger.debug('OAuth request', {
+    method: req.method,
+    url: req.originalUrl,
+    ip: req.ip,
+    contentType: req.get('Content-Type'),
+    hasCredentials: hasToken
+  });
   next();
 };
+
+/**
+ * @openapi
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Authentication]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, email, password]
+ *             properties:
+ *               name: { type: string, example: "John Doe" }
+ *               email: { type: string, example: "john@example.com" }
+ *               password: { type: string, example: "SecretPassword123" }
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *       400:
+ *         description: Invalid input or user already exists
+ * 
+ * /api/auth/login:
+ *   post:
+ *     summary: User login
+ *     tags: [Authentication]
+ *     security: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, password]
+ *             properties:
+ *               email: { type: string, example: "john@example.com" }
+ *               password: { type: string, example: "SecretPassword123" }
+ *     responses:
+ *       200:
+ *         description: Login successful, returns JWT token
+ *       401:
+ *         description: Invalid credentials
+ * 
+ * /api/auth/verify:
+ *   get:
+ *     summary: Verify JWT authentication token
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *       401:
+ *         description: Invalid or expired token
+ */
 
 // Standard authentication routes
 router.post('/register', registerUser);

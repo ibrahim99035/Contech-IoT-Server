@@ -9,11 +9,23 @@ const { protect } = require('../middleware/authMiddleware');
 const googleAssistantController = require('../controllers/google-assistant/fulfilment-handler');
 
 /**
- * @route   POST /api/google-assistant/fulfillment
- * @desc    Google Smart Home fulfillment endpoint
- *          Handles SYNC, QUERY, EXECUTE, and DISCONNECT intents from Google Assistant.
- *          Uses existing protect middleware for authentication.
- * @access  Protected (requires valid JWT token)
+ * @openapi
+ * /api/google-assistant/fulfillment:
+ *   post:
+ *     summary: Google Smart Home Fulfillment Handler
+ *     tags: [Google Assistant]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               inputs: { type: array, items: { type: object } }
+ *     responses:
+ *       200: { description: Google Home Fulfillment Intent Response }
  */
 router.post('/fulfillment', protect, googleAssistantController.googleAssistantFulfillment);
 

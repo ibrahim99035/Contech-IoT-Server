@@ -1,3 +1,4 @@
+const logger = require('../../config/logger');
 function sendNotification(io, task, status, updatedBy) {
     const message = `Task ${task._id} status changed to ${status}`;
 
@@ -20,7 +21,7 @@ function sendNotification(io, task, status, updatedBy) {
         timestamp: new Date()
     });
 
-    console.log(`Notification sent: ${message}`);
+    logger.info(`Notification sent: ${message}`);
 }
 
 module.exports = { sendNotification };

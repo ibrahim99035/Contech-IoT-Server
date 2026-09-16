@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Apartment = require('../../../models/Apartment');
 
 // GET - Get apartment by ID with full details (Optimized)
@@ -260,7 +261,7 @@ const getApartmentById = async (req, res) => {
       analysis
     });
   } catch (error) {
-    console.error('❌ [getApartmentById] Error:', error);
+    logger.error('❌ [getApartmentById] Error:', error);
     res.status(500).json({
       success: false,
       message: 'Error fetching apartment',

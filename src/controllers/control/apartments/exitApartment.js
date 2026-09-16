@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 const Apartment = require('../../../models/Apartment');
 const Room = require('../../../models/Room');
 const Device = require('../../../models/Device');
@@ -86,7 +87,7 @@ exports.exitApartment = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error exiting apartment:', error);
+    logger.error('Error exiting apartment:', error);
     return res.status(500).json({
       success: false,
       message: 'Server error while exiting apartment',

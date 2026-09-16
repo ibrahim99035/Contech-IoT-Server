@@ -1,3 +1,4 @@
+const logger = require('../../../config/logger');
 // controllers/api/device/removeUserFromDevice.js
 const Device = require('../../../models/Device');
 const mongoose = require('mongoose');
@@ -76,7 +77,7 @@ exports.removeUserFromDevice = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error removing user from device:', error);
+    logger.error('Error removing user from device:', error);
     return res.status(500).json({
       success: false,
       message: 'Server error while removing user from device',

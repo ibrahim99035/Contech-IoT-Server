@@ -10,6 +10,7 @@ const axios = require('axios');
 const User = require('../../models/User');
 const AuthorizationCode = require('../../models/AuthorizationCode');
 const AccessToken = require('../../models/AccessToken');
+const logger = require('../../config/logger');
 
 const oauthAuthorize = async (req, res) => {
   try {
@@ -21,7 +22,7 @@ const oauthAuthorize = async (req, res) => {
       state 
     } = req.query;
     
-    console.log('🔐 [OAuth Authorize] Request:', { 
+    logger.info('🔐 [OAuth Authorize] Request:', { 
       response_type, 
       client_id: client_id?.substring(0, 20) + '...', 
       redirect_uri, 
@@ -31,7 +32,7 @@ const oauthAuthorize = async (req, res) => {
     
     // Validate OAuth2 parameters
     if (response_type !== 'code') {
-      console.error('❌ [OAuth Authorize] Invalid response_type:', response_type);
+      logger.error('❌ [OAuth Authorize] Invalid response_type:', response_type);
       const errorUrl = `${redirect_uri}?error=unsupported_response_type&error_description=Only+code+response_type+supported&state=${state}`;
       return res.redirect(errorUrl);
     }
@@ -40,13 +41,13 @@ const oauthAuthorize = async (req, res) => {
     const expectedClientId = process.env.GOOGLE_ACTIONS_CLIENT_ID;
     
     if (client_id !== expectedClientId) {
-      console.error('❌ [OAuth Authorize] Invalid client_id');
+      logger.error('❌ [OAuth Authorize] Invalid client_id');
       const errorUrl = `${redirect_uri}?error=invalid_client&error_description=Invalid+client+ID&state=${state}`;
       return res.redirect(errorUrl);
     }
     
     if (!redirect_uri || !state) {
-      console.error('❌ [OAuth Authorize] Missing required parameters');
+      logger.error('❌ [OAuth Authorize] Missing required parameters');
       return res.status(400).json({ 
         error: 'invalid_request',
         error_description: 'Missing redirect_uri or state parameter'
@@ -74,7 +75,7 @@ const oauthAuthorize = async (req, res) => {
       }
     }
     
-    console.log('✅ [OAuth Authorize] Session stored, redirecting to Google OAuth');
+    logger.info('✅ [OAuth Authorize] Session stored, redirecting to Google OAuth');
     
     // Build Google OAuth URL
     const googleOAuthParams = new URLSearchParams({
@@ -93,7 +94,7 @@ const oauthAuthorize = async (req, res) => {
     res.redirect(googleOAuthUrl);
     
   } catch (error) {
-    console.error('❌ [OAuth Authorize] Error:', error);
+    logger.error('❌ [OAuth Authorize] Error:', error);
     const { redirect_uri, state } = req.query;
     if (redirect_uri && state) {
       const errorUrl = `${redirect_uri}?error=server_error&error_description=Internal+server+error&state=${state}`;
@@ -113,7 +114,7 @@ const oauthToken = async (req, res) => {
       client_secret
     } = req.body;
     
-    console.log('🎫 [OAuth Token] Request:', {
+    logger.info('🎫 [OAuth Token] Request:', {
       grant_type,
       code: code?.substring(0, 10) + '...',
       redirect_uri,
@@ -181,7 +182,7 @@ const oauthToken = async (req, res) => {
     // Delete the used authorization code
     await AuthorizationCode.deleteOne({ _id: authData._id });
     
-    console.log('✅ [OAuth Token] Issued access token for user:', authData.userId.email || authData.userId._id);
+    logger.info('✅ [OAuth Token] Issued access token for user:', authData.userId.email || authData.userId._id);
     
     // Return token response
     res.json({
@@ -193,7 +194,7 @@ const oauthToken = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ [OAuth Token] Error:', error);
+    logger.error('❌ [OAuth Token] Error:', error);
     res.status(500).json({
       error: 'server_error',
       error_description: 'Internal server error'
@@ -209,19 +210,19 @@ const googleOAuthCallback = async (req, res) => {
   try {
     const { code, state: sessionId, error } = req.query;
     
-    console.log('🔐 [Google OAuth Callback] Received:', { 
+    logger.info('🔐 [Google OAuth Callback] Received:', { 
       hasCode: !!code, 
       sessionId, 
       error 
     });
     
     if (error) {
-      console.error('❌ [Google OAuth Callback] OAuth error:', error);
+      logger.error('❌ [Google OAuth Callback] OAuth error:', error);
       return res.status(400).send('Authentication failed');
     }
     
     if (!code || !sessionId) {
-      console.error('❌ [Google OAuth Callback] Missing code or session ID');
+      logger.error('❌ [Google OAuth Callback] Missing code or session ID');
       return res.status(400).send('Invalid callback request');
     }
     
@@ -230,7 +231,7 @@ const googleOAuthCallback = async (req, res) => {
     const oauthSession = global.oauthSessions.get(sessionId);
     
     if (!oauthSession) {
-      console.error('❌ [Google OAuth Callback] Session not found:', sessionId);
+      logger.error('❌ [Google OAuth Callback] Session not found:', sessionId);
       return res.status(400).send('Session expired or invalid');
     }
     
@@ -255,7 +256,7 @@ const googleOAuthCallback = async (req, res) => {
       });
       
       const googleUser = userResponse.data;
-      console.log('✅ [Google OAuth Callback] User authenticated:', googleUser.email);
+      logger.info('✅ [Google OAuth Callback] User authenticated:', googleUser.email);
       
       // Find or create user in your system
       let user = await User.findOne({ email: googleUser.email });
@@ -273,14 +274,14 @@ const googleOAuthCallback = async (req, res) => {
           // Add any other required fields from your User model here
         });
         await user.save();
-        console.log('✅ [Google OAuth Callback] New user created:', user.email);
+        logger.info('✅ [Google OAuth Callback] New user created:', user.email);
       } else if (!user.googleId) {
         // Update existing user with Google ID
         user.googleId = googleUser.id;
         user.isVerified = true;
         if (googleUser.picture) user.avatar = googleUser.picture;
         await user.save();
-        console.log('✅ [Google OAuth Callback] User updated with Google ID:', user.email);
+        logger.info('✅ [Google OAuth Callback] User updated with Google ID:', user.email);
       }
       
       // Generate authorization code for the original OAuth flow
@@ -297,20 +298,20 @@ const googleOAuthCallback = async (req, res) => {
       
       await authRecord.save();
       
-      console.log('✅ [Google OAuth Callback] Authorization code generated');
+      logger.info('✅ [Google OAuth Callback] Authorization code generated');
       
       // Redirect back to Google Assistant with authorization code
       const successUrl = `${oauthSession.redirectUri}?code=${authCode}&state=${oauthSession.state}`;
       return res.redirect(successUrl);
       
     } catch (apiError) {
-      console.error('❌ [Google OAuth Callback] API error:', apiError.response?.data || apiError.message);
+      logger.error('❌ [Google OAuth Callback] API error:', apiError.response?.data || apiError.message);
       const errorUrl = `${oauthSession.redirectUri}?error=server_error&error_description=Authentication+failed&state=${oauthSession.state}`;
       return res.redirect(errorUrl);
     }
     
   } catch (error) {
-    console.error('❌ [Google OAuth Callback] Error:', error);
+    logger.error('❌ [Google OAuth Callback] Error:', error);
     return res.status(500).send('Internal server error');
   }
 };

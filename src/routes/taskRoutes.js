@@ -25,93 +25,173 @@ const { protect } = require('../middleware/authMiddleware');
 
 const { checkTaskLimits } = require('../middleware/checkSubscriptionLimits');
 
-// 📌 TASK CREATION
 /**
- * @route   POST /api/tasks
- * @desc    Create a new task for a device
- * @access  Protected (Requires authentication)
+ * @openapi
+ * /api/task-handler/tasks/create-task:
+ *   post:
+ *     summary: Create a new scheduled task for a device
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [name, device, nextExecution]
+ *             properties:
+ *               name: { type: string, example: "Night Light Off" }
+ *               device: { type: string }
+ *               nextExecution: { type: string, format: "date-time" }
+ *               action: { type: string, example: "off" }
+ *     responses:
+ *       201: { description: Task created }
+ *       403: { description: Limit reached }
+ * 
+ * /api/task-handler/tasks/get-task/{taskId}:
+ *   get:
+ *     summary: Get task details by ID
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Task details }
+ * 
+ * /api/task-handler/tasks/user/my-tasks:
+ *   get:
+ *     summary: Get tasks created by current user
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: User tasks list }
+ * 
+ * /api/task-handler/tasks/get-tasks/device/{deviceId}:
+ *   get:
+ *     summary: Get all tasks assigned to a device
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: deviceId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Device tasks list }
+ * 
+ * /api/task-handler/tasks/user/assigned:
+ *   get:
+ *     summary: Get tasks where user is notification recipient
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200: { description: Assigned tasks list }
+ * 
+ * /api/task-handler/tasks/filter:
+ *   get:
+ *     summary: Filter tasks by status, date range, or sorting
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema: { type: string }
+ *       - in: query
+ *         name: limit
+ *         schema: { type: integer }
+ *     responses:
+ *       200: { description: Filtered tasks list }
+ * 
+ * /api/task-handler/tasks/update/{taskId}/details:
+ *   put:
+ *     summary: Update task name or description
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Task updated }
+ * 
+ * /api/task-handler/tasks/{taskId}/schedule/update:
+ *   put:
+ *     summary: Update task schedule or recurrence
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Schedule updated }
+ * 
+ * /api/task-handler/tasks/{taskId}/status:
+ *   put:
+ *     summary: Update task status (active/paused)
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Status updated }
+ * 
+ * /api/task-handler/tasks/{taskId}/notifications/add-recepiant:
+ *   put:
+ *     summary: Add notification recipient to task
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Recipient added }
+ * 
+ * /api/task-handler/tasks/delete-task/{taskId}:
+ *   delete:
+ *     summary: Delete a scheduled task
+ *     tags: [Tasks]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: taskId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Task deleted }
  */
+
 router.post('/tasks/create-task', protect, checkTaskLimits, createTask);
-
-// 📌 TASK RETRIEVAL
-/**
- * @route   GET /api/tasks/:taskId
- * @desc    Retrieve a specific task by its ID
- * @params  { taskId: string } - The ID of the task
- * @access  Protected (User must have access to the task or device)
- */
 router.get('/tasks/get-task/:taskId', protect, getTaskById);
-
-/**
- * @route   GET /api/tasks/user/my-tasks
- * @desc    Retrieve all tasks created by the authenticated user
- * @access  Protected (Requires authentication)
- */
 router.get('/tasks/user/my-tasks', protect, getMyTasks);
-
-/**
- * @route   GET /api/tasks/device/:deviceId
- * @desc    Retrieve all tasks assigned to a specific device
- * @params  { deviceId: string } - The ID of the device
- * @access  Protected (User must have access to the device)
- */
 router.get('/tasks/get-tasks/device/:deviceId', protect, getTasksByDevice);
-
-/**
- * @route   GET /api/tasks/assigned
- * @desc    Retrieve tasks where the user is a notification recipient
- * @access  Protected (Requires authentication)
- */
 router.get('/tasks/user/assigned', protect, getAssignedTasks);
-
-/**
- * @route   GET /api/tasks/filter
- * @desc    Retrieve tasks based on filters such as status, date range, and sorting
- * @query   { status, startDate, endDate, sort, limit, page }
- * @access  Protected (Requires authentication)
- */
 router.get('/tasks/filter', protect, getFilteredTasks);
-
-// 📌 TASK UPDATES
-/**
- * @route   PUT /api/tasks/:taskId/details
- * @desc    Update task details (name, description, action)
- * @params  { taskId: string } - The ID of the task
- * @access  Protected (Only task/device creator or authorized users)
- */
 router.put('/tasks/update/:taskId/details', protect, updateTaskDetails);
-
-/**
- * @route   PUT /api/tasks/:taskId/schedule
- * @desc    Update task schedule (start time, recurrence, etc.)
- * @params  { taskId: string } - The ID of the task
- * @access  Protected (Only task/device creator or authorized users)
- */
 router.put('/tasks/:taskId/schedule/update', protect, updateTaskSchedule);
-
-/**
- * @route   PUT /api/tasks/:taskId/status
- * @desc    Update the status of a task (e.g., scheduled, active, completed)
- * @params  { taskId: string } - The ID of the task
- * @access  Protected (Only task/device creator or authorized users)
- */
 router.put('/tasks/:taskId/status', protect, updateTaskStatus);
-
-/**
- * @route   PUT /api/tasks/:taskId/notifications
- * @desc    Add a notification recipient to a task
- * @params  { taskId: string } - The ID of the task
- * @access  Protected (Only task/device creator or authorized users)
- */
 router.put('/tasks/:taskId/notifications/add-recepiant', protect, addNotificationRecipient);
-
-// 📌 TASK DELETION
-/**
- * @route   DELETE /api/tasks/:taskId
- * @desc    Delete a specific task by ID
- * @params  { taskId: string } - The ID of the task
- * @access  Protected (Only task/device creator can delete)
- */
 router.delete('/tasks/delete-task/:taskId', protect, deleteTask);
 
 module.exports = router;

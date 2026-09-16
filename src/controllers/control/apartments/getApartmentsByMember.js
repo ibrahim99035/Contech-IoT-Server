@@ -1,4 +1,5 @@
 const Apartment = require('../../../models/Apartment');
+const logger = require('../../../config/logger');
 
 exports.getApartmentsByMember = async (req, res) => {
   try {
@@ -22,8 +23,8 @@ exports.getApartmentsByMember = async (req, res) => {
     .lean();
     
     // Debugging info
-    console.log('User ID:', userId);
-    console.log('Found apartments:', apartments.length);
+    logger.info('User ID:', userId);
+    logger.info('Found apartments:', apartments.length);
     
     // Send structured response
     res.status(200).json({
@@ -33,7 +34,7 @@ exports.getApartmentsByMember = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching apartments:', error);
+    logger.error('Error fetching apartments:', error);
     res.status(500).json({ 
       status: "error",
       message: 'Error fetching apartments for the user', 

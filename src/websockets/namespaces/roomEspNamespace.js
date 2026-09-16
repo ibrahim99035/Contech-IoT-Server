@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const Device = require('../../models/Device');
 const Room = require('../../models/Room');
 const roomEspHandlers = require('../handlers/roomEspHandlers');
+const logger = require('../../config/logger');
 
 module.exports = (io) => {
   const roomEspNamespace = io.of('/ws/room-esp');
@@ -37,7 +38,7 @@ module.exports = (io) => {
         socket.room = room;
         next();
       } catch (error) {
-        console.error('Room ESP authentication error:', error);
+        logger.error('Room ESP authentication error:', error);
         next(new Error('Authentication failed: Database error'));
       }
     } else {
@@ -47,7 +48,7 @@ module.exports = (io) => {
 
   // Connection handler
   roomEspNamespace.on('connection', (socket) => {
-    console.log(`ESP connected to room namespace: ${socket.id} (Device: ${socket.device.name}, Room: ${socket.room.name})`);
+    logger.info(`ESP connected to room namespace: ${socket.id} (Device: ${socket.device.name}, Room: ${socket.room.name})`);
     
     // Join room-specific socket rooms
     socket.join(`room:${socket.room._id}`);
@@ -56,7 +57,7 @@ module.exports = (io) => {
     roomEspHandlers.registerHandlers(io, socket);
     
     socket.on('disconnect', () => {
-      console.log(`ESP disconnected from room namespace: ${socket.id} (Device: ${socket.device.name}, Room: ${socket.room.name})`);
+      logger.info(`ESP disconnected from room namespace: ${socket.id} (Device: ${socket.device.name}, Room: ${socket.room.name})`);
     });
   });
 };

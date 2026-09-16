@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const SubscriptionLimits = require('../models/SubscriptionLimits');
 const { SubscriptionPlan, Feature } = require('../models/subscriptionSystemModels'); // Adjust path as needed
+const logger = require('../config/logger');
 
 // Features data
 const defaultFeatures = [
@@ -86,71 +87,73 @@ async function seedFeatures() {
   const existingFeatures = await Feature.countDocuments();
   
   if (existingFeatures > 0) {
-    console.log(`Features already exist (${existingFeatures} features found). Skipping features seed.`);
+    logger.info(`Features already exist (${existingFeatures} features found). Skipping features seed.`);
     return;
   }
   
-  console.log('No features found. Seeding default features...');
+  logger.info('No features found. Seeding default features...');
   
   for (const feature of defaultFeatures) {
     const createdFeature = await Feature.create(feature);
-    console.log(`Created feature: ${createdFeature.name}`);
+    logger.info(`Created feature: ${createdFeature.name}`);
   }
   
-  console.log('Features seeded successfully');
+  logger.info('Features seeded successfully');
 }
 
 async function seedSubscriptionPlans() {
-  console.log('Checking subscription plans...');
+  logger.info('Checking subscription plans...');
   
   for (const plan of defaultPlans) {
     const existingPlan = await SubscriptionPlan.findOne({ name: plan.name });
     
     if (existingPlan) {
-      console.log(`Plan "${plan.name}" already exists, skipping`);
+      logger.info(`Plan "${plan.name}" already exists, skipping`);
       continue;
     }
     
     const createdPlan = await SubscriptionPlan.create(plan);
-    console.log(`Created subscription plan: ${createdPlan.name} - ${createdPlan.price}`);
+    logger.info(`Created subscription plan: ${createdPlan.name} - ${createdPlan.price}`);
   }
   
-  console.log('Subscription plans seeding completed');
+  logger.info('Subscription plans seeding completed');
 }
 
 async function seedSubscriptionLimits() {
-  console.log('Checking subscription limits...');
+  logger.info('Checking subscription limits...');
   
   for (const limit of defaultLimits) {
     const existingLimit = await SubscriptionLimits.findOne({ planName: limit.planName });
     
     if (existingLimit) {
-      console.log(`Limit for "${limit.planName}" already exists, skipping`);
+      logger.info(`Limit for "${limit.planName}" already exists, skipping`);
       continue;
     }
     
     const createdLimit = await SubscriptionLimits.create(limit);
-    console.log(`Created subscription limit: ${createdLimit.planName}`);
+    logger.info(`Created subscription limit: ${createdLimit.planName}`);
   }
   
-  console.log('Subscription limits seeding completed');
+  logger.info('Subscription limits seeding completed');
 }
 
 async function seedAll() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI);
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(process.env.MONGODB_URI);
+    }
     
-    console.log('Starting subscription system seeding...');
+    logger.info('Starting subscription system seeding...');
     
     // Seed in order: Features -> Plans -> Limits
     await seedFeatures();
     await seedSubscriptionPlans();
     await seedSubscriptionLimits();
     
-    console.log('All subscription system data seeded successfully');
+    logger.info('All subscription system data seeded successfully');
     
   } catch (error) {
-    console.error('Error seeding subscription system:', error);
+    logger.error('Error seeding subscription system:', error);
     throw error;
   }
 }
