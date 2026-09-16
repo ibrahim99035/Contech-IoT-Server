@@ -35,8 +35,8 @@ COPY --from=production-deps /app/node_modules ./node_modules
 COPY --chown=nodejs:nodejs . .
 
 # Create necessary directories
-RUN mkdir -p logs && \
-    chown -R nodejs:nodejs logs
+RUN mkdir -p uploads logs .adminjs && \
+    chown -R nodejs:nodejs uploads logs .adminjs
 
 # Switch to non-root user
 USER nodejs
