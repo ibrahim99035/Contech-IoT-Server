@@ -32,7 +32,7 @@ const getApartmentById = async (req, res) => {
 
       // Get apartment analysis using aggregation
       Apartment.aggregate([
-        { $match: { _id: require('mongoose').Types.ObjectId(req.params.id) } },
+        { $match: { _id: new (require('mongoose').Types.ObjectId)(req.params.id) } },
         {
           $lookup: {
             from: 'users',

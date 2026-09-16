@@ -23,3 +23,27 @@ exports.getFeatures = async (req, res) => {
     res.status(500).json({ success: false, message: 'Server Error', error: error.message });
   }
 };
+
+// Get a single feature by ID
+exports.getFeatureById = async (req, res) => {
+  try {
+    const feature = await Feature.findById(req.params.id);
+    if (!feature) return res.status(404).json({ success: false, message: 'Feature not found' });
+
+    res.status(200).json({ success: true, data: feature });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
+// Delete a feature
+exports.deleteFeature = async (req, res) => {
+  try {
+    const feature = await Feature.findByIdAndDelete(req.params.id);
+    if (!feature) return res.status(404).json({ success: false, message: 'Feature not found' });
+
+    res.status(200).json({ success: true, message: 'Feature deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};

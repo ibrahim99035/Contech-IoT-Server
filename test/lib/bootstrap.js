@@ -43,6 +43,13 @@ const { errorHandler } = require('../../src/middleware/errorHandler');
 
 const logger = require('../../src/config/logger');
 
+// On low-memory dev machines the event loop can stall long enough for the
+// driver to drop loopback connections. Mongoose's default 10s buffering
+// timeout then rejects queued writes mid-request and wedges the suite.
+// Give queued operations up to 2 minutes to ride out a reconnect.
+const mongoose = require('mongoose');
+mongoose.set('bufferTimeoutMS', 120000);
+
 let server;
 let io;
 

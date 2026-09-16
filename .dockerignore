@@ -1,0 +1,45 @@
+# Dependencies (installed inside the image by `npm ci`, never copied from host)
+node_modules
+npm-debug.log*
+
+# Environment / secrets (provided at runtime via docker-compose env_file)
+.env
+.env.*
+!.env.example
+
+# VCS / CI
+.git
+.gitignore
+.github
+
+# Runtime output
+logs
+*.log
+.adminjs
+
+# Local data volumes (bind-mounted by docker-compose, must not be baked in)
+mongodb
+mosquitto/data
+mosquitto/logs
+nginx/logs
+nginx/ssl
+prometheus/data
+
+# Local dev / test tooling (not needed to run the server)
+test
+test-reports
+bruno-collection
+docs
+run-tests.sh
+test-idempotent.js
+test-part1.js
+test-execution-log.md
+contech-finish-spec-plan.md
+README-TESTING.md
+
+# Editor / OS cruft
+.vscode
+.idea
+.code-graph
+.DS_Store
+Thumbs.db

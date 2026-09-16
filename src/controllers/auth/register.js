@@ -1,9 +1,14 @@
+/**
+ * User Registration Controller
+ * @module controllers/auth/register
+ */
+
 const User = require('../../models/User');
-const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
 const { SubscriptionPlan, Subscription } = require('../../models/subscriptionSystemModels');
-const activationEmailTemplate = require('../../utils/activationEmailTemplate'); 
+const activationEmailTemplate = require('../../utils/activationEmailTemplate');
+const { sendEmail } = require('../../utils/emailService');
+const logger = require('../../config/logger');
 
 // User Registration
 exports.registerUser = async (req, res) => {
@@ -13,14 +18,21 @@ exports.registerUser = async (req, res) => {
     // Check if the user already exists
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists',
+        code: 'USER_EXISTS'
+      });
     }
 
     // Check if the role is admin
     if (role === 'admin') {
-      return res.status(403).json({ message: 'Unauthorized: cannot assign admin role' });
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized: cannot assign admin role',
+        code: 'FORBIDDEN'
+      });
     }
-
 
     // Create new user
     user = new User({
@@ -63,37 +75,35 @@ exports.registerUser = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    console.log(process.env.EMAIL_PASS,);
-
-    // Nodemailer setup
-    const transporter = nodemailer.createTransport({
-      service: 'gmail', // Or your preferred email service
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-      debug: true, // Enable debug mode
-      logger: true, // Log the process to console
-  
-    });
-
-    // Prepare email content using the template
+    // Prepare and send activation email
     const emailContent = activationEmailTemplate(user, activationToken);
 
-    // Email options
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: 'Email Activation Required',
-      html: emailContent,
-    };
+    try {
+      await sendEmail({
+        to: user.email,
+        subject: 'Email Activation Required',
+        html: emailContent,
+      });
+    } catch (emailError) {
+      logger.error('Failed to send activation email', {
+        userId: user._id,
+        error: emailError.message
+      });
+      // User is created but email failed — don't fail registration
+    }
 
-    // Send activation email
-    await transporter.sendMail(mailOptions);
+    logger.info('User registered successfully', { userId: user._id, email: user.email });
 
-    res.status(201).json({ message: 'User registered successfully. Activation email sent.' });
+    res.status(201).json({
+      success: true,
+      message: 'User registered successfully. Activation email sent.'
+    });
   } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).json({ message: 'Server error during registration' });
+    logger.error('Registration error', { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Server error during registration',
+      code: 'SERVER_ERROR'
+    });
   }
 };

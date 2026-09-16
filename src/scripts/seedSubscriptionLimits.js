@@ -51,6 +51,7 @@ const defaultLimits = [
     planName: 'free',
     limits: {
       apartments: { owned: 1, memberships: 2 },
+      members: { perApartment: 3 },
       rooms: { perApartment: 3 },
       devices: { perRoom: 2 },
       tasks: { perDevice: 5, totalPerUser: 10 }
@@ -61,6 +62,7 @@ const defaultLimits = [
     planName: 'gold',
     limits: {
       apartments: { owned: 3, memberships: 5 },
+      members: { perApartment: 6 },
       rooms: { perApartment: 8 },
       devices: { perRoom: 6 },
       tasks: { perDevice: 15, totalPerUser: 50 }
@@ -71,6 +73,7 @@ const defaultLimits = [
     planName: 'platinum',
     limits: {
       apartments: { owned: 10, memberships: 20 },
+      members: { perApartment: 20 },
       rooms: { perApartment: 20 },
       devices: { perRoom: 15 },
       tasks: { perDevice: 50, totalPerUser: 200 }

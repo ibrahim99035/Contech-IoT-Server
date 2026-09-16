@@ -1,16 +1,26 @@
+/**
+ * Password Management Controller
+ * Handles password update, forgot password, and reset password flows.
+ * @module controllers/auth/passwordHandler
+ */
+
 const User = require('../../models/User');
-const bcrypt = require('bcryptjs'); 
+const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-
-// Environment variables
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN;
-
+const { sendEmail } = require('../../utils/emailService');
+const logger = require('../../config/logger');
 
 // Update Password
 exports.updatePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Old password and new password are required',
+      code: 'MISSING_FIELDS'
+    });
+  }
 
   try {
     const user = await User.findById(req.user._id);
@@ -18,15 +28,29 @@ exports.updatePassword = async (req, res) => {
     // Check if old password matches
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Old password is incorrect' });
+      return res.status(400).json({
+        success: false,
+        message: 'Old password is incorrect',
+        code: 'WRONG_PASSWORD'
+      });
     }
 
     user.password = newPassword;
-
     await user.save();
-    res.json({ message: 'Password updated successfully' });
+
+    logger.info('Password updated', { userId: user._id });
+
+    res.json({
+      success: true,
+      message: 'Password updated successfully'
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating password' });
+    logger.error('Error updating password', { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error updating password',
+      code: 'SERVER_ERROR'
+    });
   }
 };
 
@@ -35,45 +59,53 @@ exports.forgotPassword = async (req, res) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return res.status(400).json({ message: 'User with this email does not exist' });
+      // Don't reveal whether email exists
+      return res.json({
+        success: true,
+        message: 'If an account with that email exists, a reset link has been sent.'
+      });
+    }
+
+    // Verify email if needed
+    if (!user.emailActivated) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email is not verified. Please verify your email first.',
+        code: 'EMAIL_NOT_VERIFIED'
+      });
     }
 
     // Generate a reset token
-    const resetToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
+    const resetToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '10m' }
+    );
 
-    // Verify email if needed (optional step)
-    if (!user.emailActivated) {
-      return res.status(400).json({ message: 'Email is not verified. Please verify your email first.' });
-    }
-
-    // Nodemailer setup
-    const transporter = nodemailer.createTransport({
-      service: 'gmail', // Use a provider or SMTP configuration
-      auth: {
-        user: process.env.EMAIL_USER, // Environment variable for email address
-        pass: process.env.EMAIL_PASS, // Environment variable for password or app-specific password
-      },
-    });
-
-    // Email options
-    const mailOptions = {
-      from: process.env.EMAIL_USER, // Sender address
-      to: user.email, // Recipient email
+    // Send reset email using shared transporter
+    await sendEmail({
+      to: user.email,
       subject: 'Password Reset Request',
       text: `You requested a password reset. Use the following token: ${resetToken}`,
       html: `<p>You requested a password reset.</p>
              <p>Use the following token:</p>
              <p><b>${resetToken}</b></p>
              <p>This token will expire in 10 minutes.</p>`,
-    };
+    });
 
-    // Send the email
-    await transporter.sendMail(mailOptions);
+    logger.info('Password reset email sent', { userId: user._id });
 
-    res.json({ message: 'Password reset email sent successfully' });
+    res.json({
+      success: true,
+      message: 'If an account with that email exists, a reset link has been sent.'
+    });
   } catch (error) {
-    console.error('Error:', error.message);
-    res.status(500).json({ message: 'Internal server error. Please try again later.' });
+    logger.error('Forgot password error', { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error. Please try again later.',
+      code: 'SERVER_ERROR'
+    });
   }
 };
 
@@ -81,19 +113,56 @@ exports.forgotPassword = async (req, res) => {
 exports.resetPassword = async (req, res) => {
   const { resetToken, newPassword } = req.body;
 
+  if (!resetToken || !newPassword) {
+    return res.status(400).json({
+      success: false,
+      message: 'Reset token and new password are required',
+      code: 'MISSING_FIELDS'
+    });
+  }
+
   try {
-    const decoded = jwt.verify(resetToken, JWT_SECRET);
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid token or user not found' });
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid token or user not found',
+        code: 'INVALID_TOKEN'
+      });
     }
 
     user.password = newPassword;
-
     await user.save();
-    res.json({ message: 'Password reset successfully' });
+
+    logger.info('Password reset successfully', { userId: user._id });
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully'
+    });
   } catch (error) {
-    res.status(500).json({ message: 'Error resetting password' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Reset token has expired. Please request a new one.',
+        code: 'TOKEN_EXPIRED'
+      });
+    }
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid reset token',
+        code: 'INVALID_TOKEN'
+      });
+    }
+
+    logger.error('Reset password error', { error: error.message });
+    res.status(500).json({
+      success: false,
+      message: 'Error resetting password',
+      code: 'SERVER_ERROR'
+    });
   }
 };

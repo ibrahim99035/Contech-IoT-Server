@@ -14,6 +14,16 @@ exports.createCoupon = async (req, res) => {
   }
 };
 
+// Get all coupons
+exports.getCoupons = async (req, res) => {
+  try {
+    const coupons = await Coupon.find();
+    res.status(200).json({ success: true, data: coupons });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
+  }
+};
+
 // Validate a coupon
 exports.validateCoupon = async (req, res) => {
   try {
