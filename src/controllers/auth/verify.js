@@ -20,4 +20,20 @@ const verifyToken = async (req, res) => {
   });
 };
 
-module.exports = { verifyToken };
+const getMe = async (req, res) => {
+  res.status(200).json({
+    success: true,
+    data: {
+      _id: req.user._id,
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      role: req.user.role,
+      emailActivated: req.user.emailActivated,
+      googleId: req.user.googleId,
+      createdAt: req.user.createdAt
+    }
+  });
+};
+
+module.exports = { verifyToken, getMe };
