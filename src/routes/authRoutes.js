@@ -5,7 +5,7 @@ const { loginUser } = require('../controllers/auth/login');
 const { updatePassword, forgotPassword, resetPassword } = require('../controllers/auth/passwordHandler');
 const { sendActivationToken, activateEmailWithToken } = require('../controllers/auth/emailActivation');
 const { deleteMyAccount } = require('../controllers/auth/deleteMyAccount');
-const { verifyToken } = require('../controllers/auth/verify')
+const { verifyToken, getMe } = require('../controllers/auth/verify')
 
 // UPDATED: Import modern Google auth functions
 const { modernGoogleLogin, checkGoogleLink, unlinkGoogle } = require('../controllers/auth/googleAuth');
@@ -108,11 +108,15 @@ router.post('/forgot-password', forgotPassword);
 router.put('/reset-password', resetPassword);
 
 router.get('/verify', protect, verifyToken);
+router.get('/me', protect, getMe);
 
 // Google OAuth Routes (for web/mobile)
 router.post('/google', logOAuthRequest, modernGoogleLogin);
+router.post('/google-login', logOAuthRequest, modernGoogleLogin);
 router.get('/google/status', protect, logOAuthRequest, checkGoogleLink);
+router.get('/check-google-link', protect, logOAuthRequest, checkGoogleLink);
 router.delete('/google/unlink', protect, logOAuthRequest, unlinkGoogle);
+router.delete('/unlink-google', protect, logOAuthRequest, unlinkGoogle);
 
 // NEW: OAuth2 Routes for Google Assistant Account Linking
 router.get('/oauth/authorize', logOAuthRequest, oauthAuthorize);

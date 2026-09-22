@@ -148,11 +148,12 @@ const modernGoogleLogin = async (req, res) => {
     logger.info(`🎫 [Modern Google] JWT token generated for user: ${user._id}`);
 
     // Send successful response
+    // Shape matches the login/register contract: { success, data: { ...user, token } }
     res.status(200).json({
       success: true,
       message: 'Google authentication successful',
-      token: token,
-      user: {
+      data: {
+        _id: user._id,
         id: user._id,
         name: user.name,
         email: user.email,
@@ -160,7 +161,8 @@ const modernGoogleLogin = async (req, res) => {
         active: user.active,
         emailActivated: user.emailActivated, // This will now be true
         googleId: user.googleId,
-        hasGoogleAuth: true
+        hasGoogleAuth: true,
+        token: token
       }
     });
 
