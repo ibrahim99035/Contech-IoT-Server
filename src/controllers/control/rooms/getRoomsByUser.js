@@ -57,9 +57,7 @@ exports.getRoomsByUser = async (req, res) => {
       return res.status(200).json({
         success: true,
         message: 'No rooms found for this user',
-        data: {
-          rooms: []
-        },
+        data: [],
         pagination: {
           total: 0,
           page,
@@ -127,9 +125,7 @@ exports.getRoomsByUser = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: 'Rooms retrieved successfully',
-      data: {
-        rooms: processedRooms
-      },
+      data: processedRooms,
       pagination: {
         total: totalRooms,
         page,
