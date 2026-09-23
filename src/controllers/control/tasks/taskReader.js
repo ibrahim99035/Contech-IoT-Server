@@ -73,7 +73,7 @@ exports.getMyTasks = async (req, res) => {
     }
 
     const safeTasks = Array.isArray(tasks) ? tasks : [];
-    return res.status(200).json({ tasks: safeTasks });
+    return res.status(200).json({ data: safeTasks, tasks: safeTasks });
   } catch (error) {
     logger.error('Exception thrown in getMyTasks', { error: error.message, stack: error.stack });
 

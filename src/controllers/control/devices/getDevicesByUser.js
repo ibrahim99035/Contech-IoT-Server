@@ -50,26 +50,20 @@ exports.getDevicesByUser = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Devices retrieved successfully',
-      data: {
-        user: {
-          _id: userId,
-          name: req.user.name,
-          email: req.user.email
-        },
-        devices: devices.map(device => ({
-          _id: device._id,
-          name: device.name,
-          type: device.type,
-          status: device.status,
-          componentNumber: device.componentNumber,
-          room: device.room,
-          creator: device.creator,
-          users: device.users,
-          createdAt: device.createdAt,
-          updatedAt: device.updatedAt
-        })),
-        count: devices.length
-      }
+      data: devices.map(device => ({
+        _id: device._id,
+        name: device.name,
+        type: device.type,
+        status: device.status,
+        active: device.active,
+        order: device.order,
+        componentNumber: device.componentNumber,
+        room: device.room,
+        creator: device.creator,
+        users: device.users,
+        createdAt: device.createdAt,
+        updatedAt: device.updatedAt
+      }))
     });
   } catch (error) {
     logger.error('Error in getDevicesByUser:', error);
