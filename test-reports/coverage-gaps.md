@@ -1,13 +1,13 @@
 # REST Coverage Gaps
 
-- Routes in app: 125
-- Exercised by run-rest.js + run-rest-gaps.js: 125 (100.0%)
+- Routes in app: 126
+- Exercised by run-rest.js + run-rest-gaps.js: 126 (100.0%)
 - UNTESTED: 0
 
 | by method | total | covered | untested |
 |---|---|---|---|
 | DELETE | 14 | 14 | 0 |
-| GET | 67 | 67 | 0 |
+| GET | 68 | 68 | 0 |
 | POST | 19 | 19 | 0 |
 | PUT | 25 | 25 | 0 |
 

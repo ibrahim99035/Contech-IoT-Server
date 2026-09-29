@@ -238,6 +238,9 @@ async function main() {
     // (limit 2/room) before any type validation would apply → 403.
     await check('devices/create free-tier-limit (3rd)', 'POST', '/api/device-handler/devices/create',
       { name: 'Rest Third', type: 'Toaster', room: S.ids.room, order: 3, componentNumber: 'rest-comp-3' }, C, 403);
+    // Restored by fix(api): user-wide device list. Must reject anonymous callers.
+    await check('devices/user list', 'GET', `/api/device-handler/devices`, null, C, 200);
+    await check('devices/user list no-auth', 'GET', `/api/device-handler/devices`, null, null, 401);
     await check('devices/room list', 'GET', `/api/device-handler/devices/room/${S.ids.room}`, null, C, 200);
     await check('devices/room orders', 'GET', `/api/device-handler/devices/room/${S.ids.room}/orders`, null, C, 200);
     await check('devices/room orders with-id', 'GET', `/api/device-handler/devices/room/${S.ids.room}/orders/${S.ids.device1}`, null, C, 200);

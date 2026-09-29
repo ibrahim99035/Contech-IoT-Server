@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-28T23:34:10.338Z",
+  "generatedAt": "2026-09-29T04:25:16.865Z",
   "totals": {
-    "routes": 125,
+    "routes": 126,
     "byMethod": {
-      "GET": 67,
+      "GET": 68,
       "DELETE": 14,
       "POST": 19,
       "PUT": 25
@@ -111,7 +111,7 @@
       "path": "/api/auth/register",
       "guards": [],
       "probePath": "/api/auth/register",
-      "probeStatus": 500,
+      "probeStatus": 400,
       "unmounted": false,
       "note": ""
     },
@@ -901,7 +901,7 @@
       "path": "/api/auth/register",
       "guards": [],
       "probePath": "/api/auth/register",
-      "probeStatus": 500,
+      "probeStatus": 400,
       "unmounted": false,
       "note": ""
     },
@@ -946,6 +946,17 @@
         "verifyToken"
       ],
       "probePath": "/api/auth/verify",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/device-handler/devices",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices",
       "probeStatus": 401,
       "unmounted": false,
       "note": ""

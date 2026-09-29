@@ -220,21 +220,21 @@
     {
       "method": "GET",
       "template": "/api/apartments-handler/apartments/:id/members",
-      "path": "/api/apartments-handler/apartments/6abb3bb842a5691d28bf588e/members",
+      "path": "/api/apartments-handler/apartments/6abb3e07eb83231f61b261c7/members",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/api/apartments-handler/apartments/:id/members",
-      "path": "/api/apartments-handler/apartments/6abb3bb842a5691d28bf588e/members",
+      "path": "/api/apartments-handler/apartments/6abb3e07eb83231f61b261c7/members",
       "statusCode": 401,
       "matched": true
     },
     {
       "method": "DELETE",
       "template": "/api/apartments-handler/apartments/:apartmentId/remover-member/:memberId",
-      "path": "/api/apartments-handler/apartments/6abb3bb842a5691d28bf588e/remover-member/6abb3bb642a5691d28bf5853",
+      "path": "/api/apartments-handler/apartments/6abb3e07eb83231f61b261c7/remover-member/6abb3e03eb83231f61b2618c",
       "statusCode": 200,
       "matched": true
     },
@@ -255,28 +255,28 @@
     {
       "method": "PUT",
       "template": "/api/rooms-handler/rooms/:id/update-name",
-      "path": "/api/rooms-handler/rooms/6abb3bb942a5691d28bf58aa/update-name",
+      "path": "/api/rooms-handler/rooms/6abb3e08eb83231f61b261e3/update-name",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/rooms-handler/rooms/:roomId/update-password",
-      "path": "/api/rooms-handler/rooms/6abb3bb942a5691d28bf58aa/update-password",
+      "path": "/api/rooms-handler/rooms/6abb3e08eb83231f61b261e3/update-password",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/rooms-handler/rooms/:id/add-users",
-      "path": "/api/rooms-handler/rooms/6abb3bb942a5691d28bf58aa/add-users",
+      "path": "/api/rooms-handler/rooms/6abb3e08eb83231f61b261e3/add-users",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/api/rooms-handler/rooms/get-users/:roomId",
-      "path": "/api/rooms-handler/rooms/get-users/6abb3bb942a5691d28bf58aa",
+      "path": "/api/rooms-handler/rooms/get-users/6abb3e08eb83231f61b261e3",
       "statusCode": 200,
       "matched": true
     },
@@ -290,14 +290,14 @@
     {
       "method": "GET",
       "template": "/api/rooms-handler/rooms/apartment/:apartmentId",
-      "path": "/api/rooms-handler/rooms/apartment/6abb3bb842a5691d28bf588e",
+      "path": "/api/rooms-handler/rooms/apartment/6abb3e07eb83231f61b261c7",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/rooms-handler/rooms/remove-user/:roomId",
-      "path": "/api/rooms-handler/rooms/remove-user/6abb3bb942a5691d28bf58aa",
+      "path": "/api/rooms-handler/rooms/remove-user/6abb3e08eb83231f61b261e3",
       "statusCode": 200,
       "matched": true
     },
@@ -324,106 +324,120 @@
     },
     {
       "method": "GET",
+      "template": "/api/device-handler/devices",
+      "path": "/api/device-handler/devices",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices",
+      "path": "/api/device-handler/devices",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "GET",
       "template": "/api/device-handler/devices/room/:roomId",
-      "path": "/api/device-handler/devices/room/6abb3bb942a5691d28bf58aa",
+      "path": "/api/device-handler/devices/room/6abb3e08eb83231f61b261e3",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/api/device-handler/devices/room/:roomId/orders",
-      "path": "/api/device-handler/devices/room/6abb3bb942a5691d28bf58aa/orders",
+      "path": "/api/device-handler/devices/room/6abb3e08eb83231f61b261e3/orders",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/api/device-handler/devices/room/:roomId/orders/:deviceId",
-      "path": "/api/device-handler/devices/room/6abb3bb942a5691d28bf58aa/orders/6abb3bb942a5691d28bf58e1",
+      "path": "/api/device-handler/devices/room/6abb3e08eb83231f61b261e3/orders/6abb3e09eb83231f61b2621a",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/:id/update-name",
-      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-name",
+      "path": "/api/device-handler/devices/6abb3e09eb83231f61b2621a/update-name",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/:id/update-component-number",
-      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-component-number",
+      "path": "/api/device-handler/devices/6abb3e09eb83231f61b2621a/update-component-number",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/:deviceId/assign-users",
-      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/assign-users",
+      "path": "/api/device-handler/devices/6abb3e09eb83231f61b2621a/assign-users",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/api/device-handler/devices/get-users/device/:deviceId",
-      "path": "/api/device-handler/devices/get-users/device/6abb3bb942a5691d28bf58e1",
+      "path": "/api/device-handler/devices/get-users/device/6abb3e09eb83231f61b2621a",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/api/device-handler/devices/get-users/device/:deviceId",
-      "path": "/api/device-handler/devices/get-users/device/6abb3bb942a5691d28bf58e1",
+      "path": "/api/device-handler/devices/get-users/device/6abb3e09eb83231f61b2621a",
       "statusCode": 401,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/remove-user/device/:deviceId/user/:userId",
-      "path": "/api/device-handler/devices/remove-user/device/6abb3bb942a5691d28bf58e1/user/6abb3bb642a5691d28bf5853",
+      "path": "/api/device-handler/devices/remove-user/device/6abb3e09eb83231f61b2621a/user/6abb3e03eb83231f61b2618c",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/:deviceId/toggle-activation",
-      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/toggle-activation",
+      "path": "/api/device-handler/devices/6abb3e09eb83231f61b2621a/toggle-activation",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/:deviceId/toggle-activation",
-      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/toggle-activation",
+      "path": "/api/device-handler/devices/6abb3e09eb83231f61b2621a/toggle-activation",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/:deviceId/update-order",
-      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-order",
+      "path": "/api/device-handler/devices/6abb3e09eb83231f61b2621a/update-order",
       "statusCode": 409,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/:deviceId/update-order",
-      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-order",
+      "path": "/api/device-handler/devices/6abb3e09eb83231f61b2621a/update-order",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/:deviceId/update-order",
-      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-order",
+      "path": "/api/device-handler/devices/6abb3e09eb83231f61b2621a/update-order",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/device-handler/devices/exist-device/:deviceId",
-      "path": "/api/device-handler/devices/exist-device/6abb3bb942a5691d28bf58e1",
+      "path": "/api/device-handler/devices/exist-device/6abb3e09eb83231f61b2621a",
       "statusCode": 400,
       "matched": true
     },
@@ -444,14 +458,14 @@
     {
       "method": "GET",
       "template": "/api/task-handler/tasks/get-task/:taskId",
-      "path": "/api/task-handler/tasks/get-task/6abb3bba42a5691d28bf5938",
+      "path": "/api/task-handler/tasks/get-task/6abb3e0aeb83231f61b26276",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/api/task-handler/tasks/get-task/:taskId",
-      "path": "/api/task-handler/tasks/get-task/6abb3bba42a5691d28bf5938",
+      "path": "/api/task-handler/tasks/get-task/6abb3e0aeb83231f61b26276",
       "statusCode": 401,
       "matched": true
     },
@@ -465,7 +479,7 @@
     {
       "method": "GET",
       "template": "/api/task-handler/tasks/get-tasks/device/:deviceId",
-      "path": "/api/task-handler/tasks/get-tasks/device/6abb3bb942a5691d28bf58e1",
+      "path": "/api/task-handler/tasks/get-tasks/device/6abb3e09eb83231f61b2621a",
       "statusCode": 200,
       "matched": true
     },
@@ -486,35 +500,35 @@
     {
       "method": "PUT",
       "template": "/api/task-handler/tasks/update/:taskId/details",
-      "path": "/api/task-handler/tasks/update/6abb3bba42a5691d28bf5938/details",
+      "path": "/api/task-handler/tasks/update/6abb3e0aeb83231f61b26276/details",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/task-handler/tasks/:taskId/schedule/update",
-      "path": "/api/task-handler/tasks/6abb3bba42a5691d28bf5938/schedule/update",
+      "path": "/api/task-handler/tasks/6abb3e0aeb83231f61b26276/schedule/update",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/task-handler/tasks/:taskId/status",
-      "path": "/api/task-handler/tasks/6abb3bba42a5691d28bf5938/status",
+      "path": "/api/task-handler/tasks/6abb3e0aeb83231f61b26276/status",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/task-handler/tasks/:taskId/status",
-      "path": "/api/task-handler/tasks/6abb3bba42a5691d28bf5938/status",
+      "path": "/api/task-handler/tasks/6abb3e0aeb83231f61b26276/status",
       "statusCode": 400,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/task-handler/tasks/:taskId/notifications/add-recepiant",
-      "path": "/api/task-handler/tasks/6abb3bba42a5691d28bf5938/notifications/add-recepiant",
+      "path": "/api/task-handler/tasks/6abb3e0aeb83231f61b26276/notifications/add-recepiant",
       "statusCode": 200,
       "matched": true
     },
@@ -577,14 +591,14 @@
     {
       "method": "GET",
       "template": "/api/subscription/payments/:userId",
-      "path": "/api/subscription/payments/6abb3bb642a5691d28bf5855",
+      "path": "/api/subscription/payments/6abb3e03eb83231f61b2618e",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/api/subscription/payments/:userId",
-      "path": "/api/subscription/payments/6abb3bb642a5691d28bf5855",
+      "path": "/api/subscription/payments/6abb3e03eb83231f61b2618e",
       "statusCode": 200,
       "matched": true
     },
@@ -598,14 +612,14 @@
     {
       "method": "GET",
       "template": "/api/subscription/coupons/validate/:code",
-      "path": "/api/subscription/coupons/validate/RESTbac834a3",
+      "path": "/api/subscription/coupons/validate/RESTd324486a",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/coupons/validate/:code",
-      "path": "/api/subscription/coupons/validate/NOPEbac834a3",
+      "path": "/api/subscription/coupons/validate/NOPEd324486a",
       "statusCode": 404,
       "matched": true
     },
@@ -626,14 +640,14 @@
     {
       "method": "PUT",
       "template": "/api/subscription/plans/:id",
-      "path": "/api/subscription/plans/6abb3bba42a5691d28bf5982",
+      "path": "/api/subscription/plans/6abb3e0beb83231f61b262c0",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "DELETE",
       "template": "/api/subscription/plans/:id",
-      "path": "/api/subscription/plans/6abb3bba42a5691d28bf5982",
+      "path": "/api/subscription/plans/6abb3e0beb83231f61b262c0",
       "statusCode": 200,
       "matched": true
     },
@@ -654,14 +668,14 @@
     {
       "method": "DELETE",
       "template": "/api/subscription/features/:id",
-      "path": "/api/subscription/features/6abb3bba42a5691d28bf598a",
+      "path": "/api/subscription/features/6abb3e0beb83231f61b262c8",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/features/:id",
-      "path": "/api/subscription/features/6abb3bba42a5691d28bf598a",
+      "path": "/api/subscription/features/6abb3e0beb83231f61b262c8",
       "statusCode": 404,
       "matched": true
     },
@@ -738,14 +752,14 @@
     {
       "method": "GET",
       "template": "/admin/dashboard/users/get-user-by-id/:id",
-      "path": "/admin/dashboard/users/get-user-by-id/6abb3bb642a5691d28bf5855",
+      "path": "/admin/dashboard/users/get-user-by-id/6abb3e03eb83231f61b2618e",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/admin/dashboard/users/get-user-by-id/:id",
-      "path": "/admin/dashboard/users/get-user-by-id/6abb3bb642a5691d28bf5855",
+      "path": "/admin/dashboard/users/get-user-by-id/6abb3e03eb83231f61b2618e",
       "statusCode": 403,
       "matched": true
     },
@@ -759,7 +773,7 @@
     {
       "method": "PUT",
       "template": "/admin/dashboard/users/update-user-role/:id",
-      "path": "/admin/dashboard/users/update-user-role/6abb3bb642a5691d28bf5853",
+      "path": "/admin/dashboard/users/update-user-role/6abb3e03eb83231f61b2618c",
       "statusCode": 200,
       "matched": true
     },
@@ -794,7 +808,7 @@
     {
       "method": "GET",
       "template": "/admin/dashboard/apartments/get-apartment-by-id/:id",
-      "path": "/admin/dashboard/apartments/get-apartment-by-id/6abb3bb842a5691d28bf588e",
+      "path": "/admin/dashboard/apartments/get-apartment-by-id/6abb3e07eb83231f61b261c7",
       "statusCode": 200,
       "matched": true
     },
@@ -829,7 +843,7 @@
     {
       "method": "GET",
       "template": "/admin/dashboard/rooms/get-room-by-id/:id",
-      "path": "/admin/dashboard/rooms/get-room-by-id/6abb3bb942a5691d28bf58aa",
+      "path": "/admin/dashboard/rooms/get-room-by-id/6abb3e08eb83231f61b261e3",
       "statusCode": 200,
       "matched": true
     },
@@ -864,7 +878,7 @@
     {
       "method": "GET",
       "template": "/admin/dashboard/devices/get-device-by-id/:id",
-      "path": "/admin/dashboard/devices/get-device-by-id/6abb3bb942a5691d28bf58e1",
+      "path": "/admin/dashboard/devices/get-device-by-id/6abb3e09eb83231f61b2621a",
       "statusCode": 200,
       "matched": true
     },
@@ -878,7 +892,7 @@
     {
       "method": "GET",
       "template": "/admin/dashboard/tasks/get-task-by-id/:id",
-      "path": "/admin/dashboard/tasks/get-task-by-id/6abb3bba42a5691d28bf5938",
+      "path": "/admin/dashboard/tasks/get-task-by-id/6abb3e0aeb83231f61b26276",
       "statusCode": 200,
       "matched": true
     },
@@ -906,14 +920,14 @@
     {
       "method": "GET",
       "template": "/admin/dashboard/tasks/get-tasks-by-user/:userId",
-      "path": "/admin/dashboard/tasks/get-tasks-by-user/6abb3bb642a5691d28bf5855",
+      "path": "/admin/dashboard/tasks/get-tasks-by-user/6abb3e03eb83231f61b2618e",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "GET",
       "template": "/admin/dashboard/tasks/get-tasks-by-device/:deviceId",
-      "path": "/admin/dashboard/tasks/get-tasks-by-device/6abb3bb942a5691d28bf58e1",
+      "path": "/admin/dashboard/tasks/get-tasks-by-device/6abb3e09eb83231f61b2621a",
       "statusCode": 200,
       "matched": true
     },
@@ -1004,42 +1018,42 @@
     {
       "method": "GET",
       "template": "/api/images/details/:id",
-      "path": "/api/images/details/6abb3bbc42a5691d28bf5a6c",
+      "path": "/api/images/details/6abb3e0eeb83231f61b263aa",
       "statusCode": 404,
       "matched": true
     },
     {
       "method": "DELETE",
       "template": "/api/task-handler/tasks/delete-task/:taskId",
-      "path": "/api/task-handler/tasks/delete-task/6abb3bba42a5691d28bf5938",
+      "path": "/api/task-handler/tasks/delete-task/6abb3e0aeb83231f61b26276",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "DELETE",
       "template": "/api/device-handler/devices/delete/:id",
-      "path": "/api/device-handler/devices/delete/6abb3bb942a5691d28bf58e1",
+      "path": "/api/device-handler/devices/delete/6abb3e09eb83231f61b2621a",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "DELETE",
       "template": "/api/device-handler/devices/delete/:id",
-      "path": "/api/device-handler/devices/delete/6abb3bb942a5691d28bf58ec",
+      "path": "/api/device-handler/devices/delete/6abb3e09eb83231f61b26225",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "DELETE",
       "template": "/api/rooms-handler/rooms/delete/:id",
-      "path": "/api/rooms-handler/rooms/delete/6abb3bb942a5691d28bf58aa",
+      "path": "/api/rooms-handler/rooms/delete/6abb3e08eb83231f61b261e3",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "DELETE",
       "template": "/api/apartments-handler/apartments/delete/:id",
-      "path": "/api/apartments-handler/apartments/delete/6abb3bb842a5691d28bf588e",
+      "path": "/api/apartments-handler/apartments/delete/6abb3e07eb83231f61b261c7",
       "statusCode": 200,
       "matched": true
     }
@@ -1231,6 +1245,14 @@
     },
     {
       "method": "GET",
+      "template": "/api/device-handler/devices"
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices"
+    },
+    {
+      "method": "GET",
       "template": "/api/device-handler/devices/room/:id"
     },
     {
@@ -1387,11 +1409,11 @@
     },
     {
       "method": "GET",
-      "template": "/api/subscription/coupons/validate/RESTbac834a3"
+      "template": "/api/subscription/coupons/validate/RESTd324486a"
     },
     {
       "method": "GET",
-      "template": "/api/subscription/coupons/validate/NOPEbac834a3"
+      "template": "/api/subscription/coupons/validate/NOPEd324486a"
     },
     {
       "method": "POST",
