@@ -219,7 +219,11 @@ async function run() {
   console.log('Run ID: ' + TS);
   console.log('Cleanup: node test-idempotent.js --cleanup');
 
-  try { await mongoose.disconnect(); } catch (e) {}
+  try {
+    await mongoose.disconnect();
+  } catch (e) {
+    // Nothing to clean up: the process exits either way.
+  }
 }
 
 const arg = process.argv[2];
