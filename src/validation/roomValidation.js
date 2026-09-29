@@ -9,7 +9,11 @@ const roomSchema = Joi.object({
   apartment: Joi.string().required(),
   devices: Joi.array().items(Joi.string()),
   users: Joi.array().items(Joi.string()),
-  roomPassword: Joi.string().required()
+  // Optional: a room can be created without protection and one set later via
+  // the dedicated password endpoint. The Mongoose model does not require it
+  // either, and the client omits the field when the user leaves it blank —
+  // requiring it here made every such create fail with a 400.
+  roomPassword: Joi.string().allow('').optional()
 });
 
 module.exports = { roomSchema, ROOM_TYPES };

@@ -173,6 +173,21 @@ async function main() {
   const roomC = await check('rooms/create third room (used to 500)', 'POST',
     '/api/rooms-handler/rooms/create',
     { name: 'Room Three', type: 'kitchen', apartment: apt._id, roomPassword: 'Pass1234!' }, C, 201);
+  // The client omits roomPassword when the user leaves the field blank, and the
+  // validator used to mark it required, so creating a password-less room from
+  // the UI always failed with a 400. Every other test here passed a password,
+  // which is why this only surfaced in the browser.
+  const roomNoPw = await check('rooms/create without roomPassword', 'POST',
+    '/api/rooms-handler/rooms/create',
+    { name: 'Room No Password', type: 'bedroom', apartment: apt._id }, C, 201);
+  const roomEmptyPw = await check('rooms/create with empty roomPassword', 'POST',
+    '/api/rooms-handler/rooms/create',
+    { name: 'Room Empty Password', type: 'bedroom', apartment: apt._id, roomPassword: '' }, C, 201);
+  record('password-less room has no stored password',
+    roomNoPw && roomNoPw.body && roomNoPw.body.data && roomNoPw.body.data.room
+      ? !(roomNoPw.body.data.room.roomPassword)
+      : false,
+    'roomPassword absent');
   const ids = [roomA, roomB, roomC]
     .filter(Boolean)
     .map((r) => r.body && r.body.data && r.body.data.room && r.body.data.room._id)
