@@ -69,14 +69,11 @@ async function startServer() {
     // Initialize Express app
     const app = express();
 
-    // Setup AdminJS Dashboard
-    try {
-      const { adminJs, router: adminRouter } = await setupAdminJS();
-      app.use(adminJs.options.rootPath, adminRouter);
-      logger.info(`AdminJS Dashboard mounted at ${adminJs.options.rootPath}`);
-    } catch (adminErr) {
-      logger.error('Failed to mount AdminJS Dashboard', { error: adminErr.message });
-    }
+    // NOTE: the AdminJS dashboard is mounted LATER (see "Admin Routes" below),
+    // after the /admin/dashboard/* REST routers and after express.json().
+    // AdminJS's buildAuthenticatedRouter is a catch-all for every path under
+    // /admin, so mounting it first would 302-redirect all dashboard API calls to
+    // /admin/login and they would never reach their controllers.
 
     // Create HTTP server
     const server = http.createServer(app);
@@ -110,8 +107,15 @@ async function startServer() {
     // WebSocket logic for user and IoT device
     require('./src/websockets')(io);
 
-    // Start Task Scheduler after DB connection is established
-    TaskScheduler.start();
+    // Start Task Scheduler after DB connection is established.
+    // Safety gate: REDIS_URL points at the PRODUCTION Redis, so a local run would
+    // start BullMQ workers that can fire real scheduled tasks at real devices.
+    // Opt out with SCHEDULER_ENABLED=false.
+    if (String(process.env.SCHEDULER_ENABLED ?? 'true').toLowerCase() === 'false') {
+      logger.warn('Task Scheduler is disabled (SCHEDULER_ENABLED=false); skipping BullMQ workers');
+    } else {
+      TaskScheduler.start();
+    }
 
     // ─── Global Middleware ───────────────────────────────────────────────
 
@@ -151,6 +155,8 @@ async function startServer() {
     app.use('/api/subscription', subscriptionRoutes);
 
     // ─── Admin Routes ───────────────────────────────────────────────────
+    // Mounted BEFORE AdminJS on purpose: these specific /admin/dashboard/* paths
+    // must win over AdminJS's catch-all /admin router.
     app.use('/admin/dashboard/apartments', apartmentAdminRoutes);
     app.use('/admin/dashboard/users', userAdminRoutes);
     app.use('/admin/dashboard/rooms', roomAdminRoutes);
@@ -158,6 +164,15 @@ async function startServer() {
     app.use('/admin/dashboard/tasks', taskAdminRoutes);
     app.use('/admin/dashboard/subscription-limits', limitsRoutes);
     app.use('/admin/dashboard/background-imgs-set', imageRoutes);
+
+    // Setup AdminJS Dashboard (catch-all for the rest of /admin)
+    try {
+      const { adminJs, router: adminRouter } = await setupAdminJS();
+      app.use(adminJs.options.rootPath, adminRouter);
+      logger.info(`AdminJS Dashboard mounted at ${adminJs.options.rootPath}`);
+    } catch (adminErr) {
+      logger.error('Failed to mount AdminJS Dashboard', { error: adminErr.message });
+    }
 
     // ─── Health Check ───────────────────────────────────────────────────
     app.get('/health', (req, res) => {
@@ -222,10 +237,18 @@ process.on('uncaughtException', (err) => {
   process.exit(1);
 });
 
+// A single unhandled rejection must not take the whole IoT gateway offline:
+// the rejection is almost always scoped to one in-flight request, while
+// process.exit(1) drops every device connection and pending API call with it.
+// Log loudly (with stack) and keep serving so the fault is diagnosable and
+// isolated. Genuinely fatal states still exit via 'uncaughtException' above.
 process.on('unhandledRejection', (reason) => {
   const logger = require('./src/config/logger');
-  logger.error('UNHANDLED REJECTION', { reason: reason?.message || reason });
-  process.exit(1);
+  logger.error('UNHANDLED REJECTION', {
+    reason: reason?.message || reason,
+    stack: reason?.stack,
+    fatal: false
+  });
 });
 
 // Start the server

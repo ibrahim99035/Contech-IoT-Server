@@ -46,7 +46,7 @@ exports.exitApartment = async (req, res) => {
     
     // Check if the user is a member of the apartment
     if (!apartment.members.some(member => member.equals(userId))) {
-      return res.status(400).json({
+      return res.status(403).json({
         success: false,
         message: 'You are not a member of this apartment',
         data: null

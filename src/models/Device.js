@@ -34,10 +34,17 @@ const deviceSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save hook to generate a hashed component number
-deviceSchema.pre('save', function (next) {
-  if (this.isNew || this.isModified('name')) {
+// Auto-generate a component number only when the caller did not supply one.
+// Runs on 'validate' (not 'save') so the value exists before `required` is
+// enforced. A caller-supplied component number is authoritative and must never
+// be regenerated — ESPs authenticate against the stored hash, so overwriting it
+// (or re-rolling it on a rename) silently bricks the device.
+deviceSchema.pre('validate', function (next) {
+  if (this.isNew && !this.componentNumber) {
     const hash = crypto.createHash('sha256');
-    this.componentNumber = hash.update(this.name + Date.now().toString()).digest('hex');
+    this.componentNumber = hash
+      .update(`${this.name}${Date.now()}${Math.random()}`)
+      .digest('hex');
   }
   next();
 });

@@ -1,16 +1,8 @@
 const mongoose = require('mongoose');
+const crypto = require('crypto');
+const { ROOM_TYPES } = require('../constants/roomTypes');
 const bcrypt = require('bcryptjs');
 
-const ROOM_TYPES = [
-  'living_room',
-  'bedroom', 
-  'kitchen',
-  'bathroom',
-  'dining_room',
-  'office',
-  'garage',
-  'other'
-];
 
 const roomSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -26,7 +18,7 @@ const roomSchema = new mongoose.Schema({
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   roomPassword: { type: String }, 
   esp_component_connected: { type: Boolean, default: false },
-  esp_id: { type: String, unique: true }
+  esp_id: { type: String }
 }, { timestamps: true });
 
 // Hash the roomPassword before saving if it's provided and modified
@@ -43,15 +35,25 @@ roomSchema.pre('save', async function (next) {
   }
 });
 
-// Set esp_id after the document is saved
-roomSchema.post('save', async function (doc, next) {
-  if (!doc.esp_id) {
-    await this.constructor.findByIdAndUpdate(doc._id, {
-      esp_id: `esp_${doc._id}`
-    });
+// Assign esp_id before the insert. Doing this in post('save') left a window where
+// the row was indexed with no esp_id, which collided with every other such room
+// on the unique index.
+roomSchema.pre('validate', function (next) {
+  if (!this.esp_id) {
+    const suffix = this.isNew
+      ? crypto.randomBytes(12).toString('hex')
+      : String(this._id);
+    this.esp_id = `esp_${suffix}`;
   }
   next();
 });
+
+// Uniqueness only applies to rooms that actually have an esp_id, so that any
+// number of not-yet-paired rooms can coexist.
+roomSchema.index(
+  { esp_id: 1 },
+  { unique: true, partialFilterExpression: { esp_id: { $type: 'string' } } }
+);
 
 // Method to match entered password with hashed roomPassword
 roomSchema.methods.matchRoomPassword = async function (enteredPassword) {

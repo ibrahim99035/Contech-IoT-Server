@@ -20,15 +20,19 @@ const mongoose = require('mongoose');
  * @returns {Object} JSON response with details about added users
  */
 exports.addUsersToRoom = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  
+  let session;
+
   try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+
     const roomId = req.params.id;
     let { userIds } = req.body;
     
     // Validate room ID
     if (!mongoose.Types.ObjectId.isValid(roomId)) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'Invalid room ID format',
@@ -38,6 +42,8 @@ exports.addUsersToRoom = async (req, res) => {
     
     // Validate userIds input
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'userIds must be a non-empty array',
@@ -52,6 +58,8 @@ exports.addUsersToRoom = async (req, res) => {
     
     // Check if any valid userIds remain after filtering
     if (validUserIds.length === 0) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'No valid user IDs provided',
@@ -199,8 +207,12 @@ exports.addUsersToRoom = async (req, res) => {
     });
 
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    if (session) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+      session.endSession();
+    }
     logger.error('Error adding users to room:', error);
     return res.status(500).json({
       success: false,

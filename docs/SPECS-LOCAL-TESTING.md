@@ -52,7 +52,7 @@ MQTT_BROKER_URL=mqtt://88.222.220.235:1884
 MQTT_USERNAME=contech
 MQTT_PASSWORD="REMOVED_SECRET"
 ADMIN_EMAIL=admin@contech.local
-ADMIN_PASSWORD=REMOVED_SECRET
+ADMIN_PASSWORD=<admin-password>
 ```
 
 ### Start Server
@@ -72,7 +72,7 @@ curl http://localhost:5000/health
 
 Pre-seeded in production MongoDB:
 - **Email:** `admin@contech.local`
-- **Password:** `REMOVED_SECRET`
+- **Password:** `<admin-password>`
 - **Role:** `admin`
 - **Status:** `active`, `emailActivated: true`
 

@@ -24,18 +24,6 @@ exports.getPlanById = asyncHandler(async (req, res) => {
   success(res, plan, 'Plan retrieved successfully');
 });
 
-// Get a single subscription plan by ID
-exports.getPlanById = async (req, res) => {
-  try {
-    const plan = await SubscriptionPlan.findById(req.params.id);
-    if (!plan) return res.status(404).json({ success: false, message: 'Plan not found' });
-
-    res.status(200).json({ success: true, data: plan });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Server Error', error: error.message });
-  }
-};
-
 // Update a subscription plan
 exports.updatePlan = asyncHandler(async (req, res) => {
   const plan = await SubscriptionPlan.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });

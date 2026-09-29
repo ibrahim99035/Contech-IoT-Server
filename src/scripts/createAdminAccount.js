@@ -6,12 +6,12 @@
  */
 
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+require('dotenv').config();
 const User = require('../models/User');
 
 // Configuration from environment
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@contech.local';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'REMOVED_SECRET';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '<admin-password>';
 const ADMIN_NAME = process.env.ADMIN_NAME || 'System Administrator';
 
 // MongoDB connection - use 127.0.0.1 for SSH tunnel compatibility
@@ -50,16 +50,15 @@ async function createAdminAccount() {
       process.exit(0);
     }
 
-    // Hash password
+    // Create admin user.
+    // Pass the PLAINTEXT password: the User model's pre('save') hook is the
+    // single hashing point. Pre-hashing here produced a bcrypt-of-bcrypt,
+    // which matchPassword() can never verify.
     console.log('\nCreating admin account...');
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, salt);
-
-    // Create admin user
     const adminUser = new User({
       name: ADMIN_NAME,
       email: ADMIN_EMAIL,
-      password: hashedPassword,
+      password: ADMIN_PASSWORD,
       role: 'admin',
       active: true,
       emailActivated: true,

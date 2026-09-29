@@ -9,6 +9,8 @@ const { verifyToken, getMe } = require('../controllers/auth/verify')
 
 // UPDATED: Import modern Google auth functions
 const { modernGoogleLogin, checkGoogleLink, unlinkGoogle } = require('../controllers/auth/googleAuth');
+const { validate } = require('../middleware/validate');
+const { registerSchema } = require('../validation/authValidation');
 
 // NEW: Import OAuth2 handlers
 const { 
@@ -96,7 +98,7 @@ const logOAuthRequest = (req, res, next) => {
  */
 
 // Standard authentication routes
-router.post('/register', registerUser);
+router.post('/register', validate(registerSchema), registerUser);
 router.post('/login', loginUser);
 router.delete('/delete-account', protect, deleteMyAccount);
 

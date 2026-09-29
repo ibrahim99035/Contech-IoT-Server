@@ -1,8 +1,19 @@
+const mongoose = require('mongoose');
 const User = require('../../../models/User');
 
 // GET - Get user by ID with full details
 const getUserById = async (req, res) => {
   try {
+    // Without this guard a malformed id raises a CastError, which the local
+    // catch below turns into a 500. It is a bad request, not a server fault.
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID',
+        code: 'INVALID_ID'
+      });
+    }
+
     const user = await User.findById(req.params.id)
       .select('-password -__v')
       .populate({

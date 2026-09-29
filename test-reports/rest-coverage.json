@@ -1,0 +1,1645 @@
+{
+  "routeHits": [
+    {
+      "method": "GET",
+      "template": "/health",
+      "path": "/health",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/activate-email",
+      "path": "/api/auth/activate-email",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/activate-email",
+      "path": "/api/auth/activate-email",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/login",
+      "path": "/api/auth/login",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/verify",
+      "path": "/api/auth/verify",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/verify",
+      "path": "/api/auth/verify",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/login",
+      "path": "/api/auth/login",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/activation-token",
+      "path": "/api/auth/activation-token",
+      "statusCode": 500,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/forgot-password",
+      "path": "/api/auth/forgot-password",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/forgot-password",
+      "path": "/api/auth/forgot-password",
+      "statusCode": 500,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/reset-password",
+      "path": "/api/auth/reset-password",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/login",
+      "path": "/api/auth/login",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/update-password",
+      "path": "/api/auth/update-password",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/update-password",
+      "path": "/api/auth/update-password",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/google",
+      "path": "/api/auth/google",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/google/status",
+      "path": "/api/auth/google/status",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/auth/google/unlink",
+      "path": "/api/auth/google/unlink",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/oauth/authorize",
+      "path": "/api/auth/oauth/authorize?client_id=x&response_type=code&state=s",
+      "statusCode": 302,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/oauth/token",
+      "path": "/api/auth/oauth/token",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/auth/delete-account",
+      "path": "/api/auth/delete-account",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/apartments-handler/apartments/create-apartment",
+      "path": "/api/apartments-handler/apartments/create-apartment",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/apartments-handler/apartments/create-apartment",
+      "path": "/api/apartments-handler/apartments/create-apartment",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/apartments-handler/apartments/member",
+      "path": "/api/apartments-handler/apartments/member",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/update-name",
+      "path": "/api/apartments-handler/apartments/update-name",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/update-name",
+      "path": "/api/apartments-handler/apartments/update-name",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/assign-members",
+      "path": "/api/apartments-handler/apartments/assign-members",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/apartments-handler/apartments/:id/members",
+      "path": "/api/apartments-handler/apartments/6abb3bb842a5691d28bf588e/members",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/apartments-handler/apartments/:id/members",
+      "path": "/api/apartments-handler/apartments/6abb3bb842a5691d28bf588e/members",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/apartments-handler/apartments/:apartmentId/remover-member/:memberId",
+      "path": "/api/apartments-handler/apartments/6abb3bb842a5691d28bf588e/remover-member/6abb3bb642a5691d28bf5853",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/:id/update-name",
+      "path": "/api/rooms-handler/rooms/6abb3bb942a5691d28bf58aa/update-name",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/:roomId/update-password",
+      "path": "/api/rooms-handler/rooms/6abb3bb942a5691d28bf58aa/update-password",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/:id/add-users",
+      "path": "/api/rooms-handler/rooms/6abb3bb942a5691d28bf58aa/add-users",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/rooms-handler/rooms/get-users/:roomId",
+      "path": "/api/rooms-handler/rooms/get-users/6abb3bb942a5691d28bf58aa",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/rooms-handler/rooms/user/get-all",
+      "path": "/api/rooms-handler/rooms/user/get-all",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/rooms-handler/rooms/apartment/:apartmentId",
+      "path": "/api/rooms-handler/rooms/apartment/6abb3bb842a5691d28bf588e",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/remove-user/:roomId",
+      "path": "/api/rooms-handler/rooms/remove-user/6abb3bb942a5691d28bf58aa",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/device-handler/devices/create",
+      "path": "/api/device-handler/devices/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/device-handler/devices/create",
+      "path": "/api/device-handler/devices/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/device-handler/devices/create",
+      "path": "/api/device-handler/devices/create",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/room/:roomId",
+      "path": "/api/device-handler/devices/room/6abb3bb942a5691d28bf58aa",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/room/:roomId/orders",
+      "path": "/api/device-handler/devices/room/6abb3bb942a5691d28bf58aa/orders",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/room/:roomId/orders/:deviceId",
+      "path": "/api/device-handler/devices/room/6abb3bb942a5691d28bf58aa/orders/6abb3bb942a5691d28bf58e1",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/update-name",
+      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-name",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/update-component-number",
+      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-component-number",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:deviceId/assign-users",
+      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/assign-users",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/get-users/device/:deviceId",
+      "path": "/api/device-handler/devices/get-users/device/6abb3bb942a5691d28bf58e1",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/get-users/device/:deviceId",
+      "path": "/api/device-handler/devices/get-users/device/6abb3bb942a5691d28bf58e1",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/remove-user/device/:deviceId/user/:userId",
+      "path": "/api/device-handler/devices/remove-user/device/6abb3bb942a5691d28bf58e1/user/6abb3bb642a5691d28bf5853",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:deviceId/toggle-activation",
+      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/toggle-activation",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:deviceId/toggle-activation",
+      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/toggle-activation",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:deviceId/update-order",
+      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-order",
+      "statusCode": 409,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:deviceId/update-order",
+      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-order",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:deviceId/update-order",
+      "path": "/api/device-handler/devices/6abb3bb942a5691d28bf58e1/update-order",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/exist-device/:deviceId",
+      "path": "/api/device-handler/devices/exist-device/6abb3bb942a5691d28bf58e1",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/task-handler/tasks/create-task",
+      "path": "/api/task-handler/tasks/create-task",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/task-handler/tasks/create-task",
+      "path": "/api/task-handler/tasks/create-task",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/get-task/:taskId",
+      "path": "/api/task-handler/tasks/get-task/6abb3bba42a5691d28bf5938",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/get-task/:taskId",
+      "path": "/api/task-handler/tasks/get-task/6abb3bba42a5691d28bf5938",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/user/my-tasks",
+      "path": "/api/task-handler/tasks/user/my-tasks",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/get-tasks/device/:deviceId",
+      "path": "/api/task-handler/tasks/get-tasks/device/6abb3bb942a5691d28bf58e1",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/user/assigned",
+      "path": "/api/task-handler/tasks/user/assigned",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/filter",
+      "path": "/api/task-handler/tasks/filter?status=scheduled&limit=5",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/update/:taskId/details",
+      "path": "/api/task-handler/tasks/update/6abb3bba42a5691d28bf5938/details",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/:taskId/schedule/update",
+      "path": "/api/task-handler/tasks/6abb3bba42a5691d28bf5938/schedule/update",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/:taskId/status",
+      "path": "/api/task-handler/tasks/6abb3bba42a5691d28bf5938/status",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/:taskId/status",
+      "path": "/api/task-handler/tasks/6abb3bba42a5691d28bf5938/status",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/:taskId/notifications/add-recepiant",
+      "path": "/api/task-handler/tasks/6abb3bba42a5691d28bf5938/notifications/add-recepiant",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/plans",
+      "path": "/api/subscription/plans",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/plans/:id",
+      "path": "/api/subscription/plans/6abaf70f3b35a84dadcbf8ff",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/plans/:id",
+      "path": "/api/subscription/plans/not-an-object-id",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/features",
+      "path": "/api/subscription/features",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/",
+      "path": "/api/subscription",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/my",
+      "path": "/api/subscription/my",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/subscription/",
+      "path": "/api/subscription",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/payments",
+      "path": "/api/subscription/payments",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/payments/:userId",
+      "path": "/api/subscription/payments/6abb3bb642a5691d28bf5855",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/payments/:userId",
+      "path": "/api/subscription/payments/6abb3bb642a5691d28bf5855",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/coupons",
+      "path": "/api/subscription/coupons",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/coupons/validate/:code",
+      "path": "/api/subscription/coupons/validate/RESTbac834a3",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/coupons/validate/:code",
+      "path": "/api/subscription/coupons/validate/NOPEbac834a3",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/coupons",
+      "path": "/api/subscription/coupons",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/plans",
+      "path": "/api/subscription/plans",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/subscription/plans/:id",
+      "path": "/api/subscription/plans/6abb3bba42a5691d28bf5982",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/subscription/plans/:id",
+      "path": "/api/subscription/plans/6abb3bba42a5691d28bf5982",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/plans",
+      "path": "/api/subscription/plans",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/features",
+      "path": "/api/subscription/features",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/subscription/features/:id",
+      "path": "/api/subscription/features/6abb3bba42a5691d28bf598a",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/features/:id",
+      "path": "/api/subscription/features/6abb3bba42a5691d28bf598a",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/admin-activities",
+      "path": "/api/subscription/admin-activities",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/admin-activities",
+      "path": "/api/subscription/admin-activities",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment",
+      "path": "/api/google-assistant/fulfillment",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment",
+      "path": "/api/google-assistant/fulfillment",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment",
+      "path": "/api/google-assistant/fulfillment",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment",
+      "path": "/api/google-assistant/fulfillment",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment",
+      "path": "/api/google-assistant/fulfillment",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/get-all-users",
+      "path": "/admin/dashboard/users/get-all-users",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/search-users",
+      "path": "/admin/dashboard/users/search-users?q=rest",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/user-statistics",
+      "path": "/admin/dashboard/users/user-statistics",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/get-user-by-id/:id",
+      "path": "/admin/dashboard/users/get-user-by-id/6abb3bb642a5691d28bf5855",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/get-user-by-id/:id",
+      "path": "/admin/dashboard/users/get-user-by-id/6abb3bb642a5691d28bf5855",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/get-user-by-id/:id",
+      "path": "/admin/dashboard/users/get-user-by-id/not-an-object-id",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/admin/dashboard/users/update-user-role/:id",
+      "path": "/admin/dashboard/users/update-user-role/6abb3bb642a5691d28bf5853",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/all-apartments",
+      "path": "/admin/dashboard/apartments/all-apartments",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/search-apartments",
+      "path": "/admin/dashboard/apartments/search-apartments?q=rest",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/apartment-statistics",
+      "path": "/admin/dashboard/apartments/apartment-statistics",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/apartment-members-analysis",
+      "path": "/admin/dashboard/apartments/apartment-members-analysis",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/get-apartment-by-id/:id",
+      "path": "/admin/dashboard/apartments/get-apartment-by-id/6abb3bb842a5691d28bf588e",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/get-all-rooms",
+      "path": "/admin/dashboard/rooms/get-all-rooms",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/search-rooms",
+      "path": "/admin/dashboard/rooms/search-rooms?q=rest",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/room-statistics",
+      "path": "/admin/dashboard/rooms/room-statistics",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/get-room-usage-analysis",
+      "path": "/admin/dashboard/rooms/get-room-usage-analysis",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/get-room-by-id/:id",
+      "path": "/admin/dashboard/rooms/get-room-by-id/6abb3bb942a5691d28bf58aa",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/get-all-devices",
+      "path": "/admin/dashboard/devices/get-all-devices",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/search-devices",
+      "path": "/admin/dashboard/devices/search-devices?q=rest",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/get-device-statistics",
+      "path": "/admin/dashboard/devices/get-device-statistics",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/get-device-performance-analysis",
+      "path": "/admin/dashboard/devices/get-device-performance-analysis",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/get-device-by-id/:id",
+      "path": "/admin/dashboard/devices/get-device-by-id/6abb3bb942a5691d28bf58e1",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-all-tasks",
+      "path": "/admin/dashboard/tasks/get-all-tasks",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-task-by-id/:id",
+      "path": "/admin/dashboard/tasks/get-task-by-id/6abb3bba42a5691d28bf5938",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-task-analytics",
+      "path": "/admin/dashboard/tasks/get-task-analytics",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-by-status/:status",
+      "path": "/admin/dashboard/tasks/get-tasks-by-status/active",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-by-recurrence/:type",
+      "path": "/admin/dashboard/tasks/get-tasks-by-recurrence/once",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-by-user/:userId",
+      "path": "/admin/dashboard/tasks/get-tasks-by-user/6abb3bb642a5691d28bf5855",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-by-device/:deviceId",
+      "path": "/admin/dashboard/tasks/get-tasks-by-device/6abb3bb942a5691d28bf58e1",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-with-history",
+      "path": "/admin/dashboard/tasks/get-tasks-with-history",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-scheduled-today",
+      "path": "/admin/dashboard/tasks/get-tasks-scheduled-today",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-overdue-tasks",
+      "path": "/admin/dashboard/tasks/get-overdue-tasks",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/search-tasks",
+      "path": "/admin/dashboard/tasks/search-tasks?q=rest",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/subscription-limits/get-usage",
+      "path": "/admin/dashboard/subscription-limits/get-usage",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/subscription-limits/get-limits",
+      "path": "/admin/dashboard/subscription-limits/get-limits",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/admin/dashboard/subscription-limits/upsert-limits",
+      "path": "/admin/dashboard/subscription-limits/upsert-limits",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/subscription-limits/get-limits",
+      "path": "/admin/dashboard/subscription-limits/get-limits",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/images/list",
+      "path": "/api/images/list",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/images/analytics/stats",
+      "path": "/api/images/analytics/stats",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/images/find/by-type/:type",
+      "path": "/api/images/find/by-type/banner",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/images/upload/new",
+      "path": "/api/images/upload/new",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/images/details/:id",
+      "path": "/api/images/details/6abb3bbc42a5691d28bf5a6c",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/task-handler/tasks/delete-task/:taskId",
+      "path": "/api/task-handler/tasks/delete-task/6abb3bba42a5691d28bf5938",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/device-handler/devices/delete/:id",
+      "path": "/api/device-handler/devices/delete/6abb3bb942a5691d28bf58e1",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/device-handler/devices/delete/:id",
+      "path": "/api/device-handler/devices/delete/6abb3bb942a5691d28bf58ec",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/rooms-handler/rooms/delete/:id",
+      "path": "/api/rooms-handler/rooms/delete/6abb3bb942a5691d28bf58aa",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/apartments-handler/apartments/delete/:id",
+      "path": "/api/apartments-handler/apartments/delete/6abb3bb842a5691d28bf588e",
+      "statusCode": 200,
+      "matched": true
+    }
+  ],
+  "requested": [
+    {
+      "method": "GET",
+      "template": "/health"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/activate-email"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/activate-email"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/login"
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/verify"
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/verify"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/login"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/activation-token"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/forgot-password"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/forgot-password"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/reset-password"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/login"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/update-password"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/auth/update-password"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/google"
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/google/status"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/auth/google/unlink"
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/oauth/authorize"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/oauth/token"
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/auth/delete-account"
+    },
+    {
+      "method": "POST",
+      "template": "/api/apartments-handler/apartments/create-apartment"
+    },
+    {
+      "method": "POST",
+      "template": "/api/apartments-handler/apartments/create-apartment"
+    },
+    {
+      "method": "GET",
+      "template": "/api/apartments-handler/apartments/member"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/update-name"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/update-name"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/assign-members"
+    },
+    {
+      "method": "GET",
+      "template": "/api/apartments-handler/apartments/:id/members"
+    },
+    {
+      "method": "GET",
+      "template": "/api/apartments-handler/apartments/:id/members"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/apartments-handler/apartments/:id/remover-member/:id"
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create"
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/:id/update-name"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/:id/update-password"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/:id/add-users"
+    },
+    {
+      "method": "GET",
+      "template": "/api/rooms-handler/rooms/get-users/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/rooms-handler/rooms/user/get-all"
+    },
+    {
+      "method": "GET",
+      "template": "/api/rooms-handler/rooms/apartment/:id"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/remove-user/:id"
+    },
+    {
+      "method": "POST",
+      "template": "/api/device-handler/devices/create"
+    },
+    {
+      "method": "POST",
+      "template": "/api/device-handler/devices/create"
+    },
+    {
+      "method": "POST",
+      "template": "/api/device-handler/devices/create"
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/room/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/room/:id/orders"
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/room/:id/orders/:id"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/update-name"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/update-component-number"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/assign-users"
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/get-users/device/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/device-handler/devices/get-users/device/:id"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/remove-user/device/:id/user/:id"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/toggle-activation"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/toggle-activation"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/update-order"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/update-order"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/:id/update-order"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/device-handler/devices/exist-device/:id"
+    },
+    {
+      "method": "POST",
+      "template": "/api/task-handler/tasks/create-task"
+    },
+    {
+      "method": "POST",
+      "template": "/api/task-handler/tasks/create-task"
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/get-task/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/get-task/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/user/my-tasks"
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/get-tasks/device/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/user/assigned"
+    },
+    {
+      "method": "GET",
+      "template": "/api/task-handler/tasks/filter"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/update/:id/details"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/:id/schedule/update"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/:id/status"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/:id/status"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/task-handler/tasks/:id/notifications/add-recepiant"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/plans"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/plans/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/plans/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/features"
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/my"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/subscription"
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/payments"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/payments/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/payments/:id"
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/coupons"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/coupons/validate/RESTbac834a3"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/coupons/validate/NOPEbac834a3"
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/coupons"
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/plans"
+    },
+    {
+      "method": "PUT",
+      "template": "/api/subscription/plans/:id"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/subscription/plans/:id"
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/plans"
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/features"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/subscription/features/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/features/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/admin-activities"
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/admin-activities"
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment"
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment"
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment"
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment"
+    },
+    {
+      "method": "POST",
+      "template": "/api/google-assistant/fulfillment"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/get-all-users"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/search-users"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/user-statistics"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/get-user-by-id/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/get-user-by-id/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/users/get-user-by-id/:id"
+    },
+    {
+      "method": "PUT",
+      "template": "/admin/dashboard/users/update-user-role/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/all-apartments"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/search-apartments"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/apartment-statistics"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/apartment-members-analysis"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/apartments/get-apartment-by-id/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/get-all-rooms"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/search-rooms"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/room-statistics"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/get-room-usage-analysis"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/rooms/get-room-by-id/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/get-all-devices"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/search-devices"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/get-device-statistics"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/get-device-performance-analysis"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/devices/get-device-by-id/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-all-tasks"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-task-by-id/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-task-analytics"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-by-status/active"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-by-recurrence/once"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-by-user/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-by-device/:id"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-with-history"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-tasks-scheduled-today"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/get-overdue-tasks"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/tasks/search-tasks"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/subscription-limits/get-usage"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/subscription-limits/get-limits"
+    },
+    {
+      "method": "POST",
+      "template": "/admin/dashboard/subscription-limits/upsert-limits"
+    },
+    {
+      "method": "GET",
+      "template": "/admin/dashboard/subscription-limits/get-limits"
+    },
+    {
+      "method": "GET",
+      "template": "/api/images/list"
+    },
+    {
+      "method": "GET",
+      "template": "/api/images/analytics/stats"
+    },
+    {
+      "method": "GET",
+      "template": "/api/images/find/by-type/banner"
+    },
+    {
+      "method": "POST",
+      "template": "/api/images/upload/new"
+    },
+    {
+      "method": "GET",
+      "template": "/api/images/details/:id"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/task-handler/tasks/delete-task/:id"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/device-handler/devices/delete/:id"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/device-handler/devices/delete/:id"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/rooms-handler/rooms/delete/:id"
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/apartments-handler/apartments/delete/:id"
+    }
+  ]
+}

@@ -310,6 +310,9 @@ async function main() {
         S.ids.planId = plan._id;
         await check('subscription/plan by-id', 'GET', `/api/subscription/plans/${plan._id}`, null, null, 200);
       }
+      // A malformed id is a bad request, not a server fault (was 500: a local
+      // catch swallowed the CastError before the global handler could map it).
+      await check('subscription/plan by-id malformed', 'GET', '/api/subscription/plans/not-an-object-id', null, null, 400);
       await check('subscription/features', 'GET', '/api/subscription/features', null, null, 200);
     }
     await checkAny('subscription/subscribe', 'POST', '/api/subscription',
@@ -396,6 +399,7 @@ async function main() {
     await check('admin/users statistics', 'GET', '/admin/dashboard/users/user-statistics', null, A, 200);
     await check('admin/users by-id', 'GET', `/admin/dashboard/users/get-user-by-id/${customerId}`, null, A, 200);
     await check('admin/users by-id non-admin', 'GET', `/admin/dashboard/users/get-user-by-id/${customerId}`, null, C, 403);
+    await check('admin/users by-id malformed', 'GET', '/admin/dashboard/users/get-user-by-id/not-an-object-id', null, A, 400);
     await check('admin/users update-role', 'PUT', `/admin/dashboard/users/update-user-role/${S.users.moderator._id.toString()}`, { role: 'moderator' }, A, 200);
 
     await check('admin/apartments all', 'GET', '/admin/dashboard/apartments/all-apartments', null, A, 200);
@@ -478,6 +482,18 @@ async function main() {
       ].join('\n');
       fs.writeFileSync(path.join(dir, 'endpoints.md'), md);
       console.log('Report written to test-reports/endpoints.md');
+
+      // Coverage evidence: the exact route templates this run matched, plus
+      // the raw paths requested, for diffing against route-inventory.json.
+      const boot = require('./lib/bootstrap');
+      require('fs').writeFileSync(
+        path.join(dir, 'rest-coverage.json'),
+        JSON.stringify({
+          routeHits: boot.getRouteHits(),
+          requested: require('./lib/httpClient').getRecorded(),
+        }, null, 2)
+      );
+      console.log('Coverage written to test-reports/rest-coverage.json');
     } catch (e) {
       console.error('Report write failed:', e.message);
     }

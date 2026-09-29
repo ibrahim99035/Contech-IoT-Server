@@ -6,7 +6,13 @@ const logger = require('../../config/logger');
 
 // Record a payment (gateway-agnostic: captures intent/result, no fake processor)
 exports.createPayment = asyncHandler(async (req, res) => {
-  const payment = await Payment.create({ ...req.body, paymentStatus: 'pending' });
+  // The paying user is always the authenticated caller. Trusting req.body.userId
+  // both broke the documented contract (the Payment model requires `user`, which
+  // the schema never accepted) and let any caller credit another user's plan.
+  const userId = req.user._id;
+  const { userId: _ignored, user: _ignoredUser, ...body } = req.body;
+
+  const payment = await Payment.create({ ...body, user: userId, paymentStatus: 'pending' });
 
   // Attempt to mark the payment completed and update the subscription/invoice
   try {
@@ -14,7 +20,7 @@ exports.createPayment = asyncHandler(async (req, res) => {
     await payment.save();
 
     await Subscription.findOneAndUpdate(
-      { user: req.body.userId },
+      { user: userId },
       {
         subscriptionPlan: req.body.subscriptionPlanId,
         status: 'active',
@@ -25,7 +31,7 @@ exports.createPayment = asyncHandler(async (req, res) => {
     );
 
     await Invoice.create({
-      user: req.body.userId,
+      user: userId,
       payment: payment._id,
       amount: payment.amount,
       currency: payment.currency,

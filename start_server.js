@@ -7,6 +7,9 @@
 
 const { spawn } = require('child_process');
 const path = require('path');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 console.log('========================================');
 console.log('Starting Contech IoT Server');
@@ -24,28 +27,34 @@ process.chdir('/media/ibrahim/New Volume/Projects/Contech-IoT-Server');
 // Get the dynamic port for SSH tunnel
 const PORT = process.env.PORT || '5000';
 
+// Fail fast on missing configuration rather than letting server.js boot with
+// undefined credentials and fail later at the database or broker.
+const REQUIRED = ['MONGODB_URI', 'REDIS_PASSWORD', 'JWT_SECRET'];
+const missing = REQUIRED.filter((key) => !process.env[key]);
+
+if (missing.length) {
+  console.error('Missing required configuration: ' + missing.join(', '));
+  console.error('');
+  console.error('These are read from .env (gitignored) via dotenv. Create or fix it:');
+  console.error('  cp .env.example .env');
+  console.error('then set: ' + missing.join(', '));
+  process.exit(1);
+}
+
 // Start server process with explicit environment
 const server = spawn('node', ['server.js'], {
   env: {
     ...process.env,
     PORT,
     NODE_ENV: 'development',
-    // MongoDB - direct connection to production replica-set primary
-    // (verified working; SSH tunnel hits a secondary and cannot seed/write)
-    MONGODB_URI: 'mongodb://admin:REMOVED_SECRET@88.222.220.235:27017/contech?authSource=admin&directConnection=true&loadBalanced=false&retryWrites=false',
-    // Redis
-    REDIS_HOST: '88.222.220.235',
-    REDIS_PORT: '6380',
-    REDIS_PASSWORD: 'REMOVED_SECRET',
-    REDIS_URL: 'redis://:REMOVED_SECRET@88.222.220.235:6380',
-    // MQTT
-    MQTT_BROKER_URL: 'mqtt://88.222.220.235:1884',
-    MQTT_USERNAME: 'contech',
-    MQTT_PASSWORD: 'REMOVED_SECRET',
-    // Auth
-    JWT_SECRET: 'REMOVED_SECRET',
-    JWT_EXPIRES_IN: '6d',
-    // Logging
+    // Non-secret local-dev preferences only.
+    //
+    // Credentials are NOT set here. They used to be hardcoded in this file,
+    // which committed the production MongoDB, Redis, MQTT and JWT secrets to
+    // source. server.js loads them from .env (gitignored) via dotenv, so the
+    // overrides were pure duplication and pure risk: rotating a secret in .env
+    // silently did nothing while this file kept handing the old value to the
+    // child process. Keep secrets in .env and rotate them there.
     LOG_LEVEL: 'debug',
     LOG_TO_CONSOLE: 'true',
     // Frontend (local dev)

@@ -1,15 +1,7 @@
+const { ROOM_TYPES } = require('../constants/roomTypes');
+
 const Joi = require('joi');
 
-const ROOM_TYPES = [
-  'living_room',
-  'bedroom', 
-  'kitchen',
-  'bathroom',
-  'dining_room',
-  'office',
-  'garage',
-  'other'
-];
 
 const roomSchema = Joi.object({
   name: Joi.string().min(3).max(100).required(),

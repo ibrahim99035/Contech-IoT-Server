@@ -85,7 +85,7 @@ both JWT authentication (`protect` middleware) and admin role authorization
 
 **Admin Credentials (local dev):**
 - Email: `admin@contech.local`
-- Password: `REMOVED_SECRET`
+- Password: `<admin-password>`
 
 ### 1.1 Authentication \& Authorization<a name="11-authentication--authorization"></a>
 
@@ -690,7 +690,7 @@ to `MQTT_BROKER_URL`; the embedded Aedes broker is used in the test harness).
 | Local dev | `http://localhost:5000` | `ws://localhost:5000` |
 | Production | `http://88.222.220.235` (behind Nginx :80/:443) | same host |
 
-**Local admin credentials:** `admin@contech.local` / `REMOVED_SECRET`
+**Local admin credentials:** `admin@contech.local` / `<admin-password>`
 **Services (local dev, production-backed):** MongoDB `88.222.220.235:27017`, Redis `88.222.220.235:6380`, MQTT `mqtt://88.222.220.235:1884` (user `contech`).
 
 #### Recipe 1 — End User (mobile/web simulator)
@@ -700,7 +700,7 @@ to `MQTT_BROKER_URL`; the embedded Aedes broker is used in the test harness).
 const login = await fetch('http://localhost:5000/api/auth/login', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email: 'admin@contech.local', password: 'REMOVED_SECRET' })
+  body: JSON.stringify({ email: 'admin@contech.local', password: '<admin-password>' })
 });
 const { data } = await login.json();
 const token = data.token;

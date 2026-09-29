@@ -18,7 +18,10 @@ exports.checkApartmentLimits = async (req, res, next) => {
     
     next();
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    // The limiter raises business-rule failures (missing apartment/room,
+    // no active subscription) with a status attached. Those are refusals,
+    // not server faults, so do not report them as 500.
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -40,7 +43,10 @@ exports.checkRoomLimits = async (req, res, next) => {
     
     next();
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    // The limiter raises business-rule failures (missing apartment/room,
+    // no active subscription) with a status attached. Those are refusals,
+    // not server faults, so do not report them as 500.
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -62,7 +68,10 @@ exports.checkDeviceLimits = async (req, res, next) => {
     
     next();
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    // The limiter raises business-rule failures (missing apartment/room,
+    // no active subscription) with a status attached. Those are refusals,
+    // not server faults, so do not report them as 500.
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };
 
@@ -84,6 +93,9 @@ exports.checkTaskLimits = async (req, res, next) => {
     
     next();
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    // The limiter raises business-rule failures (missing apartment/room,
+    // no active subscription) with a status attached. Those are refusals,
+    // not server faults, so do not report them as 500.
+    res.status(error.statusCode || 500).json({ success: false, message: error.message });
   }
 };

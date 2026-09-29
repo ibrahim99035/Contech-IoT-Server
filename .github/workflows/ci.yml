@@ -64,3 +64,16 @@ jobs:
 
       - name: Run integration test suite
         run: npm test
+  # This repository is public. Credentials committed here are readable by
+  # anyone, so a leak must fail the build rather than reach main.
+  secret-scan:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reject committed credentials
+        run: node scripts/scan-secrets.js

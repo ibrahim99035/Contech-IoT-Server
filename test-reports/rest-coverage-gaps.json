@@ -1,0 +1,459 @@
+{
+  "routeHits": [
+    {
+      "method": "POST",
+      "template": "/api/auth/login",
+      "path": "/api/auth/login",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/login",
+      "path": "/api/auth/login",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/me",
+      "path": "/api/auth/me",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/me",
+      "path": "/api/auth/me",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/check-google-link",
+      "path": "/api/auth/check-google-link",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/check-google-link",
+      "path": "/api/auth/check-google-link",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/auth/unlink-google",
+      "path": "/api/auth/unlink-google",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/auth/unlink-google",
+      "path": "/api/auth/unlink-google",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/google-login",
+      "path": "/api/auth/google-login",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/auth/google/callback",
+      "path": "/api/auth/google/callback",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/register",
+      "path": "/api/auth/register",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/features/:id",
+      "path": "/api/subscription/features/6abb3bc7ca7b50589bd2edb0",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/features/:id",
+      "path": "/api/subscription/features/not-an-id",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/features/:id",
+      "path": "/api/subscription/features/000000000000000000000000",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/coupons",
+      "path": "/api/subscription/coupons",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/coupons",
+      "path": "/api/subscription/coupons",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api/subscription/coupons",
+      "path": "/api/subscription/coupons",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/payments",
+      "path": "/api/subscription/payments",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/payments",
+      "path": "/api/subscription/payments",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/payments",
+      "path": "/api/subscription/payments",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/subscription/payments",
+      "path": "/api/subscription/payments",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/apartments-handler/apartments/create-apartment",
+      "path": "/api/apartments-handler/apartments/create-apartment",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/apartments-handler/apartments/create-apartment",
+      "path": "/api/apartments-handler/apartments/create-apartment",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/:apartmentId/exit",
+      "path": "/api/apartments-handler/apartments/6abb3bc8ca7b50589bd2edd9/exit",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/auth/login",
+      "path": "/api/auth/login",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/:apartmentId/exit",
+      "path": "/api/apartments-handler/apartments/6abb3bcaca7b50589bd2ee39/exit",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/apartments-handler/apartments/:apartmentId/exit",
+      "path": "/api/apartments-handler/apartments/6abb3bcaca7b50589bd2ee3f/exit",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/exit-room/:roomId",
+      "path": "/api/rooms-handler/rooms/exit-room/6abb3bcaca7b50589bd2ee43",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/exit-room/:roomId",
+      "path": "/api/rooms-handler/rooms/exit-room/6abb3bc8ca7b50589bd2eddb",
+      "statusCode": 400,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/rooms-handler/rooms/exit-room/:roomId",
+      "path": "/api/rooms-handler/rooms/exit-room/000000000000000000000000",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/apartments-handler/apartments/:apartmentId/remover-member/:memberId",
+      "path": "/api/apartments-handler/apartments/6abb3bc8ca7b50589bd2edd9/remover-member/6abb3bc8ca7b50589bd2edd1",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 201,
+      "matched": true
+    },
+    {
+      "method": "POST",
+      "template": "/api/rooms-handler/rooms/create",
+      "path": "/api/rooms-handler/rooms/create",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/images/remove/:id",
+      "path": "/api/images/remove/000000000000000000000000",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/images/remove/:id",
+      "path": "/api/images/remove/000000000000000000000000",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/api/images/remove/:id",
+      "path": "/api/images/remove/000000000000000000000000",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/images/update/:id",
+      "path": "/api/images/update/000000000000000000000000",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/images/update/:id",
+      "path": "/api/images/update/000000000000000000000000",
+      "statusCode": 404,
+      "matched": true
+    },
+    {
+      "method": "PUT",
+      "template": "/api/images/update/:id",
+      "path": "/api/images/update/000000000000000000000000",
+      "statusCode": 401,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/admin/dashboard/subscription-limits/delete-limits/:planName",
+      "path": "/admin/dashboard/subscription-limits/delete-limits/platinum",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/admin/dashboard/users/delete-account/:id",
+      "path": "/admin/dashboard/users/delete-account/6abb3bc8ca7b50589bd2edd1",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "DELETE",
+      "template": "/admin/dashboard/users/delete-account/:id",
+      "path": "/admin/dashboard/users/delete-account/6abb3bc7ca7b50589bd2edcf",
+      "statusCode": 403,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": "/api-docs/json",
+      "path": "/api-docs/json",
+      "statusCode": 200,
+      "matched": true
+    },
+    {
+      "method": "GET",
+      "template": null,
+      "path": "/api-docs/",
+      "statusCode": 200,
+      "matched": false
+    }
+  ]
+}

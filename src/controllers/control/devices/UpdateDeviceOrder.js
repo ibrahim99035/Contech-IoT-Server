@@ -20,15 +20,19 @@ const Device = require('../../../models/Device');
  * @returns {Object} JSON response with updated device data or error message
  */
 exports.updateDeviceOrder = async (req, res) => {
-  const session = await Device.startSession();
-  session.startTransaction();
+  let session;
 
   try {
+    session = await Device.startSession();
+    session.startTransaction();
+
     const { deviceId } = req.params;
     const { order } = req.body;
 
     // Validate request body
     if (!order || typeof order !== 'number' || order < 1 || order > 6 || !Number.isInteger(order)) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'Order must be an integer between 1 and 6',
@@ -38,6 +42,8 @@ exports.updateDeviceOrder = async (req, res) => {
 
     // Check authentication
     if (!req.user?._id) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(401).json({
         success: false,
         message: 'Authentication required',
@@ -47,6 +53,8 @@ exports.updateDeviceOrder = async (req, res) => {
 
     // Validate deviceId parameter
     if (!deviceId) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'Device ID is required',
@@ -60,6 +68,8 @@ exports.updateDeviceOrder = async (req, res) => {
       .session(session);
       
     if (!device) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(404).json({
         success: false,
         message: 'Device not found',
@@ -69,6 +79,8 @@ exports.updateDeviceOrder = async (req, res) => {
 
     // Verify device is activated
     if (!device.activated) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: 'Cannot update order for deactivated device',
@@ -78,6 +90,8 @@ exports.updateDeviceOrder = async (req, res) => {
 
     // Verify room exists (should exist due to populate, but safety check)
     if (!device.room) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(404).json({
         success: false,
         message: 'Device room not found',
@@ -90,6 +104,8 @@ exports.updateDeviceOrder = async (req, res) => {
     const isDeviceCreator = device.creator.toString() === req.user._id.toString();
 
     if (!isRoomCreator && !isDeviceCreator) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(403).json({
         success: false,
         message: 'Permission denied: only room creator or device creator can update device order',
@@ -99,6 +115,8 @@ exports.updateDeviceOrder = async (req, res) => {
 
     // Check if the device already has this order
     if (device.order === order) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({
         success: false,
         message: `Device already has order ${order}`,
@@ -116,6 +134,8 @@ exports.updateDeviceOrder = async (req, res) => {
     }).select('_id name order').session(session);
 
     if (conflictingDevice) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(409).json({
         success: false,
         message: `Order ${order} is already taken by device "${conflictingDevice.name}"`,
@@ -175,9 +195,12 @@ exports.updateDeviceOrder = async (req, res) => {
     });
 
   } catch (error) {
-    // Rollback transaction on error
-    await session.abortTransaction();
-    session.endSession();
+    if (session) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+      session.endSession();
+    }
 
     res.status(500).json({
       success: false,

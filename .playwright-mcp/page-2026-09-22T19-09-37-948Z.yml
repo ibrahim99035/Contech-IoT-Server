@@ -1,0 +1,13 @@
+- generic [ref=f6e4]:
+  - generic [ref=f6e5]:
+    - heading "Welcome" [level=2] [ref=f6e6]
+    - generic [ref=f6e7]: to AdminJS - the world's leading open-source auto-generated admin panel for your Node.js application that allows you to manage all your data in one place
+  - generic [ref=f6e43]:
+    - heading "Contech IoT Admin" [level=5] [ref=f6e44]
+    - generic [ref=f6e45]:
+      - generic [ref=f6e46]: "*Email"
+      - textbox "Email" [ref=f6e47]
+    - generic [ref=f6e48]:
+      - generic [ref=f6e49]: "*Password"
+      - textbox "Password" [ref=f6e50]
+    - button "Login" [ref=f6e52] [cursor=pointer]

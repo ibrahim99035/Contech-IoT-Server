@@ -5,9 +5,10 @@ const SubscriptionLimiter = require('../../../utils/subscriptionLimiter');
 const logger = require('../../../config/logger');
 
 exports.assignMembers = async (req, res) => {
-  const session = await mongoose.startSession();
+  let session;
 
   try {
+    session = await mongoose.startSession();
     session.startTransaction();
 
     const { apartmentId, members } = req.body;
@@ -52,10 +53,12 @@ exports.assignMembers = async (req, res) => {
     logger.info('Members assigned to apartment', { apartmentId, count: validMemberIds.length });
     res.json({ message: 'Members assigned successfully', apartment });
   } catch (error) {
-    if (session.inTransaction()) {
-      await session.abortTransaction();
+    if (session) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+      session.endSession();
     }
-    session.endSession();
     logger.error('Error assigning members', { error: error.message });
     res.status(500).json({ message: 'Error assigning members', error: error.message });
   }

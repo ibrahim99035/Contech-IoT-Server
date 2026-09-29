@@ -53,6 +53,13 @@ mongoose.set('bufferTimeoutMS', 120000);
 let server;
 let io;
 
+// Exact route coverage: records the MATCHED route template for every request, so
+// coverage can be measured by set difference against the inventory instead of
+// by guessing which URL segment maps to which :param.
+const routeHits = [];
+function getRouteHits() { return routeHits; }
+function resetRouteHits() { routeHits.length = 0; }
+
 async function startServer({ httpPort = process.env.PORT || 5090, mongoUri = process.env.MONGODB_URI } = {}) {
   // Connect to MongoDB first (reuses db.js retry + fallback behaviour).
   const prevMongo = process.env.MONGODB_URI;
@@ -83,6 +90,25 @@ async function startServer({ httpPort = process.env.PORT || 5090, mongoUri = pro
   });
   app.use(express.json({ limit: '5mb' }));
   app.use(cors({ origin: '*', methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'] }));
+
+  // Installed BEFORE the routers but reads req.route on response finish, by
+  // which time Express has populated the matched layer.
+  app.use((req, res, next) => {
+    res.on('finish', () => {
+      const template = req.route ? `${req.baseUrl || ''}${req.route.path}` : null;
+      // `path` and `statusCode` are kept so a request that sets no req.route can
+      // still be classified: middleware-served responses (e.g. the Swagger UI)
+      // legitimately have no route, while a fall-through to 404 is a real gap.
+      routeHits.push({
+        method: req.method,
+        template,
+        path: req.originalUrl,
+        statusCode: res.statusCode,
+        matched: Boolean(req.route),
+      });
+    });
+    next();
+  });
 
   setupSwagger(app);
 
@@ -123,4 +149,4 @@ async function stopServer() {
   await mongoose.connection.close();
 }
 
-module.exports = { startServer, stopServer };
+module.exports = { startServer, stopServer, getRouteHits, resetRouteHits };

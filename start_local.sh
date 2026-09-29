@@ -51,7 +51,7 @@ for i in {1..40}; do
         echo ""
         echo "🔑 Admin Credentials:"
         echo "   • Email:  admin@contech.local"
-        echo "   • Password: REMOVED_SECRET"
+        echo "   • Password: <admin-password>"
         echo ""
         echo "📋 To test API:"
         echo "   • Import api-collection-part1-auth.json into Bruno/Yaak"

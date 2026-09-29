@@ -1,7 +1,7 @@
 # REST Endpoint Test Report
 
-- Date: 2026-09-16T10:33:36.394Z
-- Total: 154 | Passed: 154 | Failed: 0
+- Date: 2026-09-29T04:17:00.248Z
+- Total: 156 | Passed: 156 | Failed: 0
 
 ## Results
 
@@ -26,10 +26,10 @@
 - ✅ [auth/google/status] -> 200 (allowed: 200|404)
 - ✅ [auth/google/unlink not linked] -> 400 (allowed: 200|400|404)
 - ✅ [auth/oauth/authorize redirect] -> 302 (allowed: 302|400|401)
-- ✅ [auth/oauth/token invalid code] -> 401 (allowed: 400|401)
+- ✅ [auth/oauth/token invalid code] -> 400 (allowed: 400|401)
 - ✅ [auth/delete-account self] -> 200
 - ✅ [apartments/create] -> 201
-- ✅ [apartments/create id captured] 6aaa707add3fbcbf3f72933d
+- ✅ [apartments/create id captured] 6abb3bb842a5691d28bf588e
 - ✅ [apartments/create no-auth] -> 401
 - ✅ [apartments/member list] -> 200
 - ✅ [apartments/update-name] -> 200
@@ -39,8 +39,8 @@
 - ✅ [apartments/members no-auth] -> 401
 - ✅ [apartments/remove-member] -> 200
 - ✅ [rooms/create] -> 201
-- ✅ [rooms/create id captured] 6aaa707add3fbcbf3f729359
-- ✅ [rooms/create #2 (KNOWN BUG esp_id)] -> 500 (allowed: 201|500)
+- ✅ [rooms/create id captured] 6abb3bb942a5691d28bf58aa
+- ✅ [rooms/create #2 (KNOWN BUG esp_id)] -> 201 (allowed: 201|500)
 - ✅ [rooms/update-name] -> 200
 - ✅ [rooms/update-password] -> 200
 - ✅ [rooms/add-users] -> 200
@@ -49,9 +49,9 @@
 - ✅ [rooms/apartment list] -> 200
 - ✅ [rooms/remove-user] -> 200
 - ✅ [devices/create] -> 201
-- ✅ [devices/create id captured] 6aaa707cdd3fbcbf3f72938f
+- ✅ [devices/create id captured] 6abb3bb942a5691d28bf58e1
 - ✅ [devices/create #2] -> 201
-- ✅ [devices/create #2 id captured] 6aaa707cdd3fbcbf3f729399
+- ✅ [devices/create #2 id captured] 6abb3bb942a5691d28bf58ec
 - ✅ [devices/create free-tier-limit (3rd)] -> 403
 - ✅ [devices/room list] -> 200
 - ✅ [devices/room orders] -> 200
@@ -69,7 +69,7 @@
 - ✅ [devices/update-order back] -> 200
 - ✅ [devices/exist-device exit-creator-forbidden] -> 400
 - ✅ [tasks/create] -> 201
-- ✅ [tasks/create id captured] 6aaa707cdd3fbcbf3f7293e5
+- ✅ [tasks/create id captured] 6abb3bba42a5691d28bf5938
 - ✅ [tasks/create missing-action] -> 400
 - ✅ [tasks/get-task] -> 200
 - ✅ [tasks/get-task no-auth] -> 401
@@ -85,11 +85,12 @@
 - ✅ [subscription/plans] -> 200
 - ✅ [subscription/plans parsed] count=3
 - ✅ [subscription/plan by-id] -> 200
+- ✅ [subscription/plan by-id malformed] -> 400
 - ✅ [subscription/features] -> 200
 - ✅ [subscription/subscribe] -> 201 (allowed: 200|201)
 - ✅ [subscription/my] -> 200
 - ✅ [subscription/cancel] -> 200
-- ✅ [subscription/payment create] -> 400 (allowed: 201|400)
+- ✅ [subscription/payment create] -> 201 (allowed: 201|400)
 - ✅ [subscription/payments mine] -> 200
 - ✅ [subscription/payments other-user (no ownership check)] -> 200
 - ✅ [subscription/coupon create admin] -> 201
@@ -118,6 +119,7 @@
 - ✅ [admin/users statistics] -> 200
 - ✅ [admin/users by-id] -> 200
 - ✅ [admin/users by-id non-admin] -> 403
+- ✅ [admin/users by-id malformed] -> 400
 - ✅ [admin/users update-role] -> 200
 - ✅ [admin/apartments all] -> 200
 - ✅ [admin/apartments search] -> 200

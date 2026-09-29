@@ -11,7 +11,7 @@ The local Node.js server is connected to production services:
 
 ```
 Email:    admin@contech.local
-Password: REMOVED_SECRET
+Password: <admin-password>
 Role:     admin
 ```
 
@@ -37,7 +37,7 @@ curl http://localhost:5000/health
 # Login as admin
 curl -X POST http://localhost:5000/api/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"email":"admin@contech.local","password":"REMOVED_SECRET"}'
+  -d '{"email":"admin@contech.local","password":"<admin-password>"}'
 ```
 
 ## Manual Testing with Bruno/Yaak

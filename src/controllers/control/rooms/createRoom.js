@@ -98,7 +98,10 @@ exports.createRoom = async (req, res) => {
       session.endSession();
     }
     
-    return res.status(500).json({ 
+    // A missing apartment / no active subscription is a business-rule refusal,
+    // not a server fault: report the status the limiter attached instead of
+    // masking it as a 500.
+    return res.status(error.statusCode || 500).json({ 
       success: false,
       message: error.message || 'An error occurred while creating the room'
     });

@@ -145,7 +145,7 @@ Env: MQTT_BROKER_URL=mqtt://88.222.220.235:1884, MQTT_USERNAME=contech, MQTT_PAS
 - Room User (web frontend): WS /ws/room-user?token=<jwt>
 - MQTT Bridge: WS /ws/mqtt-bridge?roomId=<id>&deviceOrder=<1-6>&roomPassword=<pwd>
 - HTTP base URL: http://localhost:5000 (prod: 88.222.220.235)
-- Admin creds (local dev): admin@contech.local / REMOVED_SECRET
+- Admin creds (local dev): admin@contech.local / <admin-password>
 - .env services: MongoDB 88.222.220.235:27017 (contech), Redis 88.222.220.235:6380, MQTT 88.222.220.235:1884
 
 ### Also add

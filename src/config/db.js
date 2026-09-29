@@ -15,9 +15,33 @@ const logger = require('./logger');
 const connectDB = async (retries = 5, delay = 5000) => {
   let mongoUri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/contech';
 
+  // The database host is reached over a WAN link (~260ms RTT) and its TCP
+  // connection is dropped by the far side every ~80s. With the driver defaults
+  // that turns into a hard failure: the dead socket is only noticed after
+  // ~10s, the operation then waits out its 10s bufferTimeoutMS, and the request
+  // 500s even though the reconnect completes a few seconds later.
+  //
+  // These options make the driver recover inside that window instead of
+  // surfacing it to callers:
+  //   heartbeatFrequencyMS - notice a dead socket in ~2-3s, not ~10s
+  //   bufferTimeoutMS      - let a queued operation wait out the ~8s reconnect
+  //                          and then run, rather than timing out at exactly
+  //                          the moment the connection comes back
+  //   keepAliveInitialDelay - probe an apparently idle socket every 5s so the
+  //                          far side has less reason to reap it
+  //
+  // NB: `keepAlive` itself is a URI-level option in mongodb driver 6.x and is
+  // rejected if passed here, so it is left to the driver default (enabled).
+  const driverOptions = {
+    heartbeatFrequencyMS: 2000,
+    bufferTimeoutMS: 20000,
+    serverSelectionTimeoutMS: 15000,
+    keepAliveInitialDelay: 5000,
+  };
+
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      await mongoose.connect(mongoUri);
+      await mongoose.connect(mongoUri, driverOptions);
       logger.info('Connected to MongoDB successfully');
 
       // Connection event handlers

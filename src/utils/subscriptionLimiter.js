@@ -5,6 +5,22 @@ const Room = require('../models/Room');
 const Device = require('../models/Device');
 const Task = require('../models/Task');
 
+/**
+ * Create an Error carrying the HTTP status the API should surface.
+ * These are business-rule failures (missing parent record, no subscription,
+ * unknown plan) - not internal faults - so a catch-all must not report them
+ * as "Server Error".
+ * @param {string} message
+ * @param {number} statusCode
+ * @returns {Error}
+ */
+function businessError(message, statusCode) {
+  const err = new Error(message);
+  err.statusCode = statusCode;
+  err.expected = true;
+  return err;
+}
+
 class SubscriptionLimiter {
   constructor() {
     this.cache = new Map();
@@ -23,7 +39,7 @@ class SubscriptionLimiter {
       }).populate('subscriptionPlan');
 
       if (!userSubscription) {
-        throw new Error('No active subscription found');
+        throw businessError('No active subscription found', 403);
       }
 
       const planName = userSubscription.subscriptionPlan.name.toLowerCase();
@@ -51,7 +67,7 @@ class SubscriptionLimiter {
     });
 
     if (!limits) {
-      throw new Error(`No limits found for plan: ${planName}`);
+      throw businessError(`No limits found for plan: ${planName}`, 403);
     }
 
     this.cache.set(cacheKey, {
@@ -99,7 +115,7 @@ class SubscriptionLimiter {
     // Count rooms in the apartment
     const apartment = await Apartment.findById(apartmentId).populate('rooms');
     if (!apartment) {
-      throw new Error('Apartment not found');
+      throw businessError('Apartment not found', 404);
     }
 
     const currentRooms = apartment.rooms.length;
@@ -123,7 +139,7 @@ class SubscriptionLimiter {
     // Count devices in the room
     const room = await Room.findById(roomId).populate('devices');
     if (!room) {
-      throw new Error('Room not found');
+      throw businessError('Room not found', 404);
     }
 
     const currentDevices = room.devices.length;
@@ -182,7 +198,7 @@ class SubscriptionLimiter {
 
     const apartment = await Apartment.findById(apartmentId);
     if (!apartment) {
-      throw new Error('Apartment not found');
+      throw businessError('Apartment not found', 404);
     }
 
     const currentMembers = apartment.members.length;
@@ -271,3 +287,4 @@ class SubscriptionLimiter {
 }
 
 module.exports = new SubscriptionLimiter();
+module.exports.businessError = businessError;

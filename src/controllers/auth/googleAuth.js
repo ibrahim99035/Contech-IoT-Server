@@ -6,12 +6,38 @@
  */
 
 const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
 const jwt = require('jsonwebtoken');
 const User = require('../../models/User');
 const { SubscriptionPlan, Subscription } = require('../../models/subscriptionSystemModels');
 const logger = require('../../config/logger');
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID, process.env.GOOGLE_CLIENT_SECRET);
+
+/**
+ * Exchange a GIS authorization code (PKCE/popup flow) for Google tokens.
+ * Confidential web apps must exchange the code with the client_secret server-side.
+ */
+const exchangeCodeForTokens = async (code, codeVerifier) => {
+  const params = new URLSearchParams({
+    code,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    redirect_uri: 'postmessage',
+    grant_type: 'authorization_code'
+  });
+
+  if (codeVerifier) {
+    params.append('code_verifier', codeVerifier);
+  }
+
+  const response = await axios.post('https://oauth2.googleapis.com/token', params, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    timeout: 10000
+  });
+
+  return response.data;
+};
 
 /**
  * FIXED: Modern Google Login Handler
@@ -19,13 +45,38 @@ const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
  */
 const modernGoogleLogin = async (req, res) => {
   try {
-    const { id_token } = req.body;
+    const { id_token, code, code_verifier } = req.body;
     
     logger.info(`🔐 [Modern Google] Starting authentication process`);
-    logger.info(`🔐 [Modern Google] ID token length: ${id_token?.length || 'undefined'}`);
+    logger.info(`🔐 [Modern Google] ID token length: ${id_token?.length || 'undefined'}, has auth code: ${Boolean(code)}`);
     
-    if (!id_token) {
-      logger.info(`❌ [Modern Google] No ID token provided`);
+    let googleIdToken = id_token;
+
+    // If a GIS authorization code was provided, exchange it server-side for an id_token.
+    if (!googleIdToken && code) {
+      logger.info(`🔒 [Modern Google] Exchanging authorization code for id_token`);
+      try {
+        const tokens = await exchangeCodeForTokens(code, code_verifier);
+        googleIdToken = tokens.id_token;
+        logger.info(`🔒 [Modern Google] Code exchange succeeded, id_token length: ${googleIdToken?.length || 'undefined'}`);
+        if (!googleIdToken) {
+          return res.status(400).json({
+            success: false,
+            message: tokens.error_description || 'Google code exchange did not return an id_token'
+          });
+        }
+      } catch (exchangeError) {
+        logger.error(`❌ [Modern Google] Code exchange failed: ${exchangeError.message}`);
+        return res.status(400).json({
+          success: false,
+          message: exchangeError.response?.data?.error_description || exchangeError.message || 'Google code exchange failed',
+          error: process.env.NODE_ENV === 'development' ? exchangeError.message : undefined
+        });
+      }
+    }
+
+    if (!googleIdToken) {
+      logger.info(`❌ [Modern Google] No ID token or authorization code provided`);
       return res.status(400).json({
         success: false,
         message: 'ID token is required'
@@ -37,7 +88,7 @@ const modernGoogleLogin = async (req, res) => {
     let ticket;
     try {
       ticket = await client.verifyIdToken({
-        idToken: id_token,
+        idToken: googleIdToken,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
     } catch (verifyError) {

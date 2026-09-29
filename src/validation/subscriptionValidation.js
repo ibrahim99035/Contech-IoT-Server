@@ -21,7 +21,9 @@ const planUpdateSchema = planSchema.fork(
 ).min(1);
 
 const paymentSchema = Joi.object({
-  userId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
+  // The paying user comes from the auth token, not the body, so this is optional
+  // (and ignored when present).
+  userId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/),
   subscriptionPlanId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required(),
   amount: Joi.number().min(0).required(),
   currency: Joi.string().default('USD'),

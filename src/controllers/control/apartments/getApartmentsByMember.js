@@ -19,7 +19,7 @@ exports.getApartmentsByMember = async (req, res) => {
     .populate('creator', 'name email role')
     .populate('members', 'name email role')
     .populate('rooms', 'name')
-    .select('name creator members rooms')
+    .select('name creator members rooms createdAt updatedAt')
     .lean();
     
     // Debugging info

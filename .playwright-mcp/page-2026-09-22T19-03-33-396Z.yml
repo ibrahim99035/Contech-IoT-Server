@@ -1,0 +1,37 @@
+- generic [ref=e6]:
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]: 
+      - generic [ref=e10]: Contech IoT
+    - heading "Welcome Back" [level=1] [ref=e11]
+    - paragraph [ref=e12]: Sign in to your Contech IoT account
+  - generic [ref=e13]:
+    - generic [ref=e14]:
+      - generic [ref=e15]: Email Address
+      - textbox "Email Address" [ref=e16]:
+        - /placeholder: Enter your email
+    - generic [ref=e17]:
+      - generic [ref=e18]: Password
+      - generic [ref=e19]:
+        - textbox "Password" [ref=e20]:
+          - /placeholder: Enter your password
+        - button "Show password" [ref=e21] [cursor=pointer]:
+          - generic [ref=e22]: 
+    - generic [ref=e23]:
+      - generic [ref=e24] [cursor=pointer]:
+        - checkbox "Remember me" [ref=e25]
+        - generic [ref=e26]: Remember me
+      - link "Forgot password?" [ref=e27] [cursor=pointer]:
+        - /url: /forgot-password
+    - button " Signing in..." [disabled] [ref=e37]:
+      - generic [ref=e38]:
+        - generic [ref=e39]: 
+        - text: Signing in...
+    - generic [ref=e30]: or continue with
+    - button [disabled] [ref=e32]:
+      - img "Google" [ref=e33]
+      - text: Continue with Google
+  - paragraph [ref=e35]:
+    - text: Don't have an account?
+    - link "Sign up" [ref=e36] [cursor=pointer]:
+      - /url: /register

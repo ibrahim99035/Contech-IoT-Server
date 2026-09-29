@@ -114,17 +114,20 @@ const swaggerSpec = swaggerJsdoc(options);
  * @param {import('express').Application} app
  */
 function setupSwagger(app) {
+  // Raw OpenAPI spec in JSON.
+  // MUST be registered before the UI mount: `swaggerUi.setup` responds to every
+  // request on its prefix, so a later `app.get('/api-docs/json')` is dead code
+  // and the endpoint serves HTML instead of the spec.
+  app.get('/api-docs/json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.send(swaggerSpec);
+  });
+
   // Serve Swagger UI
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'Contech IoT — API Documentation'
   }));
-
-  // Raw OpenAPI spec in JSON
-  app.get('/api-docs/json', (req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpec);
-  });
 }
 
 module.exports = setupSwagger;

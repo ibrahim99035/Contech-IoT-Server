@@ -1,0 +1,1643 @@
+{
+  "generatedAt": "2026-09-28T23:34:10.338Z",
+  "totals": {
+    "routes": 125,
+    "byMethod": {
+      "GET": 67,
+      "DELETE": 14,
+      "POST": 19,
+      "PUT": 25
+    }
+  },
+  "badMount": [],
+  "unguarded": [
+    {
+      "method": "PUT",
+      "path": "/api/auth/activate-email",
+      "guards": [],
+      "probePath": "/api/auth/activate-email",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/activation-token",
+      "guards": [],
+      "probePath": "/api/auth/activation-token",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/forgot-password",
+      "guards": [],
+      "probePath": "/api/auth/forgot-password",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/google",
+      "guards": [
+        "logOAuthRequest",
+        "modernGoogleLogin"
+      ],
+      "probePath": "/api/auth/google",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/google-login",
+      "guards": [
+        "logOAuthRequest",
+        "modernGoogleLogin"
+      ],
+      "probePath": "/api/auth/google-login",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/google/callback",
+      "guards": [
+        "googleOAuthCallback"
+      ],
+      "probePath": "/api/auth/google/callback",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "guards": [],
+      "probePath": "/api/auth/login",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/oauth/authorize",
+      "guards": [
+        "logOAuthRequest",
+        "oauthAuthorize"
+      ],
+      "probePath": "/api/auth/oauth/authorize",
+      "probeStatus": 302,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/oauth/token",
+      "guards": [
+        "logOAuthRequest",
+        "oauthToken"
+      ],
+      "probePath": "/api/auth/oauth/token",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "guards": [],
+      "probePath": "/api/auth/register",
+      "probeStatus": 500,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/auth/reset-password",
+      "guards": [],
+      "probePath": "/api/auth/reset-password",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/images/analytics/stats",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/analytics/stats",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/images/details/:id",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/details/000000000000000000000000",
+      "probeStatus": 404,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/images/find/by-type/:type",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/find/by-type/x",
+      "probeStatus": 404,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/images/list",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/list",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/features",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/features",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/features/:id",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/features/000000000000000000000000",
+      "probeStatus": 404,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/plans",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/plans",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/plans/:id",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/plans/000000000000000000000000",
+      "probeStatus": 404,
+      "unmounted": false,
+      "note": ""
+    }
+  ],
+  "routes": [
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/apartments/all-apartments",
+      "guards": [
+        "protect",
+        "getAllApartments"
+      ],
+      "probePath": "/admin/dashboard/apartments/all-apartments",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/apartments/apartment-members-analysis",
+      "guards": [
+        "protect",
+        "getApartmentMembersAnalysis"
+      ],
+      "probePath": "/admin/dashboard/apartments/apartment-members-analysis",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/apartments/apartment-statistics",
+      "guards": [
+        "protect",
+        "getApartmentStatistics"
+      ],
+      "probePath": "/admin/dashboard/apartments/apartment-statistics",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/apartments/get-apartment-by-id/:id",
+      "guards": [
+        "protect",
+        "getApartmentById"
+      ],
+      "probePath": "/admin/dashboard/apartments/get-apartment-by-id/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/apartments/search-apartments",
+      "guards": [
+        "protect",
+        "getFilteredApartments"
+      ],
+      "probePath": "/admin/dashboard/apartments/search-apartments",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/devices/get-all-devices",
+      "guards": [
+        "protect",
+        "getAllDevices"
+      ],
+      "probePath": "/admin/dashboard/devices/get-all-devices",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/devices/get-device-by-id/:id",
+      "guards": [
+        "protect",
+        "getDeviceById"
+      ],
+      "probePath": "/admin/dashboard/devices/get-device-by-id/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/devices/get-device-performance-analysis",
+      "guards": [
+        "protect",
+        "getDevicePerformanceAnalysis"
+      ],
+      "probePath": "/admin/dashboard/devices/get-device-performance-analysis",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/devices/get-device-statistics",
+      "guards": [
+        "protect",
+        "getDeviceStatistics"
+      ],
+      "probePath": "/admin/dashboard/devices/get-device-statistics",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/devices/search-devices",
+      "guards": [
+        "protect",
+        "getFilteredDevices"
+      ],
+      "probePath": "/admin/dashboard/devices/search-devices",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/rooms/get-all-rooms",
+      "guards": [
+        "protect",
+        "getAllRooms"
+      ],
+      "probePath": "/admin/dashboard/rooms/get-all-rooms",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/rooms/get-room-by-id/:id",
+      "guards": [
+        "protect",
+        "getRoomById"
+      ],
+      "probePath": "/admin/dashboard/rooms/get-room-by-id/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/rooms/get-room-usage-analysis",
+      "guards": [
+        "protect",
+        "getRoomUsageAnalysis"
+      ],
+      "probePath": "/admin/dashboard/rooms/get-room-usage-analysis",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/rooms/room-statistics",
+      "guards": [
+        "protect",
+        "getRoomStatistics"
+      ],
+      "probePath": "/admin/dashboard/rooms/room-statistics",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/rooms/search-rooms",
+      "guards": [
+        "protect",
+        "getFilteredRooms"
+      ],
+      "probePath": "/admin/dashboard/rooms/search-rooms",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/dashboard/subscription-limits/delete-limits/:planName",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/admin/dashboard/subscription-limits/delete-limits/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/subscription-limits/get-limits",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/admin/dashboard/subscription-limits/get-limits",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/subscription-limits/get-usage",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/admin/dashboard/subscription-limits/get-usage",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/admin/dashboard/subscription-limits/upsert-limits",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/admin/dashboard/subscription-limits/upsert-limits",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-all-tasks",
+      "guards": [
+        "protect",
+        "getAllTasks"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-all-tasks",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-overdue-tasks",
+      "guards": [
+        "protect",
+        "getOverdueTasks"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-overdue-tasks",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-task-analytics",
+      "guards": [
+        "protect",
+        "getTaskAnalytics"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-task-analytics",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-task-by-id/:id",
+      "guards": [
+        "protect",
+        "getTaskById"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-task-by-id/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-tasks-by-device/:deviceId",
+      "guards": [
+        "protect",
+        "getTasksByDevice"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-tasks-by-device/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-tasks-by-recurrence/:type",
+      "guards": [
+        "protect",
+        "getTasksByRecurrence"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-tasks-by-recurrence/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-tasks-by-status/:status",
+      "guards": [
+        "protect",
+        "getTasksByStatus"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-tasks-by-status/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-tasks-by-user/:userId",
+      "guards": [
+        "protect",
+        "getTasksByUser"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-tasks-by-user/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-tasks-scheduled-today",
+      "guards": [
+        "protect",
+        "getTasksScheduledToday"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-tasks-scheduled-today",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/get-tasks-with-history",
+      "guards": [
+        "protect",
+        "getTasksWithHistory"
+      ],
+      "probePath": "/admin/dashboard/tasks/get-tasks-with-history",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/tasks/search-tasks",
+      "guards": [
+        "protect",
+        "searchTasks"
+      ],
+      "probePath": "/admin/dashboard/tasks/search-tasks",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/admin/dashboard/users/delete-account/:id",
+      "guards": [
+        "protect",
+        "deleteUser"
+      ],
+      "probePath": "/admin/dashboard/users/delete-account/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/users/get-all-users",
+      "guards": [
+        "protect",
+        "getAllUsers"
+      ],
+      "probePath": "/admin/dashboard/users/get-all-users",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/users/get-user-by-id/:id",
+      "guards": [
+        "protect",
+        "getUserById"
+      ],
+      "probePath": "/admin/dashboard/users/get-user-by-id/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/users/search-users",
+      "guards": [
+        "protect",
+        "getFilteredUsers"
+      ],
+      "probePath": "/admin/dashboard/users/search-users",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/admin/dashboard/users/update-user-role/:id",
+      "guards": [
+        "protect",
+        "updateUserRole"
+      ],
+      "probePath": "/admin/dashboard/users/update-user-role/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/admin/dashboard/users/user-statistics",
+      "guards": [
+        "protect",
+        "getUserStatistics"
+      ],
+      "probePath": "/admin/dashboard/users/user-statistics",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api-docs/json",
+      "guards": [],
+      "probePath": "/api-docs/json",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/apartments-handler/apartments/:apartmentId/exit",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/apartments-handler/apartments/x/exit",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/apartments-handler/apartments/:apartmentId/remover-member/:memberId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/apartments-handler/apartments/x/remover-member/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/apartments-handler/apartments/:id/members",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/apartments-handler/apartments/000000000000000000000000/members",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/apartments-handler/apartments/assign-members",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/apartments-handler/apartments/assign-members",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/apartments-handler/apartments/create-apartment",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/apartments-handler/apartments/create-apartment",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/apartments-handler/apartments/delete/:id",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/apartments-handler/apartments/delete/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/apartments-handler/apartments/member",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/apartments-handler/apartments/member",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/apartments-handler/apartments/update-name",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/apartments-handler/apartments/update-name",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/auth/activate-email",
+      "guards": [],
+      "probePath": "/api/auth/activate-email",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/activation-token",
+      "guards": [],
+      "probePath": "/api/auth/activation-token",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/check-google-link",
+      "guards": [
+        "protect",
+        "logOAuthRequest",
+        "checkGoogleLink"
+      ],
+      "probePath": "/api/auth/check-google-link",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/auth/delete-account",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/auth/delete-account",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/forgot-password",
+      "guards": [],
+      "probePath": "/api/auth/forgot-password",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/google",
+      "guards": [
+        "logOAuthRequest",
+        "modernGoogleLogin"
+      ],
+      "probePath": "/api/auth/google",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/google-login",
+      "guards": [
+        "logOAuthRequest",
+        "modernGoogleLogin"
+      ],
+      "probePath": "/api/auth/google-login",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/google/callback",
+      "guards": [
+        "googleOAuthCallback"
+      ],
+      "probePath": "/api/auth/google/callback",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/google/status",
+      "guards": [
+        "protect",
+        "logOAuthRequest",
+        "checkGoogleLink"
+      ],
+      "probePath": "/api/auth/google/status",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/auth/google/unlink",
+      "guards": [
+        "protect",
+        "logOAuthRequest",
+        "unlinkGoogle"
+      ],
+      "probePath": "/api/auth/google/unlink",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/login",
+      "guards": [],
+      "probePath": "/api/auth/login",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/me",
+      "guards": [
+        "protect",
+        "getMe"
+      ],
+      "probePath": "/api/auth/me",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/oauth/authorize",
+      "guards": [
+        "logOAuthRequest",
+        "oauthAuthorize"
+      ],
+      "probePath": "/api/auth/oauth/authorize",
+      "probeStatus": 302,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/oauth/token",
+      "guards": [
+        "logOAuthRequest",
+        "oauthToken"
+      ],
+      "probePath": "/api/auth/oauth/token",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/auth/register",
+      "guards": [],
+      "probePath": "/api/auth/register",
+      "probeStatus": 500,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/auth/reset-password",
+      "guards": [],
+      "probePath": "/api/auth/reset-password",
+      "probeStatus": 400,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/auth/unlink-google",
+      "guards": [
+        "protect",
+        "logOAuthRequest",
+        "unlinkGoogle"
+      ],
+      "probePath": "/api/auth/unlink-google",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/auth/update-password",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/auth/update-password",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/auth/verify",
+      "guards": [
+        "protect",
+        "verifyToken"
+      ],
+      "probePath": "/api/auth/verify",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/device-handler/devices/:deviceId/assign-users",
+      "guards": [
+        "protect",
+        "assignUsersToDevice"
+      ],
+      "probePath": "/api/device-handler/devices/x/assign-users",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/device-handler/devices/:deviceId/toggle-activation",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/x/toggle-activation",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/device-handler/devices/:deviceId/update-order",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/x/update-order",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/device-handler/devices/:id/update-component-number",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/000000000000000000000000/update-component-number",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/device-handler/devices/:id/update-name",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/000000000000000000000000/update-name",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/device-handler/devices/create",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/create",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/device-handler/devices/delete/:id",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/delete/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/device-handler/devices/exist-device/:deviceId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/exist-device/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/device-handler/devices/get-users/device/:deviceId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/get-users/device/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/device-handler/devices/remove-user/device/:deviceId/user/:userId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/remove-user/device/x/user/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/device-handler/devices/room/:roomId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/room/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/device-handler/devices/room/:roomId/orders",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/room/x/orders",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/device-handler/devices/room/:roomId/orders/:deviceId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/device-handler/devices/room/x/orders/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/google-assistant/fulfillment",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/google-assistant/fulfillment",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/images/analytics/stats",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/analytics/stats",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/images/details/:id",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/details/000000000000000000000000",
+      "probeStatus": 404,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/images/find/by-type/:type",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/find/by-type/x",
+      "probeStatus": 404,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/images/list",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/list",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/images/remove/:id",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/remove/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/images/update/:id",
+      "guards": [
+        "protect",
+        "multerMiddleware",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/update/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/images/upload/new",
+      "guards": [
+        "protect",
+        "multerMiddleware",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/images/upload/new",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/rooms-handler/rooms/:id/add-users",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/000000000000000000000000/add-users",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/rooms-handler/rooms/:id/update-name",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/000000000000000000000000/update-name",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/rooms-handler/rooms/:roomId/update-password",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/x/update-password",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/rooms-handler/rooms/apartment/:apartmentId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/apartment/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/rooms-handler/rooms/create",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/create",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/rooms-handler/rooms/delete/:id",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/delete/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/rooms-handler/rooms/exit-room/:roomId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/exit-room/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/rooms-handler/rooms/get-users/:roomId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/get-users/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/rooms-handler/rooms/remove-user/:roomId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/remove-user/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/rooms-handler/rooms/user/get-all",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/rooms-handler/rooms/user/get-all",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/subscription/",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/admin-activities",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/admin-activities",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/coupons",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/coupons",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/coupons",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/coupons",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/coupons/validate/:code",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/coupons/validate/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/features",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/features",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/features",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/features",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/subscription/features/:id",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/features/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/features/:id",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/features/000000000000000000000000",
+      "probeStatus": 404,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/my",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/my",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/payments",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/payments",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/payments/:userId",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/payments/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/plans",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/plans",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/subscription/plans",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/plans",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/subscription/plans/:id",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/plans/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/subscription/plans/:id",
+      "guards": [
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/plans/000000000000000000000000",
+      "probeStatus": 404,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/subscription/plans/:id",
+      "guards": [
+        "protect",
+        "asyncUtilWrap"
+      ],
+      "probePath": "/api/subscription/plans/000000000000000000000000",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/task-handler/tasks/:taskId/notifications/add-recepiant",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/x/notifications/add-recepiant",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/task-handler/tasks/:taskId/schedule/update",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/x/schedule/update",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/task-handler/tasks/:taskId/status",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/x/status",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "POST",
+      "path": "/api/task-handler/tasks/create-task",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/create-task",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "DELETE",
+      "path": "/api/task-handler/tasks/delete-task/:taskId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/delete-task/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/task-handler/tasks/filter",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/filter",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/task-handler/tasks/get-task/:taskId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/get-task/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/task-handler/tasks/get-tasks/device/:deviceId",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/get-tasks/device/x",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "PUT",
+      "path": "/api/task-handler/tasks/update/:taskId/details",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/update/x/details",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/task-handler/tasks/user/assigned",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/user/assigned",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/api/task-handler/tasks/user/my-tasks",
+      "guards": [
+        "protect"
+      ],
+      "probePath": "/api/task-handler/tasks/user/my-tasks",
+      "probeStatus": 401,
+      "unmounted": false,
+      "note": ""
+    },
+    {
+      "method": "GET",
+      "path": "/health",
+      "guards": [],
+      "probePath": "/health",
+      "probeStatus": 200,
+      "unmounted": false,
+      "note": ""
+    }
+  ]
+}

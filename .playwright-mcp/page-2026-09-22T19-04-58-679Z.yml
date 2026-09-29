@@ -1,0 +1,1055 @@
+- generic [ref=f2e3]:
+  - link "Skip to operations" [ref=f2e4] [cursor=pointer]:
+    - /url: "#operations"
+  - generic [ref=f2e6]:
+    - generic [ref=f2e10]:
+      - heading "Contech IoT Smart Home API 1.0.0 OAS 3.0" [level=1] [ref=f2e12]:
+        - text: Contech IoT Smart Home API
+        - generic [ref=f2e13]:
+          - generic [ref=f2e14]: 1.0.0
+          - generic [ref=f2e16]: OAS 3.0
+      - paragraph [ref=f2e20]: Production REST API for Contech IoT Smart Home Automation & Device Management
+      - link "Contact Contech IoT Support" [ref=f2e22] [cursor=pointer]:
+        - /url: mailto:support@contech.com
+    - generic [ref=f2e24]:
+      - generic [ref=f2e26]:
+        - text: Servers
+        - combobox [ref=f2e29]:
+          - option "http://localhost:5000 - Local Development Server" [selected]
+      - button "Authorize" [ref=f2e31] [cursor=pointer]
+    - main [ref=f2e35]:
+      - generic [ref=f2e38]:
+        - generic [ref=f2e40]:
+          - heading [level=3] [ref=f2e41] [cursor=pointer]:
+            - link "Tasks" [ref=f2e42]:
+              - /url: "#/Tasks"
+            - button "Collapse operation" [expanded] [ref=f2e43]
+          - generic [ref=f2e47]:
+            - generic [ref=f2e50] [cursor=pointer]:
+              - button "POST /api/task-handler/tasks/create-task Create a new scheduled task for a device" [ref=f2e51]:
+                - generic [ref=f2e52]: POST
+                - generic [ref=f2e53]:
+                  - link "/api/task-handler/tasks/create-task" [ref=f2e55]:
+                    - /url: "#/Tasks/post_api_task_handler_tasks_create_task"
+                  - generic [ref=f2e57]: Create a new scheduled task for a device
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e58]
+              - button "authorization button unlocked" [ref=f2e62]
+              - button "post /api/task-handler/tasks/create-task" [ref=f2e65]
+            - generic [ref=f2e70] [cursor=pointer]:
+              - 'button "GET /api/task-handler/tasks/get-task/{taskId} Get task details by ID" [ref=f2e71]':
+                - generic [ref=f2e72]: GET
+                - generic [ref=f2e73]:
+                  - 'link "/api/task-handler/tasks/get-task/{taskId}" [ref=f2e75]':
+                    - /url: "#/Tasks/get_api_task_handler_tasks_get_task__taskId_"
+                  - generic [ref=f2e77]: Get task details by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e78]
+              - button "authorization button unlocked" [ref=f2e82]
+              - 'button "get /api/task-handler/tasks/get-task/{taskId}" [ref=f2e85]'
+            - generic [ref=f2e90] [cursor=pointer]:
+              - button "GET /api/task-handler/tasks/user/my-tasks Get tasks created by current user" [ref=f2e91]:
+                - generic [ref=f2e92]: GET
+                - generic [ref=f2e93]:
+                  - link "/api/task-handler/tasks/user/my-tasks" [ref=f2e95]:
+                    - /url: "#/Tasks/get_api_task_handler_tasks_user_my_tasks"
+                  - generic [ref=f2e97]: Get tasks created by current user
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e98]
+              - button "authorization button unlocked" [ref=f2e102]
+              - button "get /api/task-handler/tasks/user/my-tasks" [ref=f2e105]
+            - generic [ref=f2e110] [cursor=pointer]:
+              - 'button "GET /api/task-handler/tasks/get-tasks/device/{deviceId} Get all tasks assigned to a device" [ref=f2e111]':
+                - generic [ref=f2e112]: GET
+                - generic [ref=f2e113]:
+                  - 'link "/api/task-handler/tasks/get-tasks/device/{deviceId}" [ref=f2e115]':
+                    - /url: "#/Tasks/get_api_task_handler_tasks_get_tasks_device__deviceId_"
+                  - generic [ref=f2e117]: Get all tasks assigned to a device
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e118]
+              - button "authorization button unlocked" [ref=f2e122]
+              - 'button "get /api/task-handler/tasks/get-tasks/device/{deviceId}" [ref=f2e125]'
+            - generic [ref=f2e130] [cursor=pointer]:
+              - button "GET /api/task-handler/tasks/user/assigned Get tasks where user is notification recipient" [ref=f2e131]:
+                - generic [ref=f2e132]: GET
+                - generic [ref=f2e133]:
+                  - link "/api/task-handler/tasks/user/assigned" [ref=f2e135]:
+                    - /url: "#/Tasks/get_api_task_handler_tasks_user_assigned"
+                  - generic [ref=f2e137]: Get tasks where user is notification recipient
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e138]
+              - button "authorization button unlocked" [ref=f2e142]
+              - button "get /api/task-handler/tasks/user/assigned" [ref=f2e145]
+            - generic [ref=f2e150] [cursor=pointer]:
+              - button "GET /api/task-handler/tasks/filter Filter tasks by status, date range, or sorting" [ref=f2e151]:
+                - generic [ref=f2e152]: GET
+                - generic [ref=f2e153]:
+                  - link "/api/task-handler/tasks/filter" [ref=f2e155]:
+                    - /url: "#/Tasks/get_api_task_handler_tasks_filter"
+                  - generic [ref=f2e157]: Filter tasks by status, date range, or sorting
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e158]
+              - button "authorization button unlocked" [ref=f2e162]
+              - button "get /api/task-handler/tasks/filter" [ref=f2e165]
+            - generic [ref=f2e170] [cursor=pointer]:
+              - 'button "PUT /api/task-handler/tasks/update/{taskId}/details Update task name or description" [ref=f2e171]':
+                - generic [ref=f2e172]: PUT
+                - generic [ref=f2e173]:
+                  - 'link "/api/task-handler/tasks/update/{taskId}/details" [ref=f2e175]':
+                    - /url: "#/Tasks/put_api_task_handler_tasks_update__taskId__details"
+                  - generic [ref=f2e177]: Update task name or description
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e178]
+              - button "authorization button unlocked" [ref=f2e182]
+              - 'button "put /api/task-handler/tasks/update/{taskId}/details" [ref=f2e185]'
+            - generic [ref=f2e190] [cursor=pointer]:
+              - 'button "PUT /api/task-handler/tasks/{taskId}/schedule/update Update task schedule or recurrence" [ref=f2e191]':
+                - generic [ref=f2e192]: PUT
+                - generic [ref=f2e193]:
+                  - 'link "/api/task-handler/tasks/{taskId}/schedule/update" [ref=f2e195]':
+                    - /url: "#/Tasks/put_api_task_handler_tasks__taskId__schedule_update"
+                  - generic [ref=f2e197]: Update task schedule or recurrence
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e198]
+              - button "authorization button unlocked" [ref=f2e202]
+              - 'button "put /api/task-handler/tasks/{taskId}/schedule/update" [ref=f2e205]'
+            - generic [ref=f2e210] [cursor=pointer]:
+              - 'button "PUT /api/task-handler/tasks/{taskId}/status Update task status (active/paused)" [ref=f2e211]':
+                - generic [ref=f2e212]: PUT
+                - generic [ref=f2e213]:
+                  - 'link "/api/task-handler/tasks/{taskId}/status" [ref=f2e215]':
+                    - /url: "#/Tasks/put_api_task_handler_tasks__taskId__status"
+                  - generic [ref=f2e217]: Update task status (active/paused)
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e218]
+              - button "authorization button unlocked" [ref=f2e222]
+              - 'button "put /api/task-handler/tasks/{taskId}/status" [ref=f2e225]'
+            - generic [ref=f2e230] [cursor=pointer]:
+              - 'button "PUT /api/task-handler/tasks/{taskId}/notifications/add-recepiant Add notification recipient to task" [ref=f2e231]':
+                - generic [ref=f2e232]: PUT
+                - generic [ref=f2e233]:
+                  - 'link "/api/task-handler/tasks/{taskId}/notifications/add-recepiant" [ref=f2e235]':
+                    - /url: "#/Tasks/put_api_task_handler_tasks__taskId__notifications_add_recepiant"
+                  - generic [ref=f2e237]: Add notification recipient to task
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e238]
+              - button "authorization button unlocked" [ref=f2e242]
+              - 'button "put /api/task-handler/tasks/{taskId}/notifications/add-recepiant" [ref=f2e245]'
+            - generic [ref=f2e250] [cursor=pointer]:
+              - 'button "DELETE /api/task-handler/tasks/delete-task/{taskId} Delete a scheduled task" [ref=f2e251]':
+                - generic [ref=f2e252]: DELETE
+                - generic [ref=f2e253]:
+                  - 'link "/api/task-handler/tasks/delete-task/{taskId}" [ref=f2e255]':
+                    - /url: "#/Tasks/delete_api_task_handler_tasks_delete_task__taskId_"
+                  - generic [ref=f2e257]: Delete a scheduled task
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e258]
+              - button "authorization button unlocked" [ref=f2e262]
+              - 'button "delete /api/task-handler/tasks/delete-task/{taskId}" [ref=f2e265]'
+        - generic [ref=f2e269]:
+          - heading [level=3] [ref=f2e270] [cursor=pointer]:
+            - link "Rooms" [ref=f2e271]:
+              - /url: "#/Rooms"
+            - button "Collapse operation" [expanded] [ref=f2e272]
+          - generic [ref=f2e276]:
+            - generic [ref=f2e279] [cursor=pointer]:
+              - button "POST /api/rooms-handler/rooms/create Create a new room in an apartment" [ref=f2e280]:
+                - generic [ref=f2e281]: POST
+                - generic [ref=f2e282]:
+                  - link "/api/rooms-handler/rooms/create" [ref=f2e284]:
+                    - /url: "#/Rooms/post_api_rooms_handler_rooms_create"
+                  - generic [ref=f2e286]: Create a new room in an apartment
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e287]
+              - button "authorization button unlocked" [ref=f2e291]
+              - button "post /api/rooms-handler/rooms/create" [ref=f2e294]
+            - generic [ref=f2e299] [cursor=pointer]:
+              - 'button "PUT /api/rooms-handler/rooms/{id}/update-name Update room name" [ref=f2e300]':
+                - generic [ref=f2e301]: PUT
+                - generic [ref=f2e302]:
+                  - 'link "/api/rooms-handler/rooms/{id}/update-name" [ref=f2e304]':
+                    - /url: "#/Rooms/put_api_rooms_handler_rooms__id__update_name"
+                  - generic [ref=f2e306]: Update room name
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e307]
+              - button "authorization button unlocked" [ref=f2e311]
+              - 'button "put /api/rooms-handler/rooms/{id}/update-name" [ref=f2e314]'
+            - generic [ref=f2e319] [cursor=pointer]:
+              - 'button "PUT /api/rooms-handler/rooms/{id}/add-users Add users to room" [ref=f2e320]':
+                - generic [ref=f2e321]: PUT
+                - generic [ref=f2e322]:
+                  - 'link "/api/rooms-handler/rooms/{id}/add-users" [ref=f2e324]':
+                    - /url: "#/Rooms/put_api_rooms_handler_rooms__id__add_users"
+                  - generic [ref=f2e326]: Add users to room
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e327]
+              - button "authorization button unlocked" [ref=f2e331]
+              - 'button "put /api/rooms-handler/rooms/{id}/add-users" [ref=f2e334]'
+            - generic [ref=f2e339] [cursor=pointer]:
+              - button "GET /api/rooms-handler/rooms/user/get-all Get all rooms accessible to the authenticated user" [ref=f2e340]:
+                - generic [ref=f2e341]: GET
+                - generic [ref=f2e342]:
+                  - link "/api/rooms-handler/rooms/user/get-all" [ref=f2e344]:
+                    - /url: "#/Rooms/get_api_rooms_handler_rooms_user_get_all"
+                  - generic [ref=f2e346]: Get all rooms accessible to the authenticated user
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e347]
+              - button "authorization button unlocked" [ref=f2e351]
+              - button "get /api/rooms-handler/rooms/user/get-all" [ref=f2e354]
+            - generic [ref=f2e359] [cursor=pointer]:
+              - 'button "GET /api/rooms-handler/rooms/apartment/{apartmentId} Get all rooms in a specific apartment" [ref=f2e360]':
+                - generic [ref=f2e361]: GET
+                - generic [ref=f2e362]:
+                  - 'link "/api/rooms-handler/rooms/apartment/{apartmentId}" [ref=f2e364]':
+                    - /url: "#/Rooms/get_api_rooms_handler_rooms_apartment__apartmentId_"
+                  - generic [ref=f2e366]: Get all rooms in a specific apartment
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e367]
+              - button "authorization button unlocked" [ref=f2e371]
+              - 'button "get /api/rooms-handler/rooms/apartment/{apartmentId}" [ref=f2e374]'
+            - generic [ref=f2e379] [cursor=pointer]:
+              - 'button "DELETE /api/rooms-handler/rooms/delete/{id} Delete a room by ID" [ref=f2e380]':
+                - generic [ref=f2e381]: DELETE
+                - generic [ref=f2e382]:
+                  - 'link "/api/rooms-handler/rooms/delete/{id}" [ref=f2e384]':
+                    - /url: "#/Rooms/delete_api_rooms_handler_rooms_delete__id_"
+                  - generic [ref=f2e386]: Delete a room by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e387]
+              - button "authorization button unlocked" [ref=f2e391]
+              - 'button "delete /api/rooms-handler/rooms/delete/{id}" [ref=f2e394]'
+            - generic [ref=f2e399] [cursor=pointer]:
+              - 'button "GET /api/rooms-handler/rooms/get-users/{roomId} Get all users in a room" [ref=f2e400]':
+                - generic [ref=f2e401]: GET
+                - generic [ref=f2e402]:
+                  - 'link "/api/rooms-handler/rooms/get-users/{roomId}" [ref=f2e404]':
+                    - /url: "#/Rooms/get_api_rooms_handler_rooms_get_users__roomId_"
+                  - generic [ref=f2e406]: Get all users in a room
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e407]
+              - button "authorization button unlocked" [ref=f2e411]
+              - 'button "get /api/rooms-handler/rooms/get-users/{roomId}" [ref=f2e414]'
+            - generic [ref=f2e419] [cursor=pointer]:
+              - 'button "PUT /api/rooms-handler/rooms/remove-user/{roomId} Remove users from room" [ref=f2e420]':
+                - generic [ref=f2e421]: PUT
+                - generic [ref=f2e422]:
+                  - 'link "/api/rooms-handler/rooms/remove-user/{roomId}" [ref=f2e424]':
+                    - /url: "#/Rooms/put_api_rooms_handler_rooms_remove_user__roomId_"
+                  - generic [ref=f2e426]: Remove users from room
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e427]
+              - button "authorization button unlocked" [ref=f2e431]
+              - 'button "put /api/rooms-handler/rooms/remove-user/{roomId}" [ref=f2e434]'
+            - generic [ref=f2e439] [cursor=pointer]:
+              - 'button "PUT /api/rooms-handler/rooms/exit-room/{roomId} Exit a room" [ref=f2e440]':
+                - generic [ref=f2e441]: PUT
+                - generic [ref=f2e442]:
+                  - 'link "/api/rooms-handler/rooms/exit-room/{roomId}" [ref=f2e444]':
+                    - /url: "#/Rooms/put_api_rooms_handler_rooms_exit_room__roomId_"
+                  - generic [ref=f2e446]: Exit a room
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e447]
+              - button "authorization button unlocked" [ref=f2e451]
+              - 'button "put /api/rooms-handler/rooms/exit-room/{roomId}" [ref=f2e454]'
+            - generic [ref=f2e459] [cursor=pointer]:
+              - 'button "PUT /api/rooms-handler/rooms/{roomId}/update-password Update room password for hardware authentication" [ref=f2e460]':
+                - generic [ref=f2e461]: PUT
+                - generic [ref=f2e462]:
+                  - 'link "/api/rooms-handler/rooms/{roomId}/update-password" [ref=f2e464]':
+                    - /url: "#/Rooms/put_api_rooms_handler_rooms__roomId__update_password"
+                  - generic [ref=f2e466]: Update room password for hardware authentication
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e467]
+              - button "authorization button unlocked" [ref=f2e471]
+              - 'button "put /api/rooms-handler/rooms/{roomId}/update-password" [ref=f2e474]'
+        - generic [ref=f2e478]:
+          - heading [level=3] [ref=f2e479] [cursor=pointer]:
+            - link "Google Assistant" [ref=f2e480]:
+              - /url: "#/Google%20Assistant"
+            - button "Collapse operation" [expanded] [ref=f2e481]
+          - generic [ref=f2e488] [cursor=pointer]:
+            - button "POST /api/google-assistant/fulfillment Google Smart Home Fulfillment Handler" [ref=f2e489]:
+              - generic [ref=f2e490]: POST
+              - generic [ref=f2e491]:
+                - link "/api/google-assistant/fulfillment" [ref=f2e493]:
+                  - /url: "#/Google%20Assistant/post_api_google_assistant_fulfillment"
+                - generic [ref=f2e495]: Google Smart Home Fulfillment Handler
+            - generic "Copy path to clipboard":
+              - button "Copy path to clipboard" [ref=f2e496]
+            - button "authorization button unlocked" [ref=f2e500]
+            - button "post /api/google-assistant/fulfillment" [ref=f2e503]
+        - generic [ref=f2e507]:
+          - heading [level=3] [ref=f2e508] [cursor=pointer]:
+            - link "Devices" [ref=f2e509]:
+              - /url: "#/Devices"
+            - button "Collapse operation" [expanded] [ref=f2e510]
+          - generic [ref=f2e514]:
+            - generic [ref=f2e517] [cursor=pointer]:
+              - button "POST /api/device-handler/devices/create Create a new device in a room" [ref=f2e518]:
+                - generic [ref=f2e519]: POST
+                - generic [ref=f2e520]:
+                  - link "/api/device-handler/devices/create" [ref=f2e522]:
+                    - /url: "#/Devices/post_api_device_handler_devices_create"
+                  - generic [ref=f2e524]: Create a new device in a room
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e525]
+              - button "authorization button unlocked" [ref=f2e529]
+              - button "post /api/device-handler/devices/create" [ref=f2e532]
+            - generic [ref=f2e537] [cursor=pointer]:
+              - 'button "PUT /api/device-handler/devices/{id}/update-name Update device name" [ref=f2e538]':
+                - generic [ref=f2e539]: PUT
+                - generic [ref=f2e540]:
+                  - 'link "/api/device-handler/devices/{id}/update-name" [ref=f2e542]':
+                    - /url: "#/Devices/put_api_device_handler_devices__id__update_name"
+                  - generic [ref=f2e544]: Update device name
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e545]
+              - button "authorization button unlocked" [ref=f2e549]
+              - 'button "put /api/device-handler/devices/{id}/update-name" [ref=f2e552]'
+            - generic [ref=f2e557] [cursor=pointer]:
+              - 'button "PUT /api/device-handler/devices/{id}/update-component-number Update device component number" [ref=f2e558]':
+                - generic [ref=f2e559]: PUT
+                - generic [ref=f2e560]:
+                  - 'link "/api/device-handler/devices/{id}/update-component-number" [ref=f2e562]':
+                    - /url: "#/Devices/put_api_device_handler_devices__id__update_component_number"
+                  - generic [ref=f2e564]: Update device component number
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e565]
+              - button "authorization button unlocked" [ref=f2e569]
+              - 'button "put /api/device-handler/devices/{id}/update-component-number" [ref=f2e572]'
+            - generic [ref=f2e577] [cursor=pointer]:
+              - 'button "GET /api/device-handler/devices/room/{roomId} Get all devices in a room" [ref=f2e578]':
+                - generic [ref=f2e579]: GET
+                - generic [ref=f2e580]:
+                  - 'link "/api/device-handler/devices/room/{roomId}" [ref=f2e582]':
+                    - /url: "#/Devices/get_api_device_handler_devices_room__roomId_"
+                  - generic [ref=f2e584]: Get all devices in a room
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e585]
+              - button "authorization button unlocked" [ref=f2e589]
+              - 'button "get /api/device-handler/devices/room/{roomId}" [ref=f2e592]'
+            - generic [ref=f2e597] [cursor=pointer]:
+              - 'button "DELETE /api/device-handler/devices/delete/{id} Delete a device" [ref=f2e598]':
+                - generic [ref=f2e599]: DELETE
+                - generic [ref=f2e600]:
+                  - 'link "/api/device-handler/devices/delete/{id}" [ref=f2e602]':
+                    - /url: "#/Devices/delete_api_device_handler_devices_delete__id_"
+                  - generic [ref=f2e604]: Delete a device
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e605]
+              - button "authorization button unlocked" [ref=f2e609]
+              - 'button "delete /api/device-handler/devices/delete/{id}" [ref=f2e612]'
+            - generic [ref=f2e617] [cursor=pointer]:
+              - 'button "GET /api/device-handler/devices/get-users/device/{deviceId} Get users assigned to a device" [ref=f2e618]':
+                - generic [ref=f2e619]: GET
+                - generic [ref=f2e620]:
+                  - 'link "/api/device-handler/devices/get-users/device/{deviceId}" [ref=f2e622]':
+                    - /url: "#/Devices/get_api_device_handler_devices_get_users_device__deviceId_"
+                  - generic [ref=f2e624]: Get users assigned to a device
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e625]
+              - button "authorization button unlocked" [ref=f2e629]
+              - 'button "get /api/device-handler/devices/get-users/device/{deviceId}" [ref=f2e632]'
+            - generic [ref=f2e637] [cursor=pointer]:
+              - 'button "PUT /api/device-handler/devices/remove-user/device/{deviceId}/user/{userId} Remove a user from a device" [ref=f2e638]':
+                - generic [ref=f2e639]: PUT
+                - generic [ref=f2e640]:
+                  - 'link "/api/device-handler/devices/remove-user/device/{deviceId}/user/{userId}" [ref=f2e642]':
+                    - /url: "#/Devices/put_api_device_handler_devices_remove_user_device__deviceId__user__userId_"
+                  - generic [ref=f2e644]: Remove a user from a device
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e645]
+              - button "authorization button unlocked" [ref=f2e649]
+              - 'button "put /api/device-handler/devices/remove-user/device/{deviceId}/user/{userId}" [ref=f2e652]'
+            - generic [ref=f2e657] [cursor=pointer]:
+              - 'button "PUT /api/device-handler/devices/exist-device/{deviceId} Exit device user list" [ref=f2e658]':
+                - generic [ref=f2e659]: PUT
+                - generic [ref=f2e660]:
+                  - 'link "/api/device-handler/devices/exist-device/{deviceId}" [ref=f2e662]':
+                    - /url: "#/Devices/put_api_device_handler_devices_exist_device__deviceId_"
+                  - generic [ref=f2e664]: Exit device user list
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e665]
+              - button "authorization button unlocked" [ref=f2e669]
+              - 'button "put /api/device-handler/devices/exist-device/{deviceId}" [ref=f2e672]'
+            - generic [ref=f2e677] [cursor=pointer]:
+              - 'button "PUT /api/device-handler/devices/{deviceId}/assign-users Assign users to device" [ref=f2e678]':
+                - generic [ref=f2e679]: PUT
+                - generic [ref=f2e680]:
+                  - 'link "/api/device-handler/devices/{deviceId}/assign-users" [ref=f2e682]':
+                    - /url: "#/Devices/put_api_device_handler_devices__deviceId__assign_users"
+                  - generic [ref=f2e684]: Assign users to device
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e685]
+              - button "authorization button unlocked" [ref=f2e689]
+              - 'button "put /api/device-handler/devices/{deviceId}/assign-users" [ref=f2e692]'
+            - generic [ref=f2e697] [cursor=pointer]:
+              - 'button "PUT /api/device-handler/devices/{deviceId}/toggle-activation Toggle device activation status" [ref=f2e698]':
+                - generic [ref=f2e699]: PUT
+                - generic [ref=f2e700]:
+                  - 'link "/api/device-handler/devices/{deviceId}/toggle-activation" [ref=f2e702]':
+                    - /url: "#/Devices/put_api_device_handler_devices__deviceId__toggle_activation"
+                  - generic [ref=f2e704]: Toggle device activation status
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e705]
+              - button "authorization button unlocked" [ref=f2e709]
+              - 'button "put /api/device-handler/devices/{deviceId}/toggle-activation" [ref=f2e712]'
+            - generic [ref=f2e717] [cursor=pointer]:
+              - 'button "GET /api/device-handler/devices/room/{roomId}/orders Get available hardware order numbers (1-6) for room devices" [ref=f2e718]':
+                - generic [ref=f2e719]: GET
+                - generic [ref=f2e720]:
+                  - 'link "/api/device-handler/devices/room/{roomId}/orders" [ref=f2e722]':
+                    - /url: "#/Devices/get_api_device_handler_devices_room__roomId__orders"
+                  - generic [ref=f2e724]: Get available hardware order numbers (1-6) for room devices
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e725]
+              - button "authorization button unlocked" [ref=f2e729]
+              - 'button "get /api/device-handler/devices/room/{roomId}/orders" [ref=f2e732]'
+            - generic [ref=f2e737] [cursor=pointer]:
+              - 'button "PUT /api/device-handler/devices/{deviceId}/update-order Update hardware order number of a device" [ref=f2e738]':
+                - generic [ref=f2e739]: PUT
+                - generic [ref=f2e740]:
+                  - 'link "/api/device-handler/devices/{deviceId}/update-order" [ref=f2e742]':
+                    - /url: "#/Devices/put_api_device_handler_devices__deviceId__update_order"
+                  - generic [ref=f2e744]: Update hardware order number of a device
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e745]
+              - button "authorization button unlocked" [ref=f2e749]
+              - 'button "put /api/device-handler/devices/{deviceId}/update-order" [ref=f2e752]'
+        - generic [ref=f2e756]:
+          - heading [level=3] [ref=f2e757] [cursor=pointer]:
+            - link "Authentication" [ref=f2e758]:
+              - /url: "#/Authentication"
+            - button "Collapse operation" [expanded] [ref=f2e759]
+          - generic [ref=f2e763]:
+            - generic [ref=f2e766] [cursor=pointer]:
+              - button "POST /api/auth/register Register a new user" [ref=f2e767]:
+                - generic [ref=f2e768]: POST
+                - generic [ref=f2e769]:
+                  - link "/api/auth/register" [ref=f2e771]:
+                    - /url: "#/Authentication/post_api_auth_register"
+                  - generic [ref=f2e773]: Register a new user
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e774]
+              - button "post /api/auth/register" [ref=f2e778]
+            - generic [ref=f2e783] [cursor=pointer]:
+              - button "POST /api/auth/login User login" [ref=f2e784]:
+                - generic [ref=f2e785]: POST
+                - generic [ref=f2e786]:
+                  - link "/api/auth/login" [ref=f2e788]:
+                    - /url: "#/Authentication/post_api_auth_login"
+                  - generic [ref=f2e790]: User login
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e791]
+              - button "post /api/auth/login" [ref=f2e795]
+            - generic [ref=f2e800] [cursor=pointer]:
+              - button "GET /api/auth/verify Verify JWT authentication token" [ref=f2e801]:
+                - generic [ref=f2e802]: GET
+                - generic [ref=f2e803]:
+                  - link "/api/auth/verify" [ref=f2e805]:
+                    - /url: "#/Authentication/get_api_auth_verify"
+                  - generic [ref=f2e807]: Verify JWT authentication token
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e808]
+              - button "authorization button unlocked" [ref=f2e812]
+              - button "get /api/auth/verify" [ref=f2e815]
+        - generic [ref=f2e819]:
+          - heading [level=3] [ref=f2e820] [cursor=pointer]:
+            - link "Apartments" [ref=f2e821]:
+              - /url: "#/Apartments"
+            - button "Collapse operation" [expanded] [ref=f2e822]
+          - generic [ref=f2e826]:
+            - generic [ref=f2e829] [cursor=pointer]:
+              - button "POST /api/apartments-handler/apartments/create-apartment Create a new apartment" [ref=f2e830]:
+                - generic [ref=f2e831]: POST
+                - generic [ref=f2e832]:
+                  - link "/api/apartments-handler/apartments/create-apartment" [ref=f2e834]:
+                    - /url: "#/Apartments/post_api_apartments_handler_apartments_create_apartment"
+                  - generic [ref=f2e836]: Create a new apartment
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e837]
+              - button "authorization button unlocked" [ref=f2e841]
+              - button "post /api/apartments-handler/apartments/create-apartment" [ref=f2e844]
+            - generic [ref=f2e849] [cursor=pointer]:
+              - button "GET /api/apartments-handler/apartments/member Get apartments where user is a member or creator" [ref=f2e850]:
+                - generic [ref=f2e851]: GET
+                - generic [ref=f2e852]:
+                  - link "/api/apartments-handler/apartments/member" [ref=f2e854]:
+                    - /url: "#/Apartments/get_api_apartments_handler_apartments_member"
+                  - generic [ref=f2e856]: Get apartments where user is a member or creator
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e857]
+              - button "authorization button unlocked" [ref=f2e861]
+              - button "get /api/apartments-handler/apartments/member" [ref=f2e864]
+            - generic [ref=f2e869] [cursor=pointer]:
+              - button "PUT /api/apartments-handler/apartments/assign-members Assign members to an apartment" [ref=f2e870]:
+                - generic [ref=f2e871]: PUT
+                - generic [ref=f2e872]:
+                  - link "/api/apartments-handler/apartments/assign-members" [ref=f2e874]:
+                    - /url: "#/Apartments/put_api_apartments_handler_apartments_assign_members"
+                  - generic [ref=f2e876]: Assign members to an apartment
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e877]
+              - button "authorization button unlocked" [ref=f2e881]
+              - button "put /api/apartments-handler/apartments/assign-members" [ref=f2e884]
+            - generic [ref=f2e889] [cursor=pointer]:
+              - button "PUT /api/apartments-handler/apartments/update-name Update apartment name" [ref=f2e890]:
+                - generic [ref=f2e891]: PUT
+                - generic [ref=f2e892]:
+                  - link "/api/apartments-handler/apartments/update-name" [ref=f2e894]:
+                    - /url: "#/Apartments/put_api_apartments_handler_apartments_update_name"
+                  - generic [ref=f2e896]: Update apartment name
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e897]
+              - button "authorization button unlocked" [ref=f2e901]
+              - button "put /api/apartments-handler/apartments/update-name" [ref=f2e904]
+            - generic [ref=f2e909] [cursor=pointer]:
+              - 'button "DELETE /api/apartments-handler/apartments/delete/{id} Delete apartment by ID" [ref=f2e910]':
+                - generic [ref=f2e911]: DELETE
+                - generic [ref=f2e912]:
+                  - 'link "/api/apartments-handler/apartments/delete/{id}" [ref=f2e914]':
+                    - /url: "#/Apartments/delete_api_apartments_handler_apartments_delete__id_"
+                  - generic [ref=f2e916]: Delete apartment by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e917]
+              - button "authorization button unlocked" [ref=f2e921]
+              - 'button "delete /api/apartments-handler/apartments/delete/{id}" [ref=f2e924]'
+            - generic [ref=f2e929] [cursor=pointer]:
+              - 'button "GET /api/apartments-handler/apartments/{id}/members Get all members of an apartment" [ref=f2e930]':
+                - generic [ref=f2e931]: GET
+                - generic [ref=f2e932]:
+                  - 'link "/api/apartments-handler/apartments/{id}/members" [ref=f2e934]':
+                    - /url: "#/Apartments/get_api_apartments_handler_apartments__id__members"
+                  - generic [ref=f2e936]: Get all members of an apartment
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e937]
+              - button "authorization button unlocked" [ref=f2e941]
+              - 'button "get /api/apartments-handler/apartments/{id}/members" [ref=f2e944]'
+            - generic [ref=f2e949] [cursor=pointer]:
+              - 'button "DELETE /api/apartments-handler/apartments/{apartmentId}/remover-member/{memberId} Remove a member from an apartment" [ref=f2e950]':
+                - generic [ref=f2e951]: DELETE
+                - generic [ref=f2e952]:
+                  - 'link "/api/apartments-handler/apartments/{apartmentId}/remover-member/{memberId}" [ref=f2e954]':
+                    - /url: "#/Apartments/delete_api_apartments_handler_apartments__apartmentId__remover_member__memberId_"
+                  - generic [ref=f2e956]: Remove a member from an apartment
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e957]
+              - button "authorization button unlocked" [ref=f2e961]
+              - 'button "delete /api/apartments-handler/apartments/{apartmentId}/remover-member/{memberId}" [ref=f2e964]'
+            - generic [ref=f2e969] [cursor=pointer]:
+              - 'button "PUT /api/apartments-handler/apartments/{apartmentId}/exit Exit an apartment" [ref=f2e970]':
+                - generic [ref=f2e971]: PUT
+                - generic [ref=f2e972]:
+                  - 'link "/api/apartments-handler/apartments/{apartmentId}/exit" [ref=f2e974]':
+                    - /url: "#/Apartments/put_api_apartments_handler_apartments__apartmentId__exit"
+                  - generic [ref=f2e976]: Exit an apartment
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e977]
+              - button "authorization button unlocked" [ref=f2e981]
+              - 'button "put /api/apartments-handler/apartments/{apartmentId}/exit" [ref=f2e984]'
+        - generic [ref=f2e988]:
+          - heading [level=3] [ref=f2e989] [cursor=pointer]:
+            - link "Admin Dashboard" [ref=f2e990]:
+              - /url: "#/Admin%20Dashboard"
+            - button "Collapse operation" [expanded] [ref=f2e991]
+          - generic [ref=f2e995]:
+            - generic [ref=f2e998] [cursor=pointer]:
+              - button "GET /admin/dashboard/users/get-all-users Admin - Get all users" [ref=f2e999]:
+                - generic [ref=f2e1000]: GET
+                - generic [ref=f2e1001]:
+                  - link "/admin/dashboard/users/get-all-users" [ref=f2e1003]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_users_get_all_users"
+                  - generic [ref=f2e1005]: Admin - Get all users
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1006]
+              - button "authorization button unlocked" [ref=f2e1010]
+              - button "get /admin/dashboard/users/get-all-users" [ref=f2e1013]
+            - generic [ref=f2e1018] [cursor=pointer]:
+              - button "GET /admin/dashboard/users/search-users Admin - Search users" [ref=f2e1019]:
+                - generic [ref=f2e1020]: GET
+                - generic [ref=f2e1021]:
+                  - link "/admin/dashboard/users/search-users" [ref=f2e1023]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_users_search_users"
+                  - generic [ref=f2e1025]: Admin - Search users
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1026]
+              - button "authorization button unlocked" [ref=f2e1030]
+              - button "get /admin/dashboard/users/search-users" [ref=f2e1033]
+            - generic [ref=f2e1038] [cursor=pointer]:
+              - button "GET /admin/dashboard/users/user-statistics Admin - Get user statistics" [ref=f2e1039]:
+                - generic [ref=f2e1040]: GET
+                - generic [ref=f2e1041]:
+                  - link "/admin/dashboard/users/user-statistics" [ref=f2e1043]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_users_user_statistics"
+                  - generic [ref=f2e1045]: Admin - Get user statistics
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1046]
+              - button "authorization button unlocked" [ref=f2e1050]
+              - button "get /admin/dashboard/users/user-statistics" [ref=f2e1053]
+            - generic [ref=f2e1058] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/users/get-user-by-id/{id} Admin - Get user by ID" [ref=f2e1059]':
+                - generic [ref=f2e1060]: GET
+                - generic [ref=f2e1061]:
+                  - 'link "/admin/dashboard/users/get-user-by-id/{id}" [ref=f2e1063]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_users_get_user_by_id__id_"
+                  - generic [ref=f2e1065]: Admin - Get user by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1066]
+              - button "authorization button unlocked" [ref=f2e1070]
+              - 'button "get /admin/dashboard/users/get-user-by-id/{id}" [ref=f2e1073]'
+            - generic [ref=f2e1078] [cursor=pointer]:
+              - 'button "PUT /admin/dashboard/users/update-user-role/{id} Admin - Update user role" [ref=f2e1079]':
+                - generic [ref=f2e1080]: PUT
+                - generic [ref=f2e1081]:
+                  - 'link "/admin/dashboard/users/update-user-role/{id}" [ref=f2e1083]':
+                    - /url: "#/Admin%20Dashboard/put_admin_dashboard_users_update_user_role__id_"
+                  - generic [ref=f2e1085]: Admin - Update user role
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1086]
+              - button "authorization button unlocked" [ref=f2e1090]
+              - 'button "put /admin/dashboard/users/update-user-role/{id}" [ref=f2e1093]'
+            - generic [ref=f2e1098] [cursor=pointer]:
+              - 'button "DELETE /admin/dashboard/users/delete-account/{id} Admin - Delete user account permanently" [ref=f2e1099]':
+                - generic [ref=f2e1100]: DELETE
+                - generic [ref=f2e1101]:
+                  - 'link "/admin/dashboard/users/delete-account/{id}" [ref=f2e1103]':
+                    - /url: "#/Admin%20Dashboard/delete_admin_dashboard_users_delete_account__id_"
+                  - generic [ref=f2e1105]: Admin - Delete user account permanently
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1106]
+              - button "authorization button unlocked" [ref=f2e1110]
+              - 'button "delete /admin/dashboard/users/delete-account/{id}" [ref=f2e1113]'
+            - generic [ref=f2e1118] [cursor=pointer]:
+              - button "GET /admin/dashboard/tasks/get-all-tasks Admin - Get all tasks" [ref=f2e1119]:
+                - generic [ref=f2e1120]: GET
+                - generic [ref=f2e1121]:
+                  - link "/admin/dashboard/tasks/get-all-tasks" [ref=f2e1123]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_all_tasks"
+                  - generic [ref=f2e1125]: Admin - Get all tasks
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1126]
+              - button "authorization button unlocked" [ref=f2e1130]
+              - button "get /admin/dashboard/tasks/get-all-tasks" [ref=f2e1133]
+            - generic [ref=f2e1138] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/tasks/get-task-by-id/{id} Admin - Get task details by ID" [ref=f2e1139]':
+                - generic [ref=f2e1140]: GET
+                - generic [ref=f2e1141]:
+                  - 'link "/admin/dashboard/tasks/get-task-by-id/{id}" [ref=f2e1143]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_task_by_id__id_"
+                  - generic [ref=f2e1145]: Admin - Get task details by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1146]
+              - button "authorization button unlocked" [ref=f2e1150]
+              - 'button "get /admin/dashboard/tasks/get-task-by-id/{id}" [ref=f2e1153]'
+            - generic [ref=f2e1158] [cursor=pointer]:
+              - button "GET /admin/dashboard/tasks/get-task-analytics Admin - Get task execution analytics" [ref=f2e1159]:
+                - generic [ref=f2e1160]: GET
+                - generic [ref=f2e1161]:
+                  - link "/admin/dashboard/tasks/get-task-analytics" [ref=f2e1163]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_task_analytics"
+                  - generic [ref=f2e1165]: Admin - Get task execution analytics
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1166]
+              - button "authorization button unlocked" [ref=f2e1170]
+              - button "get /admin/dashboard/tasks/get-task-analytics" [ref=f2e1173]
+            - generic [ref=f2e1178] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/tasks/get-tasks-by-status/{status} Admin - Get tasks by status" [ref=f2e1179]':
+                - generic [ref=f2e1180]: GET
+                - generic [ref=f2e1181]:
+                  - 'link "/admin/dashboard/tasks/get-tasks-by-status/{status}" [ref=f2e1183]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_tasks_by_status__status_"
+                  - generic [ref=f2e1185]: Admin - Get tasks by status
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1186]
+              - button "authorization button unlocked" [ref=f2e1190]
+              - 'button "get /admin/dashboard/tasks/get-tasks-by-status/{status}" [ref=f2e1193]'
+            - generic [ref=f2e1198] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/tasks/get-tasks-by-recurrence/{type} Admin - Get tasks by recurrence type" [ref=f2e1199]':
+                - generic [ref=f2e1200]: GET
+                - generic [ref=f2e1201]:
+                  - 'link "/admin/dashboard/tasks/get-tasks-by-recurrence/{type}" [ref=f2e1203]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_tasks_by_recurrence__type_"
+                  - generic [ref=f2e1205]: Admin - Get tasks by recurrence type
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1206]
+              - button "authorization button unlocked" [ref=f2e1210]
+              - 'button "get /admin/dashboard/tasks/get-tasks-by-recurrence/{type}" [ref=f2e1213]'
+            - generic [ref=f2e1218] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/tasks/get-tasks-by-user/{userId} Admin - Get tasks by user ID" [ref=f2e1219]':
+                - generic [ref=f2e1220]: GET
+                - generic [ref=f2e1221]:
+                  - 'link "/admin/dashboard/tasks/get-tasks-by-user/{userId}" [ref=f2e1223]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_tasks_by_user__userId_"
+                  - generic [ref=f2e1225]: Admin - Get tasks by user ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1226]
+              - button "authorization button unlocked" [ref=f2e1230]
+              - 'button "get /admin/dashboard/tasks/get-tasks-by-user/{userId}" [ref=f2e1233]'
+            - generic [ref=f2e1238] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/tasks/get-tasks-by-device/{deviceId} Admin - Get tasks by device ID" [ref=f2e1239]':
+                - generic [ref=f2e1240]: GET
+                - generic [ref=f2e1241]:
+                  - 'link "/admin/dashboard/tasks/get-tasks-by-device/{deviceId}" [ref=f2e1243]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_tasks_by_device__deviceId_"
+                  - generic [ref=f2e1245]: Admin - Get tasks by device ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1246]
+              - button "authorization button unlocked" [ref=f2e1250]
+              - 'button "get /admin/dashboard/tasks/get-tasks-by-device/{deviceId}" [ref=f2e1253]'
+            - generic [ref=f2e1258] [cursor=pointer]:
+              - button "GET /admin/dashboard/tasks/get-tasks-with-history Admin - Get tasks with execution history logs" [ref=f2e1259]:
+                - generic [ref=f2e1260]: GET
+                - generic [ref=f2e1261]:
+                  - link "/admin/dashboard/tasks/get-tasks-with-history" [ref=f2e1263]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_tasks_with_history"
+                  - generic [ref=f2e1265]: Admin - Get tasks with execution history logs
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1266]
+              - button "authorization button unlocked" [ref=f2e1270]
+              - button "get /admin/dashboard/tasks/get-tasks-with-history" [ref=f2e1273]
+            - generic [ref=f2e1278] [cursor=pointer]:
+              - button "GET /admin/dashboard/tasks/get-tasks-scheduled-today Admin - Get tasks scheduled for today" [ref=f2e1279]:
+                - generic [ref=f2e1280]: GET
+                - generic [ref=f2e1281]:
+                  - link "/admin/dashboard/tasks/get-tasks-scheduled-today" [ref=f2e1283]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_tasks_scheduled_today"
+                  - generic [ref=f2e1285]: Admin - Get tasks scheduled for today
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1286]
+              - button "authorization button unlocked" [ref=f2e1290]
+              - button "get /admin/dashboard/tasks/get-tasks-scheduled-today" [ref=f2e1293]
+            - generic [ref=f2e1298] [cursor=pointer]:
+              - button "GET /admin/dashboard/tasks/get-overdue-tasks Admin - Get overdue tasks" [ref=f2e1299]:
+                - generic [ref=f2e1300]: GET
+                - generic [ref=f2e1301]:
+                  - link "/admin/dashboard/tasks/get-overdue-tasks" [ref=f2e1303]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_get_overdue_tasks"
+                  - generic [ref=f2e1305]: Admin - Get overdue tasks
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1306]
+              - button "authorization button unlocked" [ref=f2e1310]
+              - button "get /admin/dashboard/tasks/get-overdue-tasks" [ref=f2e1313]
+            - generic [ref=f2e1318] [cursor=pointer]:
+              - button "GET /admin/dashboard/tasks/search-tasks Admin - Search tasks" [ref=f2e1319]:
+                - generic [ref=f2e1320]: GET
+                - generic [ref=f2e1321]:
+                  - link "/admin/dashboard/tasks/search-tasks" [ref=f2e1323]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_tasks_search_tasks"
+                  - generic [ref=f2e1325]: Admin - Search tasks
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1326]
+              - button "authorization button unlocked" [ref=f2e1330]
+              - button "get /admin/dashboard/tasks/search-tasks" [ref=f2e1333]
+            - generic [ref=f2e1338] [cursor=pointer]:
+              - button "GET /admin/dashboard/rooms/get-all-rooms Admin - Get all rooms with analytics" [ref=f2e1339]:
+                - generic [ref=f2e1340]: GET
+                - generic [ref=f2e1341]:
+                  - link "/admin/dashboard/rooms/get-all-rooms" [ref=f2e1343]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_rooms_get_all_rooms"
+                  - generic [ref=f2e1345]: Admin - Get all rooms with analytics
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1346]
+              - button "authorization button unlocked" [ref=f2e1350]
+              - button "get /admin/dashboard/rooms/get-all-rooms" [ref=f2e1353]
+            - generic [ref=f2e1358] [cursor=pointer]:
+              - button "GET /admin/dashboard/rooms/search-rooms Admin - Search rooms" [ref=f2e1359]:
+                - generic [ref=f2e1360]: GET
+                - generic [ref=f2e1361]:
+                  - link "/admin/dashboard/rooms/search-rooms" [ref=f2e1363]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_rooms_search_rooms"
+                  - generic [ref=f2e1365]: Admin - Search rooms
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1366]
+              - button "authorization button unlocked" [ref=f2e1370]
+              - button "get /admin/dashboard/rooms/search-rooms" [ref=f2e1373]
+            - generic [ref=f2e1378] [cursor=pointer]:
+              - button "GET /admin/dashboard/rooms/room-statistics Admin - Get room statistics dashboard" [ref=f2e1379]:
+                - generic [ref=f2e1380]: GET
+                - generic [ref=f2e1381]:
+                  - link "/admin/dashboard/rooms/room-statistics" [ref=f2e1383]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_rooms_room_statistics"
+                  - generic [ref=f2e1385]: Admin - Get room statistics dashboard
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1386]
+              - button "authorization button unlocked" [ref=f2e1390]
+              - button "get /admin/dashboard/rooms/room-statistics" [ref=f2e1393]
+            - generic [ref=f2e1398] [cursor=pointer]:
+              - button "GET /admin/dashboard/rooms/get-room-usage-analysis Admin - Get room device usage analysis" [ref=f2e1399]:
+                - generic [ref=f2e1400]: GET
+                - generic [ref=f2e1401]:
+                  - link "/admin/dashboard/rooms/get-room-usage-analysis" [ref=f2e1403]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_rooms_get_room_usage_analysis"
+                  - generic [ref=f2e1405]: Admin - Get room device usage analysis
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1406]
+              - button "authorization button unlocked" [ref=f2e1410]
+              - button "get /admin/dashboard/rooms/get-room-usage-analysis" [ref=f2e1413]
+            - generic [ref=f2e1418] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/rooms/get-room-by-id/{id} Admin - Get specific room by ID" [ref=f2e1419]':
+                - generic [ref=f2e1420]: GET
+                - generic [ref=f2e1421]:
+                  - 'link "/admin/dashboard/rooms/get-room-by-id/{id}" [ref=f2e1423]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_rooms_get_room_by_id__id_"
+                  - generic [ref=f2e1425]: Admin - Get specific room by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1426]
+              - button "authorization button unlocked" [ref=f2e1430]
+              - 'button "get /admin/dashboard/rooms/get-room-by-id/{id}" [ref=f2e1433]'
+            - generic [ref=f2e1438] [cursor=pointer]:
+              - button "GET /admin/dashboard/devices/get-all-devices Admin - Get all devices" [ref=f2e1439]:
+                - generic [ref=f2e1440]: GET
+                - generic [ref=f2e1441]:
+                  - link "/admin/dashboard/devices/get-all-devices" [ref=f2e1443]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_devices_get_all_devices"
+                  - generic [ref=f2e1445]: Admin - Get all devices
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1446]
+              - button "authorization button unlocked" [ref=f2e1450]
+              - button "get /admin/dashboard/devices/get-all-devices" [ref=f2e1453]
+            - generic [ref=f2e1458] [cursor=pointer]:
+              - button "GET /admin/dashboard/devices/search-devices Admin - Search devices" [ref=f2e1459]:
+                - generic [ref=f2e1460]: GET
+                - generic [ref=f2e1461]:
+                  - link "/admin/dashboard/devices/search-devices" [ref=f2e1463]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_devices_search_devices"
+                  - generic [ref=f2e1465]: Admin - Search devices
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1466]
+              - button "authorization button unlocked" [ref=f2e1470]
+              - button "get /admin/dashboard/devices/search-devices" [ref=f2e1473]
+            - generic [ref=f2e1478] [cursor=pointer]:
+              - button "GET /admin/dashboard/devices/get-device-statistics Admin - Get device statistics" [ref=f2e1479]:
+                - generic [ref=f2e1480]: GET
+                - generic [ref=f2e1481]:
+                  - link "/admin/dashboard/devices/get-device-statistics" [ref=f2e1483]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_devices_get_device_statistics"
+                  - generic [ref=f2e1485]: Admin - Get device statistics
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1486]
+              - button "authorization button unlocked" [ref=f2e1490]
+              - button "get /admin/dashboard/devices/get-device-statistics" [ref=f2e1493]
+            - generic [ref=f2e1498] [cursor=pointer]:
+              - button "GET /admin/dashboard/devices/get-device-performance-analysis Admin - Get device performance analysis" [ref=f2e1499]:
+                - generic [ref=f2e1500]: GET
+                - generic [ref=f2e1501]:
+                  - link "/admin/dashboard/devices/get-device-performance-analysis" [ref=f2e1503]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_devices_get_device_performance_analysis"
+                  - generic [ref=f2e1505]: Admin - Get device performance analysis
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1506]
+              - button "authorization button unlocked" [ref=f2e1510]
+              - button "get /admin/dashboard/devices/get-device-performance-analysis" [ref=f2e1513]
+            - generic [ref=f2e1518] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/devices/get-device-by-id/{id} Admin - Get device details by ID" [ref=f2e1519]':
+                - generic [ref=f2e1520]: GET
+                - generic [ref=f2e1521]:
+                  - 'link "/admin/dashboard/devices/get-device-by-id/{id}" [ref=f2e1523]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_devices_get_device_by_id__id_"
+                  - generic [ref=f2e1525]: Admin - Get device details by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1526]
+              - button "authorization button unlocked" [ref=f2e1530]
+              - 'button "get /admin/dashboard/devices/get-device-by-id/{id}" [ref=f2e1533]'
+            - generic [ref=f2e1538] [cursor=pointer]:
+              - button "GET /admin/dashboard/apartments/all-apartments Admin - Get all apartments with comprehensive analysis" [ref=f2e1539]:
+                - generic [ref=f2e1540]: GET
+                - generic [ref=f2e1541]:
+                  - link "/admin/dashboard/apartments/all-apartments" [ref=f2e1543]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_apartments_all_apartments"
+                  - generic [ref=f2e1545]: Admin - Get all apartments with comprehensive analysis
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1546]
+              - button "authorization button unlocked" [ref=f2e1550]
+              - button "get /admin/dashboard/apartments/all-apartments" [ref=f2e1553]
+            - generic [ref=f2e1558] [cursor=pointer]:
+              - button "GET /admin/dashboard/apartments/search-apartments Admin - Search and filter apartments" [ref=f2e1559]:
+                - generic [ref=f2e1560]: GET
+                - generic [ref=f2e1561]:
+                  - link "/admin/dashboard/apartments/search-apartments" [ref=f2e1563]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_apartments_search_apartments"
+                  - generic [ref=f2e1565]: Admin - Search and filter apartments
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1566]
+              - button "authorization button unlocked" [ref=f2e1570]
+              - button "get /admin/dashboard/apartments/search-apartments" [ref=f2e1573]
+            - generic [ref=f2e1578] [cursor=pointer]:
+              - button "GET /admin/dashboard/apartments/apartment-statistics Admin - Get apartment statistics dashboard" [ref=f2e1579]:
+                - generic [ref=f2e1580]: GET
+                - generic [ref=f2e1581]:
+                  - link "/admin/dashboard/apartments/apartment-statistics" [ref=f2e1583]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_apartments_apartment_statistics"
+                  - generic [ref=f2e1585]: Admin - Get apartment statistics dashboard
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1586]
+              - button "authorization button unlocked" [ref=f2e1590]
+              - button "get /admin/dashboard/apartments/apartment-statistics" [ref=f2e1593]
+            - generic [ref=f2e1598] [cursor=pointer]:
+              - button "GET /admin/dashboard/apartments/apartment-members-analysis Admin - Get apartment members distribution analysis" [ref=f2e1599]:
+                - generic [ref=f2e1600]: GET
+                - generic [ref=f2e1601]:
+                  - link "/admin/dashboard/apartments/apartment-members-analysis" [ref=f2e1603]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_apartments_apartment_members_analysis"
+                  - generic [ref=f2e1605]: Admin - Get apartment members distribution analysis
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1606]
+              - button "authorization button unlocked" [ref=f2e1610]
+              - button "get /admin/dashboard/apartments/apartment-members-analysis" [ref=f2e1613]
+            - generic [ref=f2e1618] [cursor=pointer]:
+              - 'button "GET /admin/dashboard/apartments/get-apartment-by-id/{id} Admin - Get specific apartment by ID" [ref=f2e1619]':
+                - generic [ref=f2e1620]: GET
+                - generic [ref=f2e1621]:
+                  - 'link "/admin/dashboard/apartments/get-apartment-by-id/{id}" [ref=f2e1623]':
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_apartments_get_apartment_by_id__id_"
+                  - generic [ref=f2e1625]: Admin - Get specific apartment by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1626]
+              - button "authorization button unlocked" [ref=f2e1630]
+              - 'button "get /admin/dashboard/apartments/get-apartment-by-id/{id}" [ref=f2e1633]'
+            - generic [ref=f2e1638] [cursor=pointer]:
+              - button "GET /admin/dashboard/subscription-limits/get-limits Admin - Get all subscription tier limits" [ref=f2e1639]:
+                - generic [ref=f2e1640]: GET
+                - generic [ref=f2e1641]:
+                  - link "/admin/dashboard/subscription-limits/get-limits" [ref=f2e1643]:
+                    - /url: "#/Admin%20Dashboard/get_admin_dashboard_subscription_limits_get_limits"
+                  - generic [ref=f2e1645]: Admin - Get all subscription tier limits
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1646]
+              - button "authorization button unlocked" [ref=f2e1650]
+              - button "get /admin/dashboard/subscription-limits/get-limits" [ref=f2e1653]
+            - generic [ref=f2e1658] [cursor=pointer]:
+              - button "POST /admin/dashboard/subscription-limits/upsert-limits Admin - Create or update subscription plan limit" [ref=f2e1659]:
+                - generic [ref=f2e1660]: POST
+                - generic [ref=f2e1661]:
+                  - link "/admin/dashboard/subscription-limits/upsert-limits" [ref=f2e1663]:
+                    - /url: "#/Admin%20Dashboard/post_admin_dashboard_subscription_limits_upsert_limits"
+                  - generic [ref=f2e1665]: Admin - Create or update subscription plan limit
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1666]
+              - button "authorization button unlocked" [ref=f2e1670]
+              - button "post /admin/dashboard/subscription-limits/upsert-limits" [ref=f2e1673]
+            - generic [ref=f2e1678] [cursor=pointer]:
+              - 'button "DELETE /admin/dashboard/subscription-limits/delete-limits/{planName} Admin - Delete a plan limit configuration" [ref=f2e1679]':
+                - generic [ref=f2e1680]: DELETE
+                - generic [ref=f2e1681]:
+                  - 'link "/admin/dashboard/subscription-limits/delete-limits/{planName}" [ref=f2e1683]':
+                    - /url: "#/Admin%20Dashboard/delete_admin_dashboard_subscription_limits_delete_limits__planName_"
+                  - generic [ref=f2e1685]: Admin - Delete a plan limit configuration
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1686]
+              - button "authorization button unlocked" [ref=f2e1690]
+              - 'button "delete /admin/dashboard/subscription-limits/delete-limits/{planName}" [ref=f2e1693]'
+        - generic [ref=f2e1697]:
+          - heading [level=3] [ref=f2e1698] [cursor=pointer]:
+            - link "Images" [ref=f2e1699]:
+              - /url: "#/Images"
+            - button "Collapse operation" [expanded] [ref=f2e1700]
+          - generic [ref=f2e1704]:
+            - generic [ref=f2e1707] [cursor=pointer]:
+              - button "GET /api/images/list Fetch paginated list of images" [ref=f2e1708]:
+                - generic [ref=f2e1709]: GET
+                - generic [ref=f2e1710]:
+                  - link "/api/images/list" [ref=f2e1712]:
+                    - /url: "#/Images/get_api_images_list"
+                  - generic [ref=f2e1714]: Fetch paginated list of images
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1715]
+              - button "authorization button unlocked" [ref=f2e1719]
+              - button "get /api/images/list" [ref=f2e1722]
+            - generic [ref=f2e1727] [cursor=pointer]:
+              - button "GET /api/images/analytics/stats Get image storage analytics and statistics" [ref=f2e1728]:
+                - generic [ref=f2e1729]: GET
+                - generic [ref=f2e1730]:
+                  - link "/api/images/analytics/stats" [ref=f2e1732]:
+                    - /url: "#/Images/get_api_images_analytics_stats"
+                  - generic [ref=f2e1734]: Get image storage analytics and statistics
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1735]
+              - button "authorization button unlocked" [ref=f2e1739]
+              - button "get /api/images/analytics/stats" [ref=f2e1742]
+            - generic [ref=f2e1747] [cursor=pointer]:
+              - 'button "GET /api/images/find/by-type/{type} Find active image by type category" [ref=f2e1748]':
+                - generic [ref=f2e1749]: GET
+                - generic [ref=f2e1750]:
+                  - 'link "/api/images/find/by-type/{type}" [ref=f2e1752]':
+                    - /url: "#/Images/get_api_images_find_by_type__type_"
+                  - generic [ref=f2e1754]: Find active image by type category
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1755]
+              - button "authorization button unlocked" [ref=f2e1759]
+              - 'button "get /api/images/find/by-type/{type}" [ref=f2e1762]'
+            - generic [ref=f2e1767] [cursor=pointer]:
+              - 'button "GET /api/images/details/{id} Get image details by ID" [ref=f2e1768]':
+                - generic [ref=f2e1769]: GET
+                - generic [ref=f2e1770]:
+                  - 'link "/api/images/details/{id}" [ref=f2e1772]':
+                    - /url: "#/Images/get_api_images_details__id_"
+                  - generic [ref=f2e1774]: Get image details by ID
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1775]
+              - button "authorization button unlocked" [ref=f2e1779]
+              - 'button "get /api/images/details/{id}" [ref=f2e1782]'
+            - generic [ref=f2e1787] [cursor=pointer]:
+              - button "POST /api/images/upload/new Upload new image (Cloudinary CDN)" [ref=f2e1788]:
+                - generic [ref=f2e1789]: POST
+                - generic [ref=f2e1790]:
+                  - link "/api/images/upload/new" [ref=f2e1792]:
+                    - /url: "#/Images/post_api_images_upload_new"
+                  - generic [ref=f2e1794]: Upload new image (Cloudinary CDN)
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1795]
+              - button "authorization button unlocked" [ref=f2e1799]
+              - button "post /api/images/upload/new" [ref=f2e1802]
+            - generic [ref=f2e1807] [cursor=pointer]:
+              - 'button "PUT /api/images/update/{id} Update image metadata or replace image file" [ref=f2e1808]':
+                - generic [ref=f2e1809]: PUT
+                - generic [ref=f2e1810]:
+                  - 'link "/api/images/update/{id}" [ref=f2e1812]':
+                    - /url: "#/Images/put_api_images_update__id_"
+                  - generic [ref=f2e1814]: Update image metadata or replace image file
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1815]
+              - button "authorization button unlocked" [ref=f2e1819]
+              - 'button "put /api/images/update/{id}" [ref=f2e1822]'
+            - generic [ref=f2e1827] [cursor=pointer]:
+              - 'button "DELETE /api/images/remove/{id} Delete image record and purge from Cloudinary CDN" [ref=f2e1828]':
+                - generic [ref=f2e1829]: DELETE
+                - generic [ref=f2e1830]:
+                  - 'link "/api/images/remove/{id}" [ref=f2e1832]':
+                    - /url: "#/Images/delete_api_images_remove__id_"
+                  - generic [ref=f2e1834]: Delete image record and purge from Cloudinary CDN
+              - generic "Copy path to clipboard":
+                - button "Copy path to clipboard" [ref=f2e1835]
+              - button "authorization button unlocked" [ref=f2e1839]
+              - 'button "delete /api/images/remove/{id}" [ref=f2e1842]'
+        - generic [ref=f2e1846]:
+          - heading [level=3] [ref=f2e1847] [cursor=pointer]:
+            - link "Subscription Limits" [ref=f2e1848]:
+              - /url: "#/Subscription%20Limits"
+            - button "Collapse operation" [expanded] [ref=f2e1849]
+          - generic [ref=f2e1856] [cursor=pointer]:
+            - button "GET /admin/dashboard/subscription-limits/get-usage Get current user subscription resource usage" [ref=f2e1857]:
+              - generic [ref=f2e1858]: GET
+              - generic [ref=f2e1859]:
+                - link "/admin/dashboard/subscription-limits/get-usage" [ref=f2e1861]:
+                  - /url: "#/Subscription%20Limits/get_admin_dashboard_subscription_limits_get_usage"
+                - generic [ref=f2e1863]: Get current user subscription resource usage
+            - generic "Copy path to clipboard":
+              - button "Copy path to clipboard" [ref=f2e1864]
+            - button "authorization button unlocked" [ref=f2e1868]
+            - button "get /admin/dashboard/subscription-limits/get-usage" [ref=f2e1871]
+      - generic [ref=f2e1876]:
+        - heading [level=4] [ref=f2e1877] [cursor=pointer]:
+          - button "Schemas" [expanded] [ref=f2e1878]
+        - generic [ref=f2e1882]:
+          - button "ErrorResponse" [ref=f2e1885] [cursor=pointer]:
+            - strong [ref=f2e1888]: ErrorResponse
+          - button "User" [ref=f2e1892] [cursor=pointer]:
+            - strong [ref=f2e1895]: User
+          - button "Apartment" [ref=f2e1899] [cursor=pointer]:
+            - strong [ref=f2e1902]: Apartment
+          - button "Room" [ref=f2e1906] [cursor=pointer]:
+            - strong [ref=f2e1909]: Room
+          - button "Device" [ref=f2e1913] [cursor=pointer]:
+            - strong [ref=f2e1916]: Device
+          - button "Task" [ref=f2e1920] [cursor=pointer]:
+            - strong [ref=f2e1923]: Task

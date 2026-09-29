@@ -22,12 +22,15 @@ const mongoose = require('mongoose');
  * @returns {Object} JSON response with success message or error
  */
 exports.deleteMyAccount = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  let session;
 
   try {
+    session = await mongoose.startSession();
+    session.startTransaction();
     // Check authentication
     if (!req.user?._id) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(401).json({
         success: false,
         message: 'Authentication required',
@@ -40,6 +43,8 @@ exports.deleteMyAccount = async (req, res) => {
     // Find the user to ensure they exist
     const user = await User.findById(userId);
     if (!user) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(404).json({
         success: false,
         message: 'User not found',
@@ -139,9 +144,12 @@ exports.deleteMyAccount = async (req, res) => {
       message: 'Your account has been successfully deleted'
     });
   } catch (error) {
-    // Abort transaction in case of error
-    await session.abortTransaction();
-    session.endSession();
+    if (session) {
+      if (session.inTransaction()) {
+        await session.abortTransaction();
+      }
+      session.endSession();
+    }
 
     logger.error('Error deleting user account:', error);
     res.status(500).json({

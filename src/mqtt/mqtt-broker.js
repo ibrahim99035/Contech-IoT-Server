@@ -81,7 +81,30 @@ function registerTaskEventHandlers() {
  */
 async function initialize(socketIo) {
   context.io = socketIo;
-  await clientModule.connectBroker(handleMessage);
+
+  // Safety gate: local/dev runs point MQTT_BROKER_URL at the PRODUCTION broker
+  // (see client.js resolveBrokerUrl). Opt out with MQTT_ENABLED=false so a local
+  // server never subscribes to production topics.
+  if (String(process.env.MQTT_ENABLED ?? 'true').toLowerCase() === 'false') {
+    logger.warn('MQTT is disabled (MQTT_ENABLED=false); skipping broker connection');
+    return;
+  }
+
+  // connectBroker now waits for the broker's CONNACK, so a false here means the
+  // broker is genuinely unusable (bad host, wrong credentials, or auth refused).
+  // Say so loudly: previously this reported success while every subscribe failed,
+  // and MQTT was silently dead for the whole process lifetime.
+  const connected = await clientModule.connectBroker(handleMessage);
+  if (!connected) {
+    logger.error(
+      'MQTT is NOT connected. Device/room state from the broker will not be received, ' +
+      'and task events will not be published. Check MQTT_BROKER_URL, MQTT_USERNAME and ' +
+      'MQTT_PASSWORD (a broker that is reachable but rejects the credentials fails here).',
+      { brokerUrl: process.env.MQTT_BROKER_URL }
+    );
+    return;
+  }
+
   registerTaskEventHandlers();
 }
 

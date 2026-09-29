@@ -6,7 +6,22 @@
 
 const http = require('http');
 
+// Records every (method, path-template) this client touches so a suite run can
+// be diffed against the route inventory and prove what is untested.
+const recorded = [];
+function record(method, path) {
+  // Collapse ids/segments to :p so dynamic and literal calls compare equal.
+  const t = path
+    .split('?')[0]
+    .replace(/\/[0-9a-fA-F]{24}(?=\/|$)/g, '/:id')
+    .replace(/\/not-an-object-id(?=\/|$)/g, '/:id');
+  recorded.push({ method: method.toUpperCase(), template: t });
+}
+function getRecorded() { return recorded; }
+function resetRecorded() { recorded.length = 0; }
+
 function request(basePort, method, path, body = null, token = null, extraHeaders = {}) {
+  record(method, path);
   return new Promise((resolve, reject) => {
     const data = body ? JSON.stringify(body) : '';
     const headers = {
@@ -35,4 +50,4 @@ function request(basePort, method, path, body = null, token = null, extraHeaders
   });
 }
 
-module.exports = { request };
+module.exports = { request, getRecorded, resetRecorded };

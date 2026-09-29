@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const Device = require('../../../models/Device');
 const Room = require('../../../models/Room');
 const User = require('../../../models/User');
@@ -73,6 +74,29 @@ exports.createDevice = async (req, res) => {
       status: req.body.status || 'off'
     };
 
+    // The caller may supply the ESP's plaintext serial. Device auth
+    // (`/ws/device`, `/ws/room-esp`) looks the device up by
+    // sha256(trimmedSerial), so the stored value must be that hash — storing
+    // the plaintext here would make the device impossible to authenticate.
+    if (typeof req.body.componentNumber === 'string' && req.body.componentNumber.trim()) {
+      const hashed = crypto
+        .createHash('sha256')
+        .update(req.body.componentNumber.trim())
+        .digest('hex');
+      const taken = await Device.findOne({ componentNumber: hashed });
+      if (taken) {
+        if (session) { session.endSession(); }
+        return res.status(409).json({
+          success: false,
+          message: 'Component number is already assigned to another device',
+          code: 'DUPLICATE_COMPONENT_NUMBER'
+        });
+      }
+      deviceData.componentNumber = hashed;
+    } else {
+      delete deviceData.componentNumber;
+    }
+
     if (req.body.type === 'Lock') {
       deviceData.status = req.body.status || 'locked';
       deviceData.lockState = req.body.lockState || 'locked';
@@ -130,7 +154,10 @@ exports.createDevice = async (req, res) => {
       session.endSession();
     }
     
-    res.status(500).json({
+    // A missing room / no active subscription is a business-rule refusal, not a
+    // server fault: report the status the limiter attached instead of masking
+    // it as a 500.
+    res.status(error.statusCode || 500).json({
       success: false,
       message: 'Error creating device',
       error: error.message
