@@ -33,17 +33,6 @@ jobs:
   integration-tests:
     name: Integration Tests
     runs-on: ubuntu-latest
-    services:
-      mongodb:
-        image: mongo:7.0
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval \"db.adminCommand('ping')\""
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          --health-start-period 10s
     env:
       MONGODB_URI: mongodb://127.0.0.1:27017/contech_test_db
       JWT_SECRET: dummy-ci-only-jwt-secret
@@ -52,6 +41,34 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      # GitHub service containers cannot override the image command, so a
+      # service would run a standalone mongod. The app opens multi-document
+      # transactions, which a standalone server rejects with "Transaction
+      # numbers are only allowed on a replica set member or mongos". Start
+      # mongod ourselves with --replSet and form a single-node set that
+      # advertises 127.0.0.1:27017, matching how the suite runs locally.
+      - name: Start MongoDB as a single-node replica set
+        run: |
+          docker run -d --name mongo-rs -p 27017:27017 mongo:7.0 --replSet rs0 --bind_ip_all
+
+          for i in $(seq 1 30); do
+            docker exec mongo-rs mongosh --quiet --eval "db.adminCommand('ping').ok" >/dev/null 2>&1 && break
+            sleep 2
+          done
+
+          docker exec mongo-rs mongosh --quiet --eval \
+            "rs.initiate({_id:'rs0',members:[{_id:0,host:'127.0.0.1:27017'}]})"
+
+          for i in $(seq 1 30); do
+            ready=$(docker exec mongo-rs mongosh --quiet --eval "db.runCommand({hello:1}).isWritablePrimary" 2>/dev/null)
+            [ "$ready" = "true" ] && exit 0
+            sleep 2
+          done
+
+          echo "MongoDB did not become writable primary in time" >&2
+          docker logs mongo-rs
+          exit 1
 
       - name: Setup Node
         uses: actions/setup-node@v4
