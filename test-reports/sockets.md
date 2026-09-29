@@ -1,14 +1,14 @@
 # Socket.IO Test Report
 
-- Date: 2026-09-29T04:49:38.667Z
+- Date: 2026-09-29T05:04:53.836Z
 - Total: 53 | Passed: 53 | Failed: 0
 
 ## Results
 
 - ✅ [device: model preserves a caller-supplied componentNumber] stored MODEL-PRESERVE-ME
-- ✅ [device: model auto-generates a componentNumber when omitted] stored 03b563bbc289…
-- ✅ [device: renaming does not re-roll componentNumber] 03b563bbc289… -> 03b563bbc289…
-- ✅ [device: API create accepts a plaintext componentNumber] -> 201 {"success":true,"message":"Device created successfully","data":{"device":{"_id":"6abb435c7ff9501d647b8489","na
+- ✅ [device: model auto-generates a componentNumber when omitted] stored b7c48b085a4c…
+- ✅ [device: renaming does not re-roll componentNumber] b7c48b085a4c… -> b7c48b085a4c…
+- ✅ [device: API create accepts a plaintext componentNumber] -> 201 {"success":true,"message":"Device created successfully","data":{"device":{"_id":"6abb46f05c4487178153d737","na
 - ✅ [device: ESP can authenticate with the serial given at create time] connected
 
 - ## Handshake rejection
@@ -25,17 +25,17 @@
 
 - ## /ws/user
 - ✅ [user ns: valid token connects] connected
-- ✅ [user ns: get-device-info -> device-info] -> device-info {"device":{"id":"6abb435c7ff9501d647b8477","name":"Sock Device","type":"Light","status":"o
+- ✅ [user ns: get-device-info -> device-info] -> device-info {"device":{"id":"6abb46f05c4487178153d725","name":"Sock Device","type":"Light","status":"o
 - ✅ [user ns: get-device-info w/o id -> error] -> error {"message":"Device ID is required"}
 - ✅ [user ns: get-device-esp-status w/o id -> error] -> error {"message":"Device ID is required"}
-- ✅ [user ns: get-device-esp-status -> response] -> device-esp-status-response {"deviceId":"6abb435c7ff9501d647b8477","roomId":"6abb435c7ff9501d647b8475","roomName":"Soc
+- ✅ [user ns: get-device-esp-status -> response] -> device-esp-status-response {"deviceId":"6abb46f05c4487178153d725","roomId":"6abb46f05c4487178153d723","roomName":"Soc
 - ✅ [user ns: esp-status unknown device -> error] -> error {"message":"Device not found"}
 - ✅ [user ns: update-state accepted (no error)] no error within 1.2s
 
 - ## /ws/room-user
 - ✅ [room-user ns: valid token connects] connected
-- ✅ [room-user ns: fetch-user-rooms -> user-rooms] -> user-rooms {"rooms":[{"room":{"id":"6abb435c7ff9501d647b8475","name":"Sock Room","apartment":"6abb435
-- ✅ [room-user ns: fetch-room -> room-details] -> room-details {"room":{"id":"6abb435c7ff9501d647b8475","name":"Sock Room","apartment":"6abb435c7ff9501d6
+- ✅ [room-user ns: fetch-user-rooms -> user-rooms] -> user-rooms {"rooms":[{"room":{"id":"6abb46f05c4487178153d723","name":"Sock Room","apartment":"6abb46f
+- ✅ [room-user ns: fetch-room -> room-details] -> room-details {"room":{"id":"6abb46f05c4487178153d723","name":"Sock Room","apartment":"6abb46f05c4487178
 - ✅ [room-user ns: get-esp-status w/o roomId -> error] -> error {"message":"Room ID is required"}
 - ✅ [room-user ns: get-esp-status unknown room -> error] -> error {"message":"Room not found"}
 - ✅ [room-user ns: non-member blocked from room] -> error {"message":"Access denied to this room"}
@@ -49,15 +49,15 @@
 
 - ## /ws/room-esp
 - ✅ [room-esp ns: valid componentNumber connects] connected
-- ✅ [room-esp ns: fetch-room-devices -> room-devices] -> room-devices {"roomId":"6abb435c7ff9501d647b8475","devices":[{"id":"6abb435c7ff9501d647b8477","status":
-- ✅ [room-esp ns: update fan-out reaches /ws/room-user] -> room-devices-updated {"roomId":"6abb435c7ff9501d647b8475","updates":[{"deviceId":"6abb435c7ff9501d647b847a","st
-- ✅ [room-esp ns: update-room-devices -> room-update-results] -> room-update-results {"results":[{"deviceId":"6abb435c7ff9501d647b847a","success":true,"state":"on"}]}
+- ✅ [room-esp ns: fetch-room-devices -> room-devices] -> room-devices {"roomId":"6abb46f05c4487178153d723","devices":[{"id":"6abb46f05c4487178153d725","status":
+- ✅ [room-esp ns: update fan-out reaches /ws/room-user] -> room-devices-updated {"roomId":"6abb46f05c4487178153d723","updates":[{"deviceId":"6abb46f05c4487178153d728","st
+- ✅ [room-esp ns: update-room-devices -> room-update-results] -> room-update-results {"results":[{"deviceId":"6abb46f05c4487178153d728","success":true,"state":"on"}]}
 - ✅ [room-esp ns: device state actually persisted] status=on
 - ✅ [room-esp ns: update-room-devices w/o updates -> error] -> error {"message":"Invalid updates format"}
 
 - ## /ws/mqtt-bridge
 - ✅ [mqtt ns: valid room+order+password connects] connected
-- ✅ [mqtt ns: server greets with mqtt-bridge-connected] {"deviceId":"6abb435c7ff9501d647b8477","deviceName":"Sock Device","deviceOrder":1,"roomId"
+- ✅ [mqtt ns: server greets with mqtt-bridge-connected] {"deviceId":"6abb46f05c4487178153d725","deviceName":"Sock Device","deviceOrder":1,"roomId"
 - ✅ [mqtt ns: report-state -> state-reported] -> state-reported {"success":true}
 - ✅ [mqtt ns: report-state w/o state -> error] -> error {"message":"State value is required"}
 - ✅ [mqtt ns: report-room-state malformed -> error] -> error {"message":"Invalid room state update format"}
@@ -65,10 +65,10 @@
 
 - ## end-to-end MQTT delivery
 - ✅ [mqtt: test client can connect to the broker] mqtt://127.0.0.1:1895
-- ✅ [mqtt: device state published on the broker reaches /ws/user as state-updated] -> state-updated {"deviceId":"6abb435c7ff9501d647b8477","state":"on","updatedBy":"mqtt"}
+- ✅ [mqtt: device state published on the broker reaches /ws/user as state-updated] -> state-updated {"deviceId":"6abb46f05c4487178153d725","state":"on","updatedBy":"mqtt"}
 - ✅ [mqtt: published state is persisted on the device] status=on
 - ✅ [mqtt: message for an unknown device is ignored without crashing] router survived
-- ✅ [mqtt: device status published on the broker reaches /ws/user as device-status] -> device-status {"deviceId":"6abb435c7ff9501d647b8477","isOnline":true,"updatedBy":"mqtt"}
+- ✅ [mqtt: device status published on the broker reaches /ws/user as device-status] -> device-status {"deviceId":"6abb46f05c4487178153d725","isOnline":true,"updatedBy":"mqtt"}
 - ✅ [mqtt: embedded Aedes broker reports itself started]
 - ✅ [mqtt: embedded broker completes a real MQTT handshake]
 - ✅ [mqtt: embedded broker shuts down cleanly]

@@ -42,6 +42,20 @@ function isPortOpen(port, host = '127.0.0.1') {
 }
 
 /**
+ * Wait for a TCP port to open, retrying briefly. Compose starts the API and the
+ * broker together, so a one-shot probe races the broker's own startup and used
+ * to misclassify a healthy in-network broker as absent.
+ */
+async function waitForPort(port, host, timeoutMs = 30000, intervalMs = 1000) {
+  const deadline = Date.now() + timeoutMs;
+  for (;;) {
+    if (await isPortOpen(port, host)) return true;
+    if (Date.now() >= deadline) return false;
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+}
+
+/**
  * Start an embedded local Aedes MQTT broker if no broker is active.
  */
 async function startEmbeddedBroker(port = 1883) {
@@ -157,7 +171,9 @@ async function resolveBrokerUrl() {
   // correct in-network broker. The old check keyed off the *string* containing
   // "mqtt-broker" and therefore hijacked a perfectly good Compose URL, either
   // hairpinning out to the public IP or starting a broken embedded broker.
-  if (await isPortOpen(port, host)) {
+  // Retry instead of probing once: on a cold start the API can win the race
+  // against the broker and a single 1s probe then misreports it as absent.
+  if (await waitForPort(port, host)) {
     return brokerUrl;
   }
 
@@ -182,12 +198,27 @@ async function resolveBrokerUrl() {
       return 'mqtt://127.0.0.1:1883';
     }
 
-    logger.info('No external MQTT broker detected; starting embedded Aedes broker on 1883');
-    const started = await startEmbeddedBroker(1883);
-    if (!started) {
-      logger.error('No MQTT broker available and the embedded broker failed to start');
+    // Embedded Aedes is a developer convenience, not a production fallback. If
+    // it starts here the API silently listens to a fake broker while the real
+    // devices stay on Mosquitto, so every device update is lost. Opt in only.
+    const allowEmbedded =
+      process.env.MQTT_ALLOW_EMBEDDED === 'true' || process.env.NODE_ENV !== 'production';
+    if (allowEmbedded) {
+      logger.info('No external MQTT broker detected; starting embedded Aedes broker on 1883');
+      const started = await startEmbeddedBroker(1883);
+      if (!started) {
+        logger.error('No MQTT broker available and the embedded broker failed to start');
+      }
+      return 'mqtt://127.0.0.1:1883';
     }
-    return 'mqtt://127.0.0.1:1883';
+
+    // Production: keep the configured broker and let mqtt.js reconnect rather
+    // than divert traffic to an embedded broker no device is connected to.
+    logger.error(
+      'MQTT broker "mqtt-broker" unreachable after retries; refusing to start an embedded broker. mqtt.js will keep reconnecting.',
+      { brokerUrl }
+    );
+    return brokerUrl;
   }
 
   logger.warn('Configured MQTT broker is unreachable; continuing anyway', { brokerUrl });
