@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-disable no-console -- CLI guard: stdout/stderr is its interface */
 /**
  * Block credentials from being committed.
  *
