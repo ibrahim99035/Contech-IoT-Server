@@ -18,7 +18,11 @@ exports.getApartmentsByMember = async (req, res) => {
     })
     .populate('creator', 'name email role')
     .populate('members', 'name email role')
-    .populate('rooms', 'name')
+    // The room cards in the client render type, device/user counts and ESP
+    // status (RoomList.vue). Populating only `name` left every one of those
+    // undefined, so rooms listed on an apartment rendered as unidentified,
+    // offline, zero-device entries.
+    .populate('rooms', 'name type devices users esp_component_connected creator createdAt updatedAt')
     .select('name creator members rooms createdAt updatedAt')
     .lean();
     
