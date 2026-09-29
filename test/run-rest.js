@@ -60,7 +60,7 @@ async function checkAny(name, method, path, body, token, allowed) {
 
 async function main() {
   process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27019/contech_rest_test';
-  process.env.JWT_SECRET = process.env.JWT_SECRET || 'REMOVED_SECRET';
+  process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-only-jwt-secret';
   process.env.PORT = String(PORT);
   process.env.NODE_ENV = 'test';
   process.env.MQTT_BROKER_URL = process.env.MQTT_BROKER_URL || 'mqtt://127.0.0.1:1885';

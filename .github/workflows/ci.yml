@@ -46,7 +46,7 @@ jobs:
           --health-start-period 10s
     env:
       MONGODB_URI: mongodb://127.0.0.1:27017/contech_test_db
-      JWT_SECRET: REMOVED_SECRET
+      JWT_SECRET: ci-test-jwt-secret-not-a-real-credential
       PORT: '5001'
       NODE_ENV: test
     steps:

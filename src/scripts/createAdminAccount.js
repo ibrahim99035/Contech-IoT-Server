@@ -20,7 +20,7 @@ const MONGO_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/contech?
 console.log('========================================');
 console.log('Admin Account Creator');
 console.log('========================================');
-console.log(`MongoDB: ${MONGO_URI.replace(/REMOVED_SECRET/, '****')}`);
+console.log(`MongoDB: ${MONGO_URI.replace(/\/\/[^:@/]+:[^@/]+@/, '//****:****@')}`);
 console.log(`Admin Email: ${ADMIN_EMAIL}`);
 console.log('');
 

@@ -6,7 +6,7 @@
 'use strict';
 
 process.env.MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/contech_test_db';
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'REMOVED_SECRET';
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-only-jwt-secret';
 process.env.PORT = '5001';
 process.env.NODE_ENV = 'test';
 

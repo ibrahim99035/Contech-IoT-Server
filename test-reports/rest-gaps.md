@@ -1,13 +1,13 @@
 # REST Gap Suite
 
-- Date: 2026-09-29T04:23:02.317Z
+- Date: 2026-09-29T04:49:06.155Z
 - Total: 73 | Passed: 73 | Failed: 0
 
 ## Results
 
 
 - ## auth
-- ✅ [auth/me] -> 200 {"success":true,"data":{"_id":"6abb3d1d7b15f999d53bea4a","id":"6abb3d1d7b15f999d53bea4a","name":"Gap Cust","email":"gapcust@test.c
+- ✅ [auth/me] -> 200 {"success":true,"data":{"_id":"6abb43396a7607fc3af0d8a2","id":"6abb43396a7607fc3af0d8a2","name":"Gap Cust","email":"gapcust@test.c
 - ✅ [auth/me no token] -> 401 {"success":false,"message":"No token provided","code":"NO_TOKEN"}
 - ✅ [auth/check-google-link] -> 200 {"success":true,"message":"Google authentication status retrieved","data":{"hasGoogleAuth":false,"googleId":"not linked","emailAct
 - ✅ [auth/check-google-link no token] -> 401 {"success":false,"message":"No token provided","code":"NO_TOKEN"}
@@ -22,31 +22,31 @@
 - ✅ [auth/register did NOT persist an invalid email] not persisted
 
 - ## subscription
-- ✅ [subscription/features/:id] -> 200 {"success":true,"message":"Feature retrieved successfully","data":{"_id":"6abb3d1c7b15f999d53bea2b","name":"Basic Support","descri
+- ✅ [subscription/features/:id] -> 200 {"success":true,"message":"Feature retrieved successfully","data":{"_id":"6abb43396a7607fc3af0d883","name":"Basic Support","descri
 - ✅ [subscription/features/:id malformed -> 400] -> 400 {"success":false,"message":"Invalid _id: not-an-id","code":"INVALID_ID"}
 - ✅ [subscription/features/:id unknown -> 404] -> 404 {"success":false,"message":"Feature not found","code":"NOT_FOUND"}
 - ✅ [subscription/coupons admin] -> 200 {"success":true,"message":"Coupons retrieved successfully","data":[]}
 - ✅ [subscription/coupons non-admin -> 403] -> 403 {"success":false,"message":"Access forbidden: Insufficient permissions","code":"FORBIDDEN"}
 - ✅ [subscription/coupons no token -> 401] -> 401 {"success":false,"message":"No token provided","code":"NO_TOKEN"}
-- ✅ [subscription/payments create (documented schema)] -> 201 {"success":true,"message":"Payment recorded successfully","data":{"user":"6abb3d1d7b15f999d53bea4a","amount":19.99,"currency":"USD
-- ✅ [subscription/payments ignores body userId (no cross-user credit)] -> 201 {"success":true,"message":"Payment recorded successfully","data":{"user":"6abb3d1d7b15f999d53bea4a","amount":1,"currency":"USD","p
+- ✅ [subscription/payments create (documented schema)] -> 201 {"success":true,"message":"Payment recorded successfully","data":{"user":"6abb43396a7607fc3af0d8a2","amount":19.99,"currency":"USD
+- ✅ [subscription/payments ignores body userId (no cross-user credit)] -> 201 {"success":true,"message":"Payment recorded successfully","data":{"user":"6abb43396a7607fc3af0d8a2","amount":1,"currency":"USD","p
 - ✅ [subscription/payments did not credit another user's subscription] no cross-user credit
 - ✅ [subscription/payments create bad body -> 400] -> 400 {"success":false,"message":"Validation error","code":"VALIDATION_ERROR","errors":["\"subscriptionPlanId\" is required","\"amount\"
 - ✅ [subscription/payments no token -> 401] -> 401 {"success":false,"message":"No token provided","code":"NO_TOKEN"}
 
 - ## apartments / rooms
-- ✅ [apartments/create with name only (UI contract)] -> 201 {"success":true,"data":{"name":"Maple Heights","creator":"6abb3d1d7b15f999d53bea4a","members":["6abb3d1d7b15f999d53bea4a"],"rooms"
-- ✅ [apartments/create binds creator to the token] creator=6abb3d1d7b15f999d53bea4a caller=6abb3d1d7b15f999d53bea4a
+- ✅ [apartments/create with name only (UI contract)] -> 201 {"success":true,"data":{"name":"Maple Heights","creator":"6abb43396a7607fc3af0d8a2","members":["6abb43396a7607fc3af0d8a2"],"rooms"
+- ✅ [apartments/create binds creator to the token] creator=6abb43396a7607fc3af0d8a2 caller=6abb43396a7607fc3af0d8a2
 - ✅ [apartments/create adds the caller to members] members=1
 - ✅ [apartments/create back-links the apartment to the caller] user.apartments updated
-- ✅ [apartments/create ignoring a spoofed creator] -> 201 {"success":true,"data":{"name":"Spoof Attempt","creator":"6abb3d1d7b15f999d53bea4a","members":["6abb3d1d7b15f999d53bea4a"],"rooms"
-- ✅ [apartments/create ignores a spoofed creator (IDOR guard)] creator=6abb3d1d7b15f999d53bea4a spoofed=6abb3d1c7b15f999d53bea48
+- ✅ [apartments/create ignoring a spoofed creator] -> 201 {"success":true,"data":{"name":"Spoof Attempt","creator":"6abb43396a7607fc3af0d8a2","members":["6abb43396a7607fc3af0d8a2"],"rooms"
+- ✅ [apartments/create ignores a spoofed creator (IDOR guard)] creator=6abb43396a7607fc3af0d8a2 spoofed=6abb43396a7607fc3af0d8a0
 - ✅ [apartments/create did not link the apartment to the spoofed user] no link to admin
-- ✅ [rooms/create first room] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d1f7b15f999d53bea90","name":"Room One","type":"living_room","creator":{"_id":"6abb3d1d
-- ✅ [rooms/create second room (used to 500 on duplicate esp_id)] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d1f7b15f999d53bea9c","name":"Room Two","type":"bedroom","creator":{"_id":"6abb3d1d7b15
-- ✅ [rooms/create third room (used to 500)] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d207b15f999d53beaa8","name":"Room Three","type":"kitchen","creator":{"_id":"6abb3d1d7b
-- ✅ [rooms: every created room got a distinct esp_id] 3 rooms, esp_ids=esp_48b8c41c696d2e3930f6f3a5,esp_2cdc4413a5db91eede953812,esp_7972a8643cddf090f3ebbfce
-- ✅ [rooms: esp_id is assigned at insert time (never null)] esp_48b8c41c696d2e3930f6f3a5,esp_2cdc4413a5db91eede953812,esp_7972a8643cddf090f3ebbfce
+- ✅ [rooms/create first room] -> 201 {"success":true,"data":{"room":{"_id":"6abb433b6a7607fc3af0d8e8","name":"Room One","type":"living_room","creator":{"_id":"6abb4339
+- ✅ [rooms/create second room (used to 500 on duplicate esp_id)] -> 201 {"success":true,"data":{"room":{"_id":"6abb433b6a7607fc3af0d8f4","name":"Room Two","type":"bedroom","creator":{"_id":"6abb43396a76
+- ✅ [rooms/create third room (used to 500)] -> 201 {"success":true,"data":{"room":{"_id":"6abb433c6a7607fc3af0d900","name":"Room Three","type":"kitchen","creator":{"_id":"6abb43396a
+- ✅ [rooms: every created room got a distinct esp_id] 3 rooms, esp_ids=esp_98f3a9fe3a2a9eb646e13d6b,esp_759d8c26d872df8a04de5265,esp_f2b00386e127da8671e9a517
+- ✅ [rooms: esp_id is assigned at insert time (never null)] esp_98f3a9fe3a2a9eb646e13d6b,esp_759d8c26d872df8a04de5265,esp_f2b00386e127da8671e9a517
 - ✅ [room types: server enum accepts every option the client offers] 11 types aligned
 - ✅ [room types: Mongoose enum and Joi validator agree] model-only=[] validator-only=[]
 - ✅ [apartments/:id/exit creator -> 400] -> 400 {"success":false,"message":"Apartment creator cannot exit their own apartment. Consider deleting the apartment instead.","data":nu
@@ -56,17 +56,17 @@
 - ✅ [rooms/exit-room/:id creator -> 400] -> 400 {"success":false,"message":"Room creator cannot exit their own room. Consider deleting the room instead.","data":null}
 - ✅ [rooms/exit-room/:id unknown -> 404] -> 404 {"success":false,"message":"Room not found","data":null}
 - ✅ [apartments/remover-member] -> 404 {"message":"Member not found in this apartment"}
-- ✅ [room create with type=living_room] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d217b15f999d53bead1","name":"Typed living_room","type":"living_room","creator":{"_id":
-- ✅ [room create with type=bedroom] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d217b15f999d53beadd","name":"Typed bedroom","type":"bedroom","creator":{"_id":"6abb3d1
-- ✅ [room create with type=kitchen] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d217b15f999d53beae9","name":"Typed kitchen","type":"kitchen","creator":{"_id":"6abb3d1
-- ✅ [room create with type=bathroom] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d227b15f999d53beaf5","name":"Typed bathroom","type":"bathroom","creator":{"_id":"6abb3
-- ✅ [room create with type=dining_room] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d227b15f999d53beb01","name":"Typed dining_room","type":"dining_room","creator":{"_id":
-- ✅ [room create with type=office] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d227b15f999d53beb0d","name":"Typed office","type":"office","creator":{"_id":"6abb3d1d7
-- ✅ [room create with type=garage] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d237b15f999d53beb19","name":"Typed garage","type":"garage","creator":{"_id":"6abb3d1d7
-- ✅ [room create with type=balcony] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d237b15f999d53beb25","name":"Typed balcony","type":"balcony","creator":{"_id":"6abb3d1
-- ✅ [room create with type=basement] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d237b15f999d53beb32","name":"Typed basement","type":"basement","creator":{"_id":"6abb3
-- ✅ [room create with type=attic] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d237b15f999d53beb3e","name":"Typed attic","type":"attic","creator":{"_id":"6abb3d1d7b1
-- ✅ [room create with type=other] -> 201 {"success":true,"data":{"room":{"_id":"6abb3d247b15f999d53beb4a","name":"Typed other","type":"other","creator":{"_id":"6abb3d1d7b1
+- ✅ [room create with type=living_room] -> 201 {"success":true,"data":{"room":{"_id":"6abb433d6a7607fc3af0d929","name":"Typed living_room","type":"living_room","creator":{"_id":
+- ✅ [room create with type=bedroom] -> 201 {"success":true,"data":{"room":{"_id":"6abb433d6a7607fc3af0d935","name":"Typed bedroom","type":"bedroom","creator":{"_id":"6abb433
+- ✅ [room create with type=kitchen] -> 201 {"success":true,"data":{"room":{"_id":"6abb433d6a7607fc3af0d941","name":"Typed kitchen","type":"kitchen","creator":{"_id":"6abb433
+- ✅ [room create with type=bathroom] -> 201 {"success":true,"data":{"room":{"_id":"6abb433d6a7607fc3af0d94d","name":"Typed bathroom","type":"bathroom","creator":{"_id":"6abb4
+- ✅ [room create with type=dining_room] -> 201 {"success":true,"data":{"room":{"_id":"6abb433e6a7607fc3af0d959","name":"Typed dining_room","type":"dining_room","creator":{"_id":
+- ✅ [room create with type=office] -> 201 {"success":true,"data":{"room":{"_id":"6abb433e6a7607fc3af0d965","name":"Typed office","type":"office","creator":{"_id":"6abb43396
+- ✅ [room create with type=garage] -> 201 {"success":true,"data":{"room":{"_id":"6abb433e6a7607fc3af0d971","name":"Typed garage","type":"garage","creator":{"_id":"6abb43396
+- ✅ [room create with type=balcony] -> 201 {"success":true,"data":{"room":{"_id":"6abb433f6a7607fc3af0d97d","name":"Typed balcony","type":"balcony","creator":{"_id":"6abb433
+- ✅ [room create with type=basement] -> 201 {"success":true,"data":{"room":{"_id":"6abb433f6a7607fc3af0d98a","name":"Typed basement","type":"basement","creator":{"_id":"6abb4
+- ✅ [room create with type=attic] -> 201 {"success":true,"data":{"room":{"_id":"6abb433f6a7607fc3af0d996","name":"Typed attic","type":"attic","creator":{"_id":"6abb43396a7
+- ✅ [room create with type=other] -> 201 {"success":true,"data":{"room":{"_id":"6abb43406a7607fc3af0d9a2","name":"Typed other","type":"other","creator":{"_id":"6abb43396a7
 - ✅ [room types: every type is accepted end-to-end by create] 11/11 created
 - ✅ [rooms: an apartment can hold 8 rooms] 8 rooms
 - ✅ [room create beyond the 8-room cap is refused] -> 403 {"success":false,"message":"Room limit reached (8 per apartment)","current":8,"limit":8}
@@ -82,7 +82,7 @@
 
 - ## admin
 - ✅ [admin limits delete by planName] -> 200 {"success":true,"message":"Limits deactivated successfully"}
-- ✅ [admin users delete-account] -> 200 {"success":true,"message":"User deleted successfully","deletedUser":{"id":"6abb3d1d7b15f999d53bea4c","name":"Gap Victim","email":"
+- ✅ [admin users delete-account] -> 200 {"success":true,"message":"User deleted successfully","deletedUser":{"id":"6abb43396a7607fc3af0d8a4","name":"Gap Victim","email":"
 - ✅ [admin users delete-account actually removed the user] user removed
 - ✅ [admin users delete-account non-admin -> 403] -> 403 {"success":false,"message":"Access forbidden: Insufficient permissions","code":"FORBIDDEN"}
 

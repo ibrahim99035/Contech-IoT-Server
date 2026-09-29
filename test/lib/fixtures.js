@@ -50,7 +50,7 @@ async function seed() {
       emailActivated: true
     });
     S.users[key] = u;
-    S.tokens[key] = jwt.sign({ id: u._id.toString(), role }, process.env.JWT_SECRET || 'REMOVED_SECRET', { expiresIn: '1d' });
+    S.tokens[key] = jwt.sign({ id: u._id.toString(), role }, process.env.JWT_SECRET || 'test-only-jwt-secret', { expiresIn: '1d' });
   }
 
   // ── Apartment ──────────────────────────────────────────────────────────

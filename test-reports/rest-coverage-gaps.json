@@ -101,7 +101,7 @@
     {
       "method": "GET",
       "template": "/api/subscription/features/:id",
-      "path": "/api/subscription/features/6abb3d1c7b15f999d53bea2b",
+      "path": "/api/subscription/features/6abb43396a7607fc3af0d883",
       "statusCode": 200,
       "matched": true
     },
@@ -206,7 +206,7 @@
     {
       "method": "PUT",
       "template": "/api/apartments-handler/apartments/:apartmentId/exit",
-      "path": "/api/apartments-handler/apartments/6abb3d1e7b15f999d53bea54/exit",
+      "path": "/api/apartments-handler/apartments/6abb433a6a7607fc3af0d8ac/exit",
       "statusCode": 400,
       "matched": true
     },
@@ -220,28 +220,28 @@
     {
       "method": "PUT",
       "template": "/api/apartments-handler/apartments/:apartmentId/exit",
-      "path": "/api/apartments-handler/apartments/6abb3d207b15f999d53beab4/exit",
+      "path": "/api/apartments-handler/apartments/6abb433c6a7607fc3af0d90c/exit",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/apartments-handler/apartments/:apartmentId/exit",
-      "path": "/api/apartments-handler/apartments/6abb3d207b15f999d53beaba/exit",
+      "path": "/api/apartments-handler/apartments/6abb433c6a7607fc3af0d912/exit",
       "statusCode": 403,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/rooms-handler/rooms/exit-room/:roomId",
-      "path": "/api/rooms-handler/rooms/exit-room/6abb3d207b15f999d53beabe",
+      "path": "/api/rooms-handler/rooms/exit-room/6abb433c6a7607fc3af0d916",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "PUT",
       "template": "/api/rooms-handler/rooms/exit-room/:roomId",
-      "path": "/api/rooms-handler/rooms/exit-room/6abb3d1e7b15f999d53bea56",
+      "path": "/api/rooms-handler/rooms/exit-room/6abb433a6a7607fc3af0d8ae",
       "statusCode": 400,
       "matched": true
     },
@@ -255,7 +255,7 @@
     {
       "method": "DELETE",
       "template": "/api/apartments-handler/apartments/:apartmentId/remover-member/:memberId",
-      "path": "/api/apartments-handler/apartments/6abb3d1e7b15f999d53bea54/remover-member/6abb3d1d7b15f999d53bea4c",
+      "path": "/api/apartments-handler/apartments/6abb433a6a7607fc3af0d8ac/remover-member/6abb43396a7607fc3af0d8a4",
       "statusCode": 404,
       "matched": true
     },
@@ -430,14 +430,14 @@
     {
       "method": "DELETE",
       "template": "/admin/dashboard/users/delete-account/:id",
-      "path": "/admin/dashboard/users/delete-account/6abb3d1d7b15f999d53bea4c",
+      "path": "/admin/dashboard/users/delete-account/6abb43396a7607fc3af0d8a4",
       "statusCode": 200,
       "matched": true
     },
     {
       "method": "DELETE",
       "template": "/admin/dashboard/users/delete-account/:id",
-      "path": "/admin/dashboard/users/delete-account/6abb3d1d7b15f999d53bea4a",
+      "path": "/admin/dashboard/users/delete-account/6abb43396a7607fc3af0d8a2",
       "statusCode": 403,
       "matched": true
     },

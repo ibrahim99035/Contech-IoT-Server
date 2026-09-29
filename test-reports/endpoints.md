@@ -1,6 +1,6 @@
 # REST Endpoint Test Report
 
-- Date: 2026-09-29T04:26:54.922Z
+- Date: 2026-09-29T04:48:43.072Z
 - Total: 158 | Passed: 158 | Failed: 0
 
 ## Results
@@ -29,7 +29,7 @@
 - ✅ [auth/oauth/token invalid code] -> 400 (allowed: 400|401)
 - ✅ [auth/delete-account self] -> 200
 - ✅ [apartments/create] -> 201
-- ✅ [apartments/create id captured] 6abb3e07eb83231f61b261c7
+- ✅ [apartments/create id captured] 6abb43276d7c2a6c590ae46c
 - ✅ [apartments/create no-auth] -> 401
 - ✅ [apartments/member list] -> 200
 - ✅ [apartments/update-name] -> 200
@@ -39,7 +39,7 @@
 - ✅ [apartments/members no-auth] -> 401
 - ✅ [apartments/remove-member] -> 200
 - ✅ [rooms/create] -> 201
-- ✅ [rooms/create id captured] 6abb3e08eb83231f61b261e3
+- ✅ [rooms/create id captured] 6abb43276d7c2a6c590ae488
 - ✅ [rooms/create #2 (KNOWN BUG esp_id)] -> 201 (allowed: 201|500)
 - ✅ [rooms/update-name] -> 200
 - ✅ [rooms/update-password] -> 200
@@ -49,9 +49,9 @@
 - ✅ [rooms/apartment list] -> 200
 - ✅ [rooms/remove-user] -> 200
 - ✅ [devices/create] -> 201
-- ✅ [devices/create id captured] 6abb3e09eb83231f61b2621a
+- ✅ [devices/create id captured] 6abb43286d7c2a6c590ae4bf
 - ✅ [devices/create #2] -> 201
-- ✅ [devices/create #2 id captured] 6abb3e09eb83231f61b26225
+- ✅ [devices/create #2 id captured] 6abb43286d7c2a6c590ae4ca
 - ✅ [devices/create free-tier-limit (3rd)] -> 403
 - ✅ [devices/user list] -> 200
 - ✅ [devices/user list no-auth] -> 401
@@ -71,7 +71,7 @@
 - ✅ [devices/update-order back] -> 200
 - ✅ [devices/exist-device exit-creator-forbidden] -> 400
 - ✅ [tasks/create] -> 201
-- ✅ [tasks/create id captured] 6abb3e0aeb83231f61b26276
+- ✅ [tasks/create id captured] 6abb43296d7c2a6c590ae51b
 - ✅ [tasks/create missing-action] -> 400
 - ✅ [tasks/get-task] -> 200
 - ✅ [tasks/get-task no-auth] -> 401
