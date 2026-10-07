@@ -6,6 +6,7 @@
 'use strict';
 
 const bcrypt = require('bcryptjs');
+const MongoStore = require('connect-mongo');
 
 // Load Mongoose Models
 const User = require('../models/User');
@@ -198,8 +199,15 @@ async function setupAdminJS() {
     null,
     {
       resave: false,
-      saveUninitialized: true,
-      secret: process.env.JWT_SECRET || 'contech-adminjs-secret-session-key-32chars'
+      saveUninitialized: false,
+      secret: process.env.JWT_SECRET || 'contech-adminjs-secret-session-key-32chars',
+      // Persist sessions in MongoDB instead of express-session's in-memory
+      // MemoryStore, which leaks memory and drops every session on restart.
+      store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        collectionName: 'adminjs_sessions',
+        ttl: 6 * 24 * 60 * 60
+      })
     }
   );
 
