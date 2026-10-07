@@ -63,12 +63,18 @@ const connectDB = async (retries = 5, delay = 5000) => {
         error: error.message
       });
 
-      if (error.message.includes('ENOTFOUND') && mongoUri.includes('@mongodb:')) {
-        mongoUri = mongoUri.replace('@mongodb:', '@127.0.0.1:');
-        logger.info(`Host 'mongodb' unresolved. Switching URI to 127.0.0.1...`);
-      } else if ((error.message.includes('Authentication failed') || error.message.includes('auth failed')) && mongoUri.includes('@')) {
-        mongoUri = 'mongodb://127.0.0.1:27017/contech';
-        logger.info(`MongoDB auth failed locally. Falling back to unauthenticated local connection: ${mongoUri}`);
+      // Development-only convenience fallbacks. In production these are unsafe:
+      // an auth failure could silently switch to an *unauthenticated* local
+      // database, hiding a real outage. Only apply them outside production, so
+      // production stays fail-fast and exits after the retries below.
+      if (process.env.NODE_ENV !== 'production') {
+        if (error.message.includes('ENOTFOUND') && mongoUri.includes('@mongodb:')) {
+          mongoUri = mongoUri.replace('@mongodb:', '@127.0.0.1:');
+          logger.info(`Host 'mongodb' unresolved. Switching URI to 127.0.0.1...`);
+        } else if ((error.message.includes('Authentication failed') || error.message.includes('auth failed')) && mongoUri.includes('@')) {
+          mongoUri = 'mongodb://127.0.0.1:27017/contech';
+          logger.info(`MongoDB auth failed locally. Falling back to unauthenticated local connection: ${mongoUri}`);
+        }
       }
 
       if (attempt < retries) {

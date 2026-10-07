@@ -76,12 +76,20 @@ async function getRedisClient() {
     isConnecting = false;
     return client;
   } catch (error) {
-    logger.warn('Failed to connect to Redis, proceeding with in-memory fallbacks', { error: error.message });
     if (client) {
       try { await client.disconnect(); } catch { /* ignore disconnect errors */ }
     }
     client = null;
     isConnecting = false;
+
+    // Set REDIS_REQUIRED=true to refuse to run without Redis (the scheduler
+    // would otherwise silently degrade to in-memory and drop queued tasks).
+    if (process.env.REDIS_REQUIRED === 'true') {
+      logger.error('Redis connection failed and REDIS_REQUIRED=true; aborting', { error: error.message });
+      throw error;
+    }
+
+    logger.error('Redis unavailable - running in DEGRADED mode with in-memory fallbacks (scheduled tasks may be lost)', { error: error.message });
     return null;
   }
 }
