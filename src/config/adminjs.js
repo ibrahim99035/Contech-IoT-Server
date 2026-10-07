@@ -193,14 +193,16 @@ async function setupAdminJS() {
           return null;
         }
       },
-      cookiePassword: process.env.JWT_SECRET || 'contech-adminjs-secret-session-key-32chars',
+      // JWT_SECRET is validated as required at startup (src/config/env.js), so
+      // there is no insecure fallback secret to accidentally ship.
+      cookiePassword: process.env.JWT_SECRET,
       cookieName: 'adminjs_session'
     },
     null,
     {
       resave: false,
       saveUninitialized: false,
-      secret: process.env.JWT_SECRET || 'contech-adminjs-secret-session-key-32chars',
+      secret: process.env.JWT_SECRET,
       // Persist sessions in MongoDB instead of express-session's in-memory
       // MemoryStore, which leaks memory and drops every session on restart.
       store: MongoStore.create({
