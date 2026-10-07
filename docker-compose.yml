@@ -1,10 +1,12 @@
-version: '3.8'
 services:
   # MongoDB Database
   mongodb:
     image: mongo:7.0
     container_name: contech-mongodb
     restart: unless-stopped
+    # Caps memory so a runaway container cannot OOM the co-tenant rihla stack
+    # (and vice versa) on this shared 3.8 GiB host.
+    mem_limit: 768m
     # Loopback only: the database is reachable over the Compose network, and
     # publishing it on 0.0.0.0 exposed an authenticated-only service to the
     # internet (Docker's port publishing bypasses UFW).
@@ -39,6 +41,7 @@ services:
     image: mongo-express:1.0.2
     container_name: contech-mongo-express
     restart: unless-stopped
+    mem_limit: 128m
     # Loopback only: an unauthenticated-by-default DB admin UI must never be
     # published on the public interface.
     ports:
@@ -63,8 +66,12 @@ services:
       dockerfile: Dockerfile
     container_name: contech-api
     restart: unless-stopped
+    mem_limit: 512m
+    # Loopback only: nginx reaches the API over the Compose network, so the API
+    # must not be published on the public interface (Docker's port publishing
+    # bypasses UFW and exposed the whole API + AdminJS over plain HTTP).
     ports:
-      - "5000:5000"
+      - "127.0.0.1:5000:5000"
     environment:
       - NODE_ENV=production
     env_file:
@@ -79,7 +86,7 @@ services:
       mqtt-broker:
         condition: service_started
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health/ready"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -89,6 +96,7 @@ services:
     image: eclipse-mosquitto:2.0.18
     container_name: contech-mqtt
     restart: unless-stopped
+    mem_limit: 128m
     ports:
       - "1884:1884"
       - "9002:9002"
@@ -105,7 +113,10 @@ services:
     image: redis:7-alpine
     container_name: contech-redis
     restart: unless-stopped
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    mem_limit: 256m
+    # BullMQ requires noeviction: with allkeys-lru, queue/job keys can be evicted
+    # under memory pressure, silently dropping scheduled device tasks.
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD}", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "noeviction"]
     # Loopback only: Redis is used in-network; the 0.0.0.0 publish exposed it.
     ports:
       - "127.0.0.1:6380:6379"
@@ -124,6 +135,7 @@ services:
     image: nginx:alpine
     container_name: contech-nginx
     restart: unless-stopped
+    mem_limit: 64m
     ports:
       - "80:80"
       - "443:443"

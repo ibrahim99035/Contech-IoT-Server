@@ -11,7 +11,9 @@ const http = require('http');
 const options = {
   host: 'localhost',
   port: process.env.PORT || 5000,
-  path: '/health',
+  // Readiness (not liveness): the container should report unhealthy while the
+  // database is unreachable, so the deploy gate cannot pass on a broken start.
+  path: '/health/ready',
   timeout: 5000
 };
 

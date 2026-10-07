@@ -174,7 +174,8 @@ async function startServer() {
       logger.error('Failed to mount AdminJS Dashboard', { error: adminErr.message });
     }
 
-    // ─── Health Check ───────────────────────────────────────────────────
+    // ─── Health Checks ──────────────────────────────────────────────────
+    // Liveness: the process is up. Does NOT assert dependencies.
     app.get('/health', (req, res) => {
       res.status(200).json({
         status: 'OK',
@@ -182,6 +183,18 @@ async function startServer() {
         uptime: process.uptime(),
         version: process.env.npm_package_version || '1.0.0',
         environment: process.env.NODE_ENV
+      });
+    });
+
+    // Readiness: 503 until the database is actually usable, so a deploy gate
+    // or orchestrator can tell "serving" from "started but broken".
+    app.get('/health/ready', (req, res) => {
+      const mongoose = require('mongoose');
+      const mongoUp = mongoose.connection.readyState === 1;
+      res.status(mongoUp ? 200 : 503).json({
+        status: mongoUp ? 'READY' : 'NOT_READY',
+        dependencies: { mongodb: mongoUp ? 'up' : 'down' },
+        timestamp: new Date().toISOString()
       });
     });
 
