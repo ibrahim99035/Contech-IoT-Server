@@ -12,6 +12,10 @@ services:
     image: mongo:7.0
     container_name: contech-mongodb
     restart: unless-stopped
+    # Run as the image's unprivileged mongodb user (uid:gid 999) rather than root.
+    # /data/db and /data/configdb are already 999-owned; provision-secrets.sh
+    # re-asserts ownership so a fresh volume starts correctly too.
+    user: "999:999"
     # Caps memory so a runaway container cannot OOM the co-tenant rihla stack
     # (and vice versa) on this shared 3.8 GiB host.
     mem_limit: 768m
@@ -105,13 +109,19 @@ services:
     container_name: contech-mqtt
     restart: unless-stopped
     mem_limit: 128m
+    # External devices connect over TLS only (mqtts://mqtt.contech-iot.com:8883).
+    # Plain MQTT (1884) and WebSockets (9002) are consumed in-network (API /
+    # nginx) and are bound to loopback so they are never public; Docker port
+    # publishing bypasses UFW, hence the explicit 127.0.0.1 bind.
     ports:
-      - "1884:1884"
-      - "9002:9002"
+      - "127.0.0.1:1884:1884"
+      - "127.0.0.1:9002:9002"
+      - "8883:8883"
     volumes:
       - ./mosquitto/config:/mosquitto/config
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/logs:/mosquitto/log
+      - ./mosquitto/certs:/mosquitto/certs:ro
     networks:
       - contech-network
     command: mosquitto -c /mosquitto/config/mosquitto.conf

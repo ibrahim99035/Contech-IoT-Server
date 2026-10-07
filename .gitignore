@@ -21,6 +21,11 @@ Thumbs.db
 # AdminJS runtime-generated bundles
 .adminjs/
 
+# Runtime secrets & TLS material (never commit)
+nginx/ssl/*.pem
+mosquitto/config/passwd
+mosquitto/certs/
+
 # Docker volumes (local)
 mongodb/
 mosquitto/data/

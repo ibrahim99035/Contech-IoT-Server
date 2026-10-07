@@ -8,8 +8,10 @@
 # Provisions:
 #   - mongodb/keyfile        (replica-set keyFile, mode 400, uid:gid 999)
 #   - mosquitto/config/passwd (MQTT credentials from MQTT_USERNAME/MQTT_PASSWORD)
+#   - mosquitto/certs/*       (TLS cert for the broker, from nginx/ssl)
 # and verifies (but does not create) the nginx TLS certificates, which are
-# populated by the certbot deploy hook.
+# populated by the certbot deploy hook. It also re-asserts ownership of the
+# MongoDB data volumes so the broker can run as the unprivileged 999 user.
 #
 # Values are read from the environment first, then from ./.env. .env is parsed
 # with sed rather than sourced, because unquoted URIs containing '&' would be
@@ -60,9 +62,28 @@ else
   log "created $PASSFILE"
 fi
 
-# ── 3. TLS certificates (verify only) ───────────────────────────────────────
+# ── 3. TLS certificates (verify + fan out to the broker) ────────────────────
 if [ -s nginx/ssl/contech-iot.com.fullchain.pem ] && [ -s nginx/ssl/contech-iot.com.privkey.pem ]; then
   log "nginx TLS certs present"
+  bash scripts/sync-mqtt-certs.sh
 else
   log "WARN: nginx/ssl certs missing; the certbot deploy hook must populate them before 'up'"
+fi
+
+# ── 4. MongoDB data-volume ownership (non-root runtime) ─────────────────────
+# docker-compose runs mongod as uid:gid 999:999. Existing volumes are already
+# 999-owned; this makes a freshly created volume safe on a clean host too. The
+# broker image is reused so no extra pull is required.
+PROJECT="${COMPOSE_PROJECT_NAME:-$(basename "$ROOT")}"
+if docker image inspect mongo:7.0 >/dev/null 2>&1; then
+  for vol in mongodb-data mongodb-config; do
+    name="${PROJECT}_${vol}"
+    if docker run --rm -u 0 -v "${name}:/mnt" --entrypoint chown mongo:7.0 -R 999:999 /mnt >/dev/null 2>&1; then
+      log "ensured ownership 999:999 on volume $name"
+    else
+      log "WARN: could not chown volume $name (continuing)"
+    fi
+  done
+else
+  log "mongo:7.0 image not present locally; skipping volume ownership check"
 fi
