@@ -43,6 +43,8 @@ jobs:
           docker compose version >/dev/null 2>&1 && COMPOSE="docker compose"
           echo "[1/6] Provisioning untracked runtime secrets..."
           bash scripts/provision-secrets.sh
+          echo "[1b/6] Ensuring MongoDB backup cron..."
+          bash scripts/install-backup-cron.sh
           echo "[2/6] Tearing down stale stack (volumes preserved)..."
           $COMPOSE down -t 5 || echo "no compose project to tear down"
           echo "[3/6] Pulling published GHCR image..."

@@ -1,3 +1,11 @@
+# Shared Docker log rotation. The json-file driver is unbounded by default and
+# a single runaway container previously produced a 1.7 GB log on this host.
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   # MongoDB Database
   mongodb:
@@ -30,11 +38,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+    logging: *default-logging
 
   # MongoDB Express (Web UI for database management)
   mongo-express:
@@ -57,6 +61,7 @@ services:
       - contech-network
     depends_on:
       - mongodb
+    logging: *default-logging
 
   # Node.js Application
   api:
@@ -83,6 +88,8 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
+      redis:
+        condition: service_healthy
       mqtt-broker:
         condition: service_started
     healthcheck:
@@ -90,6 +97,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    logging: *default-logging
 
   # Mosquitto MQTT Broker
   mqtt-broker:
@@ -107,6 +115,7 @@ services:
     networks:
       - contech-network
     command: mosquitto -c /mosquitto/config/mosquitto.conf
+    logging: *default-logging
 
   # Redis Cache (task scheduler queue + caching)
   redis:
@@ -129,6 +138,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    logging: *default-logging
 
   # Nginx Reverse Proxy
   nginx:
@@ -148,6 +158,7 @@ services:
     depends_on:
       - api
       - mqtt-broker
+    logging: *default-logging
 
 networks:
   contech-network:
