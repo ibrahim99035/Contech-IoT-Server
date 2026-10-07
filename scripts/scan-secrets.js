@@ -15,7 +15,7 @@ const { execFileSync } = require('child_process');
 
 // Capture the whole right-hand side (including ${...} and trailing punctuation)
 // so placeholders and template references can be recognised and skipped.
-const SECRET_KEY = /(PASSWORD|SECRET|_PASS|API_KEY|PRIVATE_KEY|ACCESS_KEY|TOKEN)\s*[:=]\s*([^\n]{1,160})/gi;
+const SECRET_KEY = /(PASSWORD|PASSWD|PWD|SECRET|_PASS|API_KEY|PRIVATE_KEY|ACCESS_KEY|TOKEN)\s*[:=]\s*([^\n]{1,160})/gi;
 
 // Placeholders, examples and empty values are not findings.
 const ALLOW = [
