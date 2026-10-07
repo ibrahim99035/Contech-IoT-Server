@@ -8,11 +8,14 @@ const { validationError } = require('../utils/response');
 /**
  * Validate req.body against a Joi schema.
  * On failure returns 400 with a standardized error shape and stops the chain.
+ * Unknown keys are stripped rather than rejected: mobile/web clients routinely
+ * send extra metadata (confirmPassword, phone, deviceToken, ...) that must not
+ * fail registration.
  * @param {import('joi').Schema} schema
  */
 function validate(schema) {
   return (req, res, next) => {
-    const { error, value } = schema.validate(req.body, { abortEarly: false });
+    const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
     if (error) {
       return validationError(res, error.details.map((d) => d.message));
     }

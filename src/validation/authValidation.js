@@ -8,8 +8,9 @@ const registerSchema = Joi.object({
   email: Joi.string().trim().email().max(254).required(),
   password: Joi.string().min(8).max(128).required(),
   // 'admin' stays in the enum so the controller's explicit 403 (not a generic
-  // validation error) is what a caller attempting it receives.
-  role: Joi.string().valid('admin', 'customer', 'moderator').default('customer'),
+  // validation error) is what a caller attempting it receives. A missing, empty
+  // or null role (some clients send a placeholder) falls back to 'customer'.
+  role: Joi.string().valid('admin', 'customer', 'moderator').allow(null, '').default('customer'),
 });
 
 const loginSchema = Joi.object({

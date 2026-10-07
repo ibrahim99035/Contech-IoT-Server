@@ -108,6 +108,22 @@ async function main() {
   const badEmail = await User.findOne({ email: 'not-an-email' });
   record('auth/register did NOT persist an invalid email', badEmail === null,
     badEmail ? `persisted user ${badEmail._id}` : 'not persisted');
+  // Contract: a client that sends extra metadata (confirmPassword, phone,
+  // deviceToken, ...) must not be rejected — the validator strips unknown keys
+  // instead of failing them.
+  const extraEmail = `extra-${Date.now()}@test.com`;
+  await check('auth/register tolerates extra client fields (stripped)', 'POST', '/api/auth/register',
+    { name: 'Extra Fields', email: extraEmail, password: PASSWORD, role: 'customer',
+      confirmPassword: PASSWORD, phone: '+201234567890', deviceToken: 'tok', platform: 'android' }, null, 201);
+  const extraUser = await User.findOne({ email: extraEmail });
+  record('auth/register created the account despite extra fields',
+    !!extraUser && extraUser.role === 'customer',
+    extraUser ? `role=${extraUser.role}` : 'user not created');
+  // A placeholder role (null / empty) must be coerced, not rejected.
+  await check('auth/register role null -> 201 (coerced)', 'POST', '/api/auth/register',
+    { name: 'Null Role', email: `nullrole-${Date.now()}@test.com`, password: PASSWORD, role: null }, null, 201);
+  await check('auth/register role "" -> 201 (coerced)', 'POST', '/api/auth/register',
+    { name: 'Empty Role', email: `emptyrole-${Date.now()}@test.com`, password: PASSWORD, role: '' }, null, 201);
 
   // ══ subscription ═════════════════════════════════════════════════════════
   results.push('', '## subscription');

@@ -34,12 +34,15 @@ exports.registerUser = async (req, res) => {
       });
     }
 
+    // An omitted, empty or null role is the default customer role.
+    const userRole = role || 'customer';
+
     // Create new user
     user = new User({
       name,
       email,
       password: password,
-      role,
+      role: userRole,
       active: true,
       emailActivated: false,
     });
