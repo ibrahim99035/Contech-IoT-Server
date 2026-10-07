@@ -19,9 +19,10 @@ cat > "$CRON_FILE" <<CRON
 SHELL=/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 MAILTO=""
-15 2 * * * root cd $REPO && ./scripts/backup-mongo.sh >> $REPO/mongodb/backups/backup.log 2>&1
+15 2 * * * root cd $REPO && bash ./scripts/backup-mongo.sh >> $REPO/mongodb/backups/backup.log 2>&1
 CRON
 
 chmod 0644 "$CRON_FILE"
 chown root:root "$CRON_FILE"
+chmod +x "$REPO/scripts/backup-mongo.sh" 2>/dev/null || true
 echo "[backup-cron] installed $CRON_FILE (daily 02:15)"
