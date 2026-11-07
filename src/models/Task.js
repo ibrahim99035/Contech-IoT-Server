@@ -74,7 +74,7 @@ taskSchema.methods.convertLocalTimeToUTC = function(localDate, localTime) {
 // FIXED: Add cron support
 taskSchema.methods.getNextCronOccurrence = function(currentUserTime) {
   try {
-    const parser = require('cron-parser');
+    const { CronExpressionParser } = require('cron-parser');
     const cronExpression = this.schedule.recurrence.cronExpression;
     
     if (!cronExpression) {
@@ -82,13 +82,12 @@ taskSchema.methods.getNextCronOccurrence = function(currentUserTime) {
       return null;
     }
 
-    // Parse cron expression in user's timezone
-    const options = {
+    // Parse cron expression in user's timezone (cron-parser v5 API).
+    const interval = CronExpressionParser.parse(cronExpression, {
       currentDate: currentUserTime.toDate(),
       tz: this.timezone
-    };
+    });
 
-    const interval = parser.parseExpression(cronExpression, options);
     const nextOccurrence = interval.next().toDate();
     
     // Convert back to moment in user timezone
@@ -99,170 +98,112 @@ taskSchema.methods.getNextCronOccurrence = function(currentUserTime) {
   }
 };
 
-// FIXED: Improved next occurrence calculation
-taskSchema.methods.getNextOccurrenceInUserTimezone = function(currentUserTime, isInitialScheduling = false) {
+// The first moment this schedule is allowed to run: startDate at startTime in
+// the task's timezone. Every recurrence type is anchored to this instant.
+taskSchema.methods.getScheduleAnchorInUserTimezone = function() {
+  const anchorUtc = this.convertLocalTimeToUTC(this.schedule.startDate, this.schedule.startTime);
+  return moment.tz(anchorUtc, this.timezone);
+};
+
+// Calculate the next occurrence in the user's timezone.
+//
+// `startDate` is a hard floor for every recurrence type: a daily task that
+// starts in ten days must not run today. Once the anchor is in the past we
+// advance through the recurrence from "now" until the occurrence is future.
+taskSchema.methods.getNextOccurrenceInUserTimezone = function(currentUserTime) {
   const [hours, minutes] = this.schedule.startTime.split(':').map(Number);
-  let nextOccurrence = currentUserTime.clone().hours(hours).minutes(minutes).seconds(0).milliseconds(0);
-  
-  // For one-time tasks
-  if (this.schedule.recurrence.type === 'once') {
-    const startDate = moment.tz(this.schedule.startDate, this.timezone).startOf('day');
-    const taskDate = startDate.clone().hours(hours).minutes(minutes);
-    
-    // If it's in the future, return it
-    if (taskDate.isAfter(currentUserTime)) {
-      return taskDate;
+  const recurrence = this.schedule.recurrence || {};
+  const type = recurrence.type || 'once';
+  const interval = Math.max(1, Number(recurrence.interval) || 1);
+  const anchor = this.getScheduleAnchorInUserTimezone();
+
+  // One-time task: only valid while its start is still in the future.
+  if (type === 'once') {
+    return anchor.isAfter(currentUserTime) ? anchor : null;
+  }
+
+  // Custom cron: search from just before a future anchor so an anchor that
+  // matches the cron expression is returned as the first occurrence.
+  if (type === 'custom') {
+    const cronFrom = anchor.isAfter(currentUserTime)
+      ? anchor.clone().subtract(1, 'second')
+      : currentUserTime.clone();
+    return this.getNextCronOccurrence(cronFrom);
+  }
+
+  // The first occurrence can never be before the anchor; when the anchor has
+  // already passed, start searching from now.
+  const searchFrom = moment.max(currentUserTime.clone(), anchor.clone());
+
+  if (type === 'daily') {
+    const candidate = searchFrom.clone().hours(hours).minutes(minutes).seconds(0).milliseconds(0);
+    // Setting the time can move the candidate before the search window on the
+    // same day (e.g. now 18:00, startTime 09:30); advance in interval steps.
+    while (!candidate.isAfter(currentUserTime) || candidate.isBefore(anchor)) {
+      candidate.add(interval, 'days');
+      candidate.hours(hours).minutes(minutes).seconds(0).milliseconds(0);
+    }
+    return candidate;
+  }
+
+  if (type === 'weekly') {
+    const daysOfWeek = recurrence.daysOfWeek;
+
+    // Fixed weekly cadence (no weekday filter): count weeks from the anchor.
+    if (!daysOfWeek || daysOfWeek.length === 0) {
+      const candidate = anchor.clone();
+      while (!candidate.isAfter(currentUserTime)) {
+        candidate.add(7 * interval, 'days');
+      }
+      return candidate;
+    }
+
+    // Specific weekdays: first matching weekday at/after the anchor and after now.
+    const allowedDays = [...new Set(daysOfWeek)].sort((a, b) => a - b);
+    const candidate = searchFrom.clone().hours(hours).minutes(minutes).seconds(0).milliseconds(0);
+    for (let i = 0; i < 14; i++) {
+      if (candidate.isAfter(currentUserTime) && !candidate.isBefore(anchor) && allowedDays.includes(candidate.day())) {
+        return candidate;
+      }
+      candidate.add(1, 'day');
+      candidate.hours(hours).minutes(minutes).seconds(0).milliseconds(0);
     }
     return null;
   }
-  
-  // FIXED: Handle custom cron expressions
-  if (this.schedule.recurrence.type === 'custom') {
-    return this.getNextCronOccurrence(currentUserTime);
-  }
-  
-  // For recurring tasks, check if today's time has already passed
-  const todayAtScheduledTime = currentUserTime.clone().hours(hours).minutes(minutes).seconds(0).milliseconds(0);
-  const needsToMoveToNext = todayAtScheduledTime.isSameOrBefore(currentUserTime) && !isInitialScheduling;
-  
-  // If today's execution time hasn't passed and this is initial scheduling, use today
-  if (!needsToMoveToNext && isInitialScheduling) {
-    // Check if today matches the recurrence pattern
-    if (this.matchesRecurrencePattern(todayAtScheduledTime)) {
-      return todayAtScheduledTime;
-    }
-  }
-  
-  // Move to next occurrence based on recurrence type
-  switch (this.schedule.recurrence.type) {
-    case 'daily':
-      if (needsToMoveToNext) {
-        nextOccurrence.add(this.schedule.recurrence.interval || 1, 'days');
+
+  if (type === 'monthly') {
+    // `dayOfMonth` wins when supplied; otherwise recur on the startDate's day.
+    const targetDay = recurrence.dayOfMonth || anchor.date();
+    // Move a month cursor from day 1 so large intervals cannot overflow
+    // (e.g. Jan 31 + 1 month must land in February, clamped to its last day).
+    const cursor = anchor.clone().startOf('month').hours(hours).minutes(minutes).seconds(0).milliseconds(0);
+
+    for (let i = 0; i < 1200; i++) {
+      const candidate = cursor.clone()
+        .date(Math.min(targetDay, cursor.daysInMonth()))
+        .hours(hours).minutes(minutes).seconds(0).milliseconds(0);
+
+      if (candidate.isAfter(currentUserTime) && !candidate.isBefore(anchor)) {
+        return candidate;
       }
-      break;
-      
-    case 'weekly':
-      nextOccurrence = this.getNextWeeklyOccurrence(currentUserTime, needsToMoveToNext);
-      break;
-      
-    case 'monthly':
-      nextOccurrence = this.getNextMonthlyOccurrence(currentUserTime, needsToMoveToNext);
-      break;
-  }
-  
-  return nextOccurrence;
-};
-
-// FIXED: Better weekly occurrence calculation
-taskSchema.methods.getNextWeeklyOccurrence = function(currentUserTime, needsToMoveToNext) {
-  const [hours, minutes] = this.schedule.startTime.split(':').map(Number);
-  const daysOfWeek = this.schedule.recurrence.daysOfWeek;
-  
-  // If no specific days are set, use weekly interval from current day
-  if (!daysOfWeek || daysOfWeek.length === 0) {
-    let nextOccurrence = currentUserTime.clone().hours(hours).minutes(minutes).seconds(0).milliseconds(0);
-    if (needsToMoveToNext) {
-      nextOccurrence.add(7 * (this.schedule.recurrence.interval || 1), 'days');
+      cursor.add(interval, 'months');
     }
-    return nextOccurrence;
+    return null;
   }
-  
-  const sortedDays = [...daysOfWeek].sort();
-  const currentDay = currentUserTime.day(); // 0 = Sunday
-  const currentTime = currentUserTime.clone().hours(hours).minutes(minutes).seconds(0).milliseconds(0);
-  
-  // Find next day of week
-  let nextDay = sortedDays.find(day => {
-    if (day > currentDay) return true;
-    if (day === currentDay && !needsToMoveToNext) return true;
-    return false;
-  });
-  
-  if (nextDay !== undefined) {
-    // Found a day this week
-    const daysToAdd = nextDay - currentDay;
-    return currentTime.add(daysToAdd, 'days');
-  } else {
-    // Move to next week, first day
-    const firstDay = sortedDays[0];
-    const daysUntilNextWeek = (7 - currentDay + firstDay) % 7 || 7;
-    return currentTime.add(daysUntilNextWeek, 'days');
-  }
+
+  // Unknown recurrence: fall back to the anchor if it is still in the future.
+  return anchor.isAfter(currentUserTime) ? anchor : null;
 };
 
-// FIXED: Better monthly occurrence calculation
-taskSchema.methods.getNextMonthlyOccurrence = function(currentUserTime, needsToMoveToNext) {
-  const [hours, minutes] = this.schedule.startTime.split(':').map(Number);
-  const targetDay = this.schedule.recurrence.dayOfMonth;
-  
-  let nextOccurrence = currentUserTime.clone().hours(hours).minutes(minutes).seconds(0).milliseconds(0);
-  
-  if (targetDay) {
-    // Set to specific day of month
-    const currentDay = currentUserTime.date();
-    
-    if (targetDay > currentDay || (targetDay === currentDay && !needsToMoveToNext)) {
-      // This month
-      nextOccurrence.date(Math.min(targetDay, nextOccurrence.daysInMonth()));
-    } else {
-      // Next month
-      nextOccurrence.add(this.schedule.recurrence.interval || 1, 'months');
-      nextOccurrence.date(Math.min(targetDay, nextOccurrence.daysInMonth()));
-    }
-  } else {
-    // Same day of month as start date
-    if (needsToMoveToNext) {
-      nextOccurrence.add(this.schedule.recurrence.interval || 1, 'months');
-    }
-  }
-  
-  return nextOccurrence;
-};
-
-// Helper method to check if a date matches the recurrence pattern
-taskSchema.methods.matchesRecurrencePattern = function(dateToCheck) {
-  switch (this.schedule.recurrence.type) {
-    case 'daily':
-      return true;
-      
-    case 'weekly':
-      const daysOfWeek = this.schedule.recurrence.daysOfWeek;
-      if (!daysOfWeek || daysOfWeek.length === 0) return true;
-      return daysOfWeek.includes(dateToCheck.day());
-      
-    case 'monthly':
-      const targetDay = this.schedule.recurrence.dayOfMonth;
-      if (!targetDay) return true;
-      return dateToCheck.date() === targetDay;
-      
-    case 'custom':
-      return true; // Cron handles its own pattern matching
-      
-    default:
-      return true;
-  }
-};
-
-// FIXED: Updated main calculation method
 taskSchema.methods.updateNextExecution = function() {
   const currentUserTime = this.getCurrentTimeInUserTimezone();
-  
-  // For one-time tasks
-  if (this.schedule.recurrence.type === 'once') {
-    const taskDateTime = this.convertLocalTimeToUTC(this.schedule.startDate, this.schedule.startTime);
-    this.nextExecution = taskDateTime > new Date() ? taskDateTime : null;
-    return;
-  }
-  
-  // For recurring tasks
-  const isInitialScheduling = !this.lastExecuted && this.isNew;
-  const nextUserTime = this.getNextOccurrenceInUserTimezone(currentUserTime, isInitialScheduling);
-  
+  const nextUserTime = this.getNextOccurrenceInUserTimezone(currentUserTime);
+
   if (!nextUserTime) {
     this.nextExecution = null;
     return;
   }
-  
+
   // Check end date
   if (this.schedule.endDate) {
     const endDate = moment.tz(this.schedule.endDate, this.timezone).endOf('day');
@@ -272,7 +213,7 @@ taskSchema.methods.updateNextExecution = function() {
       return;
     }
   }
-  
+
   // Convert to UTC
   this.nextExecution = nextUserTime.utc().toDate();
 };

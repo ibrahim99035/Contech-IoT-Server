@@ -101,6 +101,19 @@ class TaskSchedulerService {
       logger.info(`Found ${activeTasks.length} active tasks to sync`);
 
       for (const task of activeTasks) {
+        // Self-heal rows written before recurring schedules were anchored to
+        // schedule.startDate: a recurring task whose nextExecution precedes
+        // its own start must be recomputed. Only that exact condition is
+        // touched, so genuinely overdue tasks keep their overdue semantics.
+        if (task.schedule?.recurrence?.type && task.schedule.recurrence.type !== 'once') {
+          const anchor = task.getScheduleAnchorInUserTimezone();
+          if (task.nextExecution && moment.utc(task.nextExecution).isBefore(anchor)) {
+            task.updateNextExecution();
+            await task.save();
+            if (!task.nextExecution || task.status !== 'active') continue;
+          }
+        }
+
         const executionTime = new Date(task.nextExecution).getTime();
 
         // Overdue task handling: If nextExecution is in the past, process/update

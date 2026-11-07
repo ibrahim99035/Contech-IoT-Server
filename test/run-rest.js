@@ -298,6 +298,95 @@ async function main() {
           recurrence: { type: 'once', interval: 1 }
         }
       }, C, 200);
+
+    // Regression: recurring tasks must honor schedule.startDate. A daily task
+    // that starts in ten days used to be scheduled for today/tomorrow.
+    {
+      const startDay = new Date(Date.now() + 10 * 86400e3).toISOString().slice(0, 10);
+      const r = await check('tasks/update schedule daily honors startDate', 'PUT',
+        `/api/task-handler/tasks/${S.ids.task}/schedule/update`,
+        {
+          schedule: {
+            startDate: `${startDay}T00:00:00.000Z`,
+            startTime: '09:30',
+            recurrence: { type: 'daily', interval: 1 },
+          },
+        }, C, 200);
+      const next = r.body?.task?.nextExecution ? new Date(r.body.task.nextExecution) : null;
+      const expected = new Date(`${startDay}T09:30:00.000Z`);
+      record('tasks/daily nextExecution anchored to startDate',
+        !!next && next.getTime() === expected.getTime(),
+        `expected=${expected.toISOString()} actual=${next ? next.toISOString() : 'null'}`);
+    }
+
+    // Model-level anchoring checks for the other recurring types (no DB rows).
+    {
+      const start = new Date(Date.now() + 20 * 86400e3);
+      const startDay = start.toISOString().slice(0, 10);
+      const expected = new Date(`${startDay}T09:30:00.000Z`);
+      const base = {
+        name: 'anchor check',
+        creator: S.users.customer._id,
+        device: S.ids.device1,
+        timezone: 'UTC',
+        action: { type: 'status_change', value: 'on' },
+      };
+
+      const weekly = new Task({
+        ...base,
+        schedule: {
+          startDate: start,
+          startTime: '09:30',
+          recurrence: { type: 'weekly', daysOfWeek: [start.getUTCDay()], interval: 1 },
+        },
+      });
+      weekly.updateNextExecution();
+      record('tasks/weekly nextExecution anchored to startDate',
+        weekly.nextExecution?.getTime() === expected.getTime(),
+        `expected=${expected.toISOString()} actual=${weekly.nextExecution ? weekly.nextExecution.toISOString() : 'null'}`);
+
+      const monthly = new Task({
+        ...base,
+        schedule: {
+          startDate: start,
+          startTime: '09:30',
+          recurrence: { type: 'monthly', dayOfMonth: start.getUTCDate(), interval: 1 },
+        },
+      });
+      monthly.updateNextExecution();
+      record('tasks/monthly nextExecution anchored to startDate',
+        monthly.nextExecution?.getTime() === expected.getTime(),
+        `expected=${expected.toISOString()} actual=${monthly.nextExecution ? monthly.nextExecution.toISOString() : 'null'}`);
+
+      const custom = new Task({
+        ...base,
+        schedule: {
+          startDate: start,
+          startTime: '09:30',
+          recurrence: { type: 'custom', cronExpression: '30 9 * * *', interval: 1 },
+        },
+      });
+      custom.updateNextExecution();
+      record('tasks/custom nextExecution anchored to startDate',
+        custom.nextExecution?.getTime() === expected.getTime(),
+        `expected=${expected.toISOString()} actual=${custom.nextExecution ? custom.nextExecution.toISOString() : 'null'}`);
+
+      // A recurring task whose anchor is already in the past must advance into
+      // the future, never return the past anchor itself.
+      const pastDaily = new Task({
+        ...base,
+        schedule: {
+          startDate: new Date(Date.now() - 10 * 86400e3),
+          startTime: '09:30',
+          recurrence: { type: 'daily', interval: 1 },
+        },
+      });
+      pastDaily.updateNextExecution();
+      record('tasks/daily past anchor advances into future',
+        !!pastDaily.nextExecution && pastDaily.nextExecution.getTime() > Date.now(),
+        `next=${pastDaily.nextExecution ? pastDaily.nextExecution.toISOString() : 'null'}`);
+    }
+
     await check('tasks/update status active', 'PUT', `/api/task-handler/tasks/${S.ids.task}/status`, { status: 'active' }, C, 200);
     await check('tasks/update status invalid', 'PUT', `/api/task-handler/tasks/${S.ids.task}/status`, { status: 'bogus' }, C, 400);
     await check('tasks/add-notification-recipient', 'PUT', `/api/task-handler/tasks/${S.ids.task}/notifications/add-recepiant`,
