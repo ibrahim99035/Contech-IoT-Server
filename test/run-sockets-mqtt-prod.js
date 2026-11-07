@@ -117,18 +117,35 @@ function assertSafeTopic(topicName) {
 // ── REST ────────────────────────────────────────────────────────────────────
 
 async function api(method, route, body) {
-  const res = await fetch(`${API}${route}`, {
+  const options = {
     method,
     headers: {
       Authorization: `Bearer ${TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: body === undefined ? undefined : JSON.stringify(body),
-  });
-  const text = await res.text();
-  let json;
-  try { json = JSON.parse(text); } catch { json = text; }
-  return { status: res.status, body: json };
+    signal: AbortSignal.timeout(15000),
+  };
+
+  let lastError;
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    try {
+      const res = await fetch(`${API}${route}`, options);
+      const text = await res.text();
+      let json;
+      try { json = JSON.parse(text); } catch { json = text; }
+      if (res.status >= 500 && attempt < 5) {
+        await delay(400 * attempt);
+        continue;
+      }
+      return { status: res.status, body: json };
+    } catch (err) {
+      lastError = err;
+      if (attempt === 5) throw err;
+      await delay(400 * attempt);
+    }
+  }
+  throw lastError;
 }
 
 async function getDevice() {
