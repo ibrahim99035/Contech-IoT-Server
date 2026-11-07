@@ -8,6 +8,7 @@
 const { context } = require('../context');
 const { topics } = require('../topics');
 const { normalizeState } = require('../../websockets/utils/stateUtils');
+const { createEchoId } = require('../echoGuard');
 const Device = require('../../models/Device');
 const { publishEspStateUpdate, publishEspRoomStateUpdate } = require('./espPublisher');
 const logger = require('../../config/logger');
@@ -17,8 +18,13 @@ const logger = require('../../config/logger');
  * @param {string} deviceId
  * @param {string} state
  * @param {object} [options]
+ * @param {boolean} [options.publishEsp=true] - also fan out to ESP room topics
+ * @param {boolean} [options.suppressEcho=false] - tag this publish so the server
+ *   ignores its own inbound copy (caller already applied DB/Socket.IO updates)
  */
 function publishDeviceState(deviceId, state, options = {}) {
+  const { publishEsp = true, suppressEcho = false, ...payloadOptions } = options;
+
   if (!context.client || !context.client.connected) {
     logger.error('MQTT client not connected (publishDeviceState)');
     return;
@@ -27,11 +33,17 @@ function publishDeviceState(deviceId, state, options = {}) {
   const payload = {
     state: normalizeState(state),
     timestamp: new Date(),
-    ...options
+    ...payloadOptions
   };
+
+  if (suppressEcho) {
+    payload.echoId = createEchoId();
+  }
 
   context.client.publish(topics.deviceState(deviceId), JSON.stringify(payload), { qos: 1, retain: true });
   logger.debug('Published state to device via MQTT', { deviceId, state: payload.state });
+
+  if (!publishEsp) return;
 
   // Also notify ESP devices if this device belongs to a room
   Device.findById(deviceId)
@@ -50,8 +62,13 @@ function publishDeviceState(deviceId, state, options = {}) {
  * @param {string} roomId
  * @param {Array<{deviceId: string, state: string}>} updates
  * @param {object} [options]
+ * @param {boolean} [options.publishEsp=true] - also fan out to ESP room topics
+ * @param {boolean} [options.suppressEcho=false] - tag this publish so the server
+ *   ignores its own inbound copy (caller already applied DB/Socket.IO updates)
  */
 function publishRoomState(roomId, updates, options = {}) {
+  const { publishEsp = true, suppressEcho = false, ...payloadOptions } = options;
+
   if (!context.client || !context.client.connected) {
     logger.error('MQTT client not connected (publishRoomState)');
     return;
@@ -63,11 +80,17 @@ function publishRoomState(roomId, updates, options = {}) {
       state: normalizeState(update.state)
     })),
     timestamp: new Date(),
-    ...options
+    ...payloadOptions
   };
+
+  if (suppressEcho) {
+    payload.echoId = createEchoId();
+  }
 
   context.client.publish(topics.roomState(roomId), JSON.stringify(payload), { qos: 1 });
   logger.debug('Published state updates for room via MQTT', { roomId, count: updates.length });
+
+  if (!publishEsp) return;
 
   // Also create ESP-friendly updates
   Device.find({

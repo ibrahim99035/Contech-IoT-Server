@@ -457,7 +457,8 @@ class TaskSchedulerService {
         await Device.findByIdAndUpdate(device._id, { status: normalizedState });
         mqttBroker.publishDeviceState(device._id, normalizedState, {
           updatedBy: 'task',
-          taskTriggered: true
+          taskTriggered: true,
+          publishEsp: false
         });
         break;
 

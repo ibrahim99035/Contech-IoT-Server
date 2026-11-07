@@ -8,6 +8,7 @@ const Device = require('../../models/Device');
 const Room = require('../../models/Room');
 const { normalizeState } = require('../../websockets/utils/stateUtils');
 const { publishEspRoomStateUpdate } = require('../publishers/espPublisher');
+const { isOwnEcho } = require('../echoGuard');
 const logger = require('../../config/logger');
 
 /**
@@ -17,6 +18,11 @@ const logger = require('../../config/logger');
  */
 async function handleRoomStateMessage(roomId, payload) {
   try {
+    if (isOwnEcho(payload)) {
+      logger.debug('Ignoring server-originated room state echo', { roomId });
+      return;
+    }
+
     if (!payload.updates || !Array.isArray(payload.updates)) {
       logger.warn('Invalid room state update format', { roomId });
       return;

@@ -5,6 +5,7 @@ const deviceSchema = new mongoose.Schema({
   name: { type: String, required: true },
   type: { type: String, required: true }, // E.g., Light, Thermostat, etc.
   status: { type: String, enum: ['on', 'off', 'locked', 'unlocked'], default: 'off' },
+  isOnline: { type: Boolean, default: false },
   room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true },
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Users with access
   tasks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Task' }], // Tasks related to this device

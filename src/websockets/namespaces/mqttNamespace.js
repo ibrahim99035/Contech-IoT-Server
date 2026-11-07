@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const Device = require('../../models/Device');
 const Room = require('../../models/Room');
 const mqttBroker = require('../../mqtt/mqtt-broker');
+const { topics } = require('../../mqtt/topics');
 const { normalizeState } = require('../utils/stateUtils');
 const logger = require('../../config/logger');
 
@@ -90,7 +91,8 @@ module.exports = (io) => {
         mqttBroker.publishDeviceState(socket.device._id, newState, {
           updatedBy: 'device',
           deviceId: socket.device._id.toString(),
-          room: socket.room._id.toString()
+          room: socket.room._id.toString(),
+          publishEsp: false
         });
         socket.emit('state-reported', { success: true });
       } catch (error) {
@@ -109,7 +111,8 @@ module.exports = (io) => {
         }
         mqttBroker.publishRoomState(data.roomId, data.updates, {
           updatedBy: 'esp-room-report',
-          deviceId: socket.device._id.toString()
+          deviceId: socket.device._id.toString(),
+          publishEsp: false
         });
         socket.emit('room-state-reported', { success: true });
       } catch (error) {
@@ -121,25 +124,24 @@ module.exports = (io) => {
     // ✅ CRITICAL FIX: Proper disconnect handler that retrieves roomId from mapping
     socket.on('disconnect', async () => {
       logger.info(`🔌 ESP disconnecting: ${espId}`);
-      
+
       try {
         // Get roomId from espRoomMappings (more reliable than closure)
         const espMapping = mqttBroker.espRoomMappings.get(espId);
-        
+        const mappedRoomId = espMapping?.roomId || roomId;
+
         if (!espMapping) {
-          logger.warn(`⚠️ No mapping found for ESP ${espId} during disconnect`);
-          return;
+          logger.warn(`⚠️ No mapping found for ESP ${espId} during disconnect; using connection room ${mappedRoomId}`);
+        } else {
+          logger.info(`📍 Found room mapping: ${mappedRoomId} for ESP ${espId}`);
         }
-        
-        const mappedRoomId = espMapping.roomId;
-        logger.info(`📍 Found room mapping: ${mappedRoomId} for ESP ${espId}`);
-        
+
         // Remove from roomEspConnections
         if (mqttBroker.roomEspConnections.has(mappedRoomId)) {
           mqttBroker.roomEspConnections.get(mappedRoomId).delete(espId);
           const remainingCount = mqttBroker.roomEspConnections.get(mappedRoomId).size;
           logger.info(`📊 Remaining ESPs in room ${mappedRoomId}: ${remainingCount}`);
-          
+
           // If no more ESPs, set status to false
           if (remainingCount === 0) {
             mqttBroker.roomEspConnections.delete(mappedRoomId);
@@ -149,18 +151,26 @@ module.exports = (io) => {
         } else {
           logger.warn(`⚠️ Room ${mappedRoomId} not found in roomEspConnections during disconnect`);
         }
-        
+
         // Remove from espRoomMappings
         mqttBroker.espRoomMappings.delete(espId);
         logger.info(`🗑️ ESP ${espId} removed from mappings`);
-        
+
       } catch (error) {
         logger.error(`❌ Error handling disconnect for ${espId}:`, error);
       }
+
+      // Presence is per-device. Always clear the retained online marker for this
+      // bridge's device, even if the mapping was already gone.
+      mqttBroker.client?.publish(
+        topics.deviceStatus(socket.device._id),
+        JSON.stringify({ status: 'offline', timestamp: new Date() }),
+        { qos: 1, retain: true }
+      );
     });
     
     mqttBroker.client?.publish(
-      `home-automation/${socket.device._id}/status`,
+      topics.deviceStatus(socket.device._id),
       JSON.stringify({ status: 'online', timestamp: new Date() }),
       { qos: 1, retain: true }
     );

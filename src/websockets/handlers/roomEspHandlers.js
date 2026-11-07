@@ -1,6 +1,7 @@
 // websockets/handlers/roomEspHandlers.js
 const Device = require('../../models/Device');
 const { normalizeState } = require('../utils/stateUtils');
+const mqttBroker = require('../../mqtt/mqtt-broker');
 const logger = require('../../config/logger');
 
 function registerHandlers(io, socket) {
@@ -95,6 +96,13 @@ function registerHandlers(io, socket) {
           roomId: socket.room._id,
           updates: updatedDevices,
           updatedBy: 'esp'
+        });
+
+        // The room-ESP socket already applied these updates; publish for
+        // MQTT/ESP subscribers without re-processing the server's own echo.
+        mqttBroker.publishRoomState(socket.room._id, updatedDevices, {
+          updatedBy: 'esp',
+          suppressEcho: true
         });
       }
       

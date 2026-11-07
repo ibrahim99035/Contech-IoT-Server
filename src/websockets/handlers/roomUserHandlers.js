@@ -154,7 +154,8 @@ function registerHandlers(io, socket) {
         // Publish bulk room state update to MQTT
         mqttBroker.publishRoomState(room._id, updatedDevices, {
           updatedBy: 'user',
-          userId: socket.user._id.toString()
+          userId: socket.user._id.toString(),
+          suppressEcho: true
         });
       }
       

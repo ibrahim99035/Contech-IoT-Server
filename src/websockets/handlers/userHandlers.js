@@ -35,7 +35,8 @@ function registerHandlers(io, socket) {
       
       mqttBroker.publishDeviceState(device._id, newState, {
         updatedBy: 'user',
-        userId: socket.user._id.toString()
+        userId: socket.user._id.toString(),
+        suppressEcho: true
       });
       
       // ✅ FIX: Get real-time ESP status from memory, not database
@@ -50,6 +51,18 @@ function registerHandlers(io, socket) {
         userId: socket.user._id.toString(),
         roomId: roomId,  
         espConnected: actualEspStatus
+      });
+
+      const updates = [{ deviceId: device._id, state: newState }];
+      io.of('/ws/room-user').to(`room:${roomId}`).emit('room-devices-updated', {
+        roomId,
+        updates,
+        updatedBy: 'user',
+        userId: socket.user._id.toString()
+      });
+      io.of('/ws/room-esp').to(`room:${roomId}`).emit('room-state-changed', {
+        roomId,
+        updates
       });
       
       logger.info(`Device ${device.name} updated to ${newState}, ESP: ${actualEspStatus}`);

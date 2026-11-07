@@ -55,6 +55,7 @@ exports.getDevicesByUser = async (req, res) => {
         name: device.name,
         type: device.type,
         status: device.status,
+        isOnline: device.isOnline,
         active: device.active,
         order: device.order,
         componentNumber: device.componentNumber,

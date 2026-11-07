@@ -1,5 +1,6 @@
 // websockets/handlers/deviceHandlers.js
 const { normalizeState } = require('../utils/stateUtils');
+const mqttBroker = require('../../mqtt/mqtt-broker');
 const logger = require('../../config/logger');
 
 function registerHandlers(io, socket) {
@@ -22,6 +23,29 @@ function registerHandlers(io, socket) {
         deviceId: socket.device._id, 
         state: newState,
         updatedBy: 'device'
+      });
+
+      const roomId = socket.device.room ? socket.device.room.toString() : null;
+      if (roomId) {
+        const updates = [{ deviceId: socket.device._id, state: newState }];
+
+        io.of('/ws/room-user').to(`room:${roomId}`).emit('room-devices-updated', {
+          roomId,
+          updates,
+          updatedBy: 'device'
+        });
+
+        io.of('/ws/room-esp').to(`room:${roomId}`).emit('room-state-changed', {
+          roomId,
+          updates
+        });
+      }
+
+      // A device report is already applied locally; publish it for MQTT/ESP
+      // subscribers without letting the server re-process its own echo.
+      mqttBroker.publishDeviceState(socket.device._id, newState, {
+        updatedBy: 'device',
+        suppressEcho: true
       });
       
       socket.emit('state-reported', { state: newState });

@@ -22,6 +22,7 @@ const topics = {
   espRoomBulkUpdate: (roomId) => `home-automation/esp/room/${roomId}/bulk-update`,
   espRoomTaskUpdate: (roomId) => `home-automation/esp/room/${roomId}/task-update`,
   deviceState: (deviceId) => `home-automation/${deviceId}/state`,
+  deviceStatus: (deviceId) => `home-automation/${deviceId}/status`,
   deviceTask: (deviceId) => `home-automation/${deviceId}/task`,
   roomState: (roomId) => `home-automation/room/${roomId}/state`
 };

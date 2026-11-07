@@ -108,6 +108,7 @@ exports.getDevicesByRoom = async (req, res) => {
           name: device.name,
           type: device.type,
           status: device.status,
+          isOnline: device.isOnline,
           order: device.order,
           componentNumber: device.componentNumber,
           creator: device.creator,

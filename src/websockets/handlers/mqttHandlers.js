@@ -31,10 +31,13 @@ function registerHandlers(io, socket) {
       // Normalize state
       const newState = normalizeState(data.state);
       
-      // Publish to MQTT
+      // Publish to MQTT. This path intentionally relies on the server's own
+      // subscription to apply the DB/Socket.IO/ESP fan-out, so do not publish
+      // the ESP command here (that would duplicate the echo's fan-out).
       mqttBroker.publishDeviceState(device._id, newState, {
         updatedBy: 'user',
-        userId: socket.user._id.toString()
+        userId: socket.user._id.toString(),
+        publishEsp: false
       });
       
       // Respond to the client
@@ -97,10 +100,12 @@ function registerHandlers(io, socket) {
         return socket.emit('error', { message: 'No valid device updates found' });
       }
       
-      // Publish to MQTT
+      // Publish to MQTT. Persistence and ESP fan-out happen when the server
+      // consumes this publish, so skip the direct ESP publish here.
       mqttBroker.publishRoomState(room._id, validUpdates, {
         updatedBy: 'user',
-        userId: socket.user._id.toString()
+        userId: socket.user._id.toString(),
+        publishEsp: false
       });
       
       // Respond to the client

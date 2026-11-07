@@ -7,6 +7,7 @@ const { context } = require('../context');
 const Device = require('../../models/Device');
 const { normalizeState } = require('../../websockets/utils/stateUtils');
 const { publishEspStateUpdate } = require('../publishers/espPublisher');
+const { isOwnEcho } = require('../echoGuard');
 const logger = require('../../config/logger');
 
 /**
@@ -16,6 +17,11 @@ const logger = require('../../config/logger');
  */
 async function handleDeviceStateMessage(deviceId, payload) {
   try {
+    if (isOwnEcho(payload)) {
+      logger.debug('Ignoring server-originated device state echo', { deviceId });
+      return;
+    }
+
     const device = await Device.findById(deviceId);
     if (!device) {
       logger.warn('MQTT state: device not found', { deviceId });
